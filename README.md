@@ -24,7 +24,7 @@ How To Use
 
     class Plugins(info: sbt.ProjectInfo) extends sbt.PluginDefinition(info) {
       val codaRepo = "Coda Hale's Repository" at "http://repo.codahale.com/"
-      val assemblySBT = "com.codahale" % "assembly-sbt" % "0.1"
+      val assemblySBT = "com.codahale" % "assembly-sbt" % "0.1.1"
     }
 
 (You may need to check this project's tags to see what the most recent release
@@ -48,6 +48,6 @@ one) then you'll end up with a fully executable JAR, ready to rock.
 License
 -------
 
-Copyright (c) 2010 Coda Hale
+Copyright (c) 2010-2011 Coda Hale
 
 Published under The MIT License, see LICENSE
