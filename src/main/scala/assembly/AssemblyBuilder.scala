@@ -17,6 +17,9 @@ trait AssemblyBuilder extends BasicScalaProject {
   def assemblyTemporaryPath = outputPath / "assembly-libs"
   def assemblyClasspath = runClasspath
   def assemblyExtraJars = mainDependencies.scalaJars
+  def assemblyConflictingFiles(path: Path) = List((path / "META-INF" / "LICENSE"),
+                                                  (path / "META-INF" / "license"),
+                                                  (path / "META-INF" / "License"))
 
   def assemblyPaths(tempDir: Path, classpath: PathFinder, extraJars: PathFinder, exclude: PathFinder => PathFinder) = {
     val (libs, directories) = classpath.get.toList.partition(ClasspathUtilities.isArchive)
@@ -25,10 +28,7 @@ trait AssemblyBuilder extends BasicScalaProject {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
       FileUtilities.unzip(jar, tempDir, log).left.foreach(error)
-      FileUtilities.clean(List((tempDir / "META-INF" / "LICENSE"),
-                                   (tempDir / "META-INF" / "license"),
-                                   (tempDir / "META-INF" / "License")),
-                              true, log)
+      FileUtilities.clean(assemblyConflictingFiles(tempDir), true, log)
       val servicesDir = tempDir / "META-INF" / "services"
       if (servicesDir.asFile.exists) {
        for (service <- (servicesDir ** "*").get) {
