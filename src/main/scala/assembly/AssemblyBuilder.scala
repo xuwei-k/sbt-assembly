@@ -1,13 +1,14 @@
 package assembly
 
+import sbt._
 import java.io.PrintWriter
 import scala.collection.mutable
 import scala.io.Source
 
-trait AssemblyBuilder extends sbt.BasicScalaProject {
+trait AssemblyBuilder extends BasicScalaProject {
   override def classpathFilter = super.classpathFilter -- "*-sources.jar" -- "*-javadoc.jar"
   
-  def assemblyExclude(base: sbt.PathFinder) =
+  def assemblyExclude(base: PathFinder) =
     (base / "META-INF" ** "*") --- // generally ignore the hell out of META-INF
       (base / "META-INF" / "services" ** "*") --- // include all service providers
       (base / "META-INF" / "maven" ** "*") // include all Maven POMs and such
@@ -17,14 +18,14 @@ trait AssemblyBuilder extends sbt.BasicScalaProject {
   def assemblyClasspath = runClasspath
   def assemblyExtraJars = mainDependencies.scalaJars
 
-  def assemblyPaths(tempDir: sbt.Path, classpath: sbt.PathFinder, extraJars: sbt.PathFinder, exclude: sbt.PathFinder => sbt.PathFinder) = {
-    val (libs, directories) = classpath.get.toList.partition(sbt.ClasspathUtilities.isArchive)
+  def assemblyPaths(tempDir: Path, classpath: PathFinder, extraJars: PathFinder, exclude: PathFinder => PathFinder) = {
+    val (libs, directories) = classpath.get.toList.partition(ClasspathUtilities.isArchive)
     val services = mutable.Map[String, mutable.ArrayBuffer[String]]()
     for(jar <- extraJars.get ++ libs) {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
-      sbt.FileUtilities.unzip(jar, tempDir, log).left.foreach(error)
-      sbt.FileUtilities.clean(List((tempDir / "META-INF" / "LICENSE"),
+      FileUtilities.unzip(jar, tempDir, log).left.foreach(error)
+      FileUtilities.clean(List((tempDir / "META-INF" / "LICENSE"),
                                    (tempDir / "META-INF" / "license"),
                                    (tempDir / "META-INF" / "License")),
                               true, log)
@@ -55,12 +56,12 @@ trait AssemblyBuilder extends sbt.BasicScalaProject {
       writer.close()
     }
     
-    val base = (sbt.Path.lazyPathFinder(tempDir :: directories) ##)
+    val base = (Path.lazyPathFinder(tempDir :: directories) ##)
     (descendents(base, "*") --- exclude(base)).get
   }
 
-  def assemblyTask(tempDir: sbt.Path, classpath: sbt.PathFinder, extraJars: sbt.PathFinder, exclude: sbt.PathFinder => sbt.PathFinder) = {
-    packageTask(sbt.Path.lazyPathFinder(assemblyPaths(tempDir, classpath, extraJars, exclude)), assemblyOutputPath, packageOptions)
+  def assemblyTask(tempDir: Path, classpath: PathFinder, extraJars: PathFinder, exclude: PathFinder => PathFinder) = {
+    packageTask(Path.lazyPathFinder(assemblyPaths(tempDir, classpath, extraJars, exclude)), assemblyOutputPath, packageOptions)
   }
   
   lazy val assembly = assemblyTask(assemblyTemporaryPath,
