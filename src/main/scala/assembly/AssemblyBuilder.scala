@@ -24,6 +24,10 @@ trait AssemblyBuilder extends sbt.BasicScalaProject {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
       sbt.FileUtilities.unzip(jar, tempDir, log).left.foreach(error)
+      sbt.FileUtilities.clean(List((tempDir / "META-INF" / "LICENSE"),
+                                   (tempDir / "META-INF" / "license"),
+                                   (tempDir / "META-INF" / "License")),
+                              true, log)
       val servicesDir = tempDir / "META-INF" / "services"
       if (servicesDir.asFile.exists) {
        for (service <- (servicesDir ** "*").get) {
