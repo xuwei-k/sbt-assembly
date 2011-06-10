@@ -8,18 +8,17 @@ import scala.io.Source
 import Project.Initialize
 
 object AssemblyPlugin extends Plugin {  
+  val Assembly = config("assembly")
   val assembly = TaskKey[Unit]("assembly")
   
   val assemblyExclude           = SettingKey[PathFinder => PathFinder]("assembly-exclude")  
   val assemblyOutputPath        = SettingKey[File]("assembly-output-path")
   val assemblyJarName           = SettingKey[String]("assembly-jar-name")
-  val assemblyClasspath         = TaskKey[Classpath]("assembly-classpath")
   val assemblyConflictingFiles  = SettingKey[File => List[File]]("assembly-conflicting-files") 
-  val assemblyPackageOptions    = TaskKey[Seq[PackageOption]]("assembly-package-options")
-        
+  
   private def assemblyTask: Initialize[Task[Unit]] =
-    (test in Test, assemblyPackageOptions, cacheDirectory, assemblyOutputPath,
-        assemblyClasspath, assemblyExclude, assemblyConflictingFiles, streams) map {
+    (test in Assembly, packageOptions in Assembly, cacheDirectory in Assembly, assemblyOutputPath,
+        fullClasspath in Assembly, assemblyExclude, assemblyConflictingFiles, streams) map {
       (test, options, cacheDir, jarPath, cp, exclude, conflicting, s) =>
         IO.withTemporaryDirectory { tempDir =>
           val srcs = assemblyPaths(tempDir, cp, exclude, conflicting, s.log)
@@ -27,9 +26,9 @@ object AssemblyPlugin extends Plugin {
           Package(config, cacheDir, s.log) 
         }
     }
-    
+  
   private def assemblyPackageOptionsTask: Initialize[Task[Seq[PackageOption]]] =
-    (packageOptions, mainClass in Runtime) map { (os, mainClass) =>
+    (packageOptions, mainClass in Assembly) map { (os, mainClass) =>
       mainClass map { s =>
         os find { o => o.isInstanceOf[Package.MainClass] } map { _ => os
         } getOrElse { Package.MainClass(s) +: os }
@@ -90,11 +89,13 @@ object AssemblyPlugin extends Plugin {
   
   override lazy val settings = Seq(
     assembly <<= assemblyTask,
-    assemblyPackageOptions <<= assemblyPackageOptionsTask,
+    test in Assembly <<= (test in Test) map { x => x },
+    mainClass in Assembly <<= (mainClass in Runtime) map { x => x },
+    packageOptions in Assembly <<= assemblyPackageOptionsTask,
     assemblyExclude := excludePaths _,
     assemblyOutputPath <<= (target, assemblyJarName) { (t, s) => t / s },
     assemblyJarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
-    assemblyClasspath <<= (fullClasspath in Runtime) map { x => x },
+    fullClasspath in Assembly <<= (fullClasspath in Runtime) map { x => x },
     assemblyConflictingFiles := conflictingFiles _
   )
 }
