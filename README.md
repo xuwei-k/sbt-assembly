@@ -1,9 +1,11 @@
-assembly-sbt
+sbt-assembly
 ============
 
 *Deploy fat JARs. Restart processes.*
 
-assembly-sbt is a [simple-build-tool](http://code.google.com/p/simple-build-tool/)
+sbt-assembly is a sbt 0.10 port of and awesome sbt plugin by codahale:
+
+> assembly-sbt is a [simple-build-tool](http://code.google.com/p/simple-build-tool/)
 plugin for building a single JAR file of your project which includes all of its
 dependencies, allowing to deploy the damn thing as a single file without dicking
 around with shell scripts and lib directories or, worse, welding your
@@ -19,35 +21,25 @@ Requirements
 How To Use
 ----------
 
-**First**, specify assembly-sbt as a dependency in
-`project/plugins/Plugins.scala`:
+Specify sbt-assembly as a dependency in
+`project/plugins/build.sbt`:
 
-    class Plugins(info: sbt.ProjectInfo) extends sbt.PluginDefinition(info) {
-      val codaRepo = "Coda Hale's Repository" at "http://repo.codahale.com/"
-      val assemblySBT = "com.codahale" % "assembly-sbt" % "0.1.1"
-    }
+    libraryDependencies += "com.eed3si9n" %% "sbt-assembly" % "0.2-SNAPSHOT"
 
 (You may need to check this project's tags to see what the most recent release
 is. I'm notoriously crap about updating the version numbers in my READMEs.)
-
-**Second**, add the `AssemblyBuilder` trait to your project:
-    
-    class MyProject(info: ProjectInfo) extends DefaultProject(info) with assembly.AssemblyBuilder {
-      // etc.
-    }
-
 
 Now you'll have an awesome new `assembly` task which will compile your project,
 run your tests, and then pack your class files and all your dependencies into a
 single JAR file: `target/scala_X.X.X/projectname-assembly-X.X.X.jar`.
 
-If you specify a `mainClass` in simple-build-tool (or just let it autodetect
+If you specify a `mainClass in Assembly` in simple-build-tool (or just let it autodetect
 one) then you'll end up with a fully executable JAR, ready to rock.
 
 
 License
 -------
 
-Copyright (c) 2010-2011 Coda Hale
+Copyright (c) 2010-2011 e.e d3si9n, Coda Hale
 
 Published under The MIT License, see LICENSE
