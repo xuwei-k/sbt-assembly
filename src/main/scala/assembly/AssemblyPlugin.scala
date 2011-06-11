@@ -11,7 +11,7 @@ object AssemblyPlugin extends Plugin {
   val Assembly = config("assembly")
   val assembly = TaskKey[Unit]("assembly")
   
-  val assemblyExclude           = SettingKey[PathFinder => PathFinder]("assembly-exclude")  
+  val assemblyExclude           = SettingKey[Seq[File] => Seq[File]]("assembly-exclude")  
   val assemblyOutputPath        = SettingKey[File]("assembly-output-path")
   val assemblyJarName           = SettingKey[String]("assembly-jar-name")
   val assemblyConflictingFiles  = SettingKey[File => List[File]]("assembly-conflicting-files") 
@@ -35,17 +35,17 @@ object AssemblyPlugin extends Plugin {
       } getOrElse {os}      
     }
 
-  private def excludePaths(base: PathFinder) =
-    (base / "META-INF" ** "*") --- // generally ignore the hell out of META-INF
+  private def excludePaths(base: Seq[File]): Seq[File] =
+    ((base / "META-INF" ** "*") --- // generally ignore the hell out of META-INF
       (base / "META-INF" / "services" ** "*") --- // include all service providers
-      (base / "META-INF" / "maven" ** "*") // include all Maven POMs and such
+      (base / "META-INF" / "maven" ** "*")).get // include all Maven POMs and such
       
   private def conflictingFiles(path: File) = List((path / "META-INF" / "LICENSE"),
                                                   (path / "META-INF" / "license"),
                                                   (path / "META-INF" / "License"))      
           
   private def assemblyPaths(tempDir: File, classpath: Classpath,
-      exclude: PathFinder => PathFinder, conflicting: File => List[File], log: Logger) = {
+      exclude: Seq[File] => Seq[File], conflicting: File => List[File], log: Logger) = {
     import sbt.classpath.ClasspathUtilities
 
     val (libs, directories) = classpath.map(_.data).partition(ClasspathUtilities.isArchive)
