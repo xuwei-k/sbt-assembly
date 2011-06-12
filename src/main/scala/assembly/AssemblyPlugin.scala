@@ -11,14 +11,14 @@ object AssemblyPlugin extends Plugin {
   val Assembly = config("assembly") extend(Runtime)
   val assembly = TaskKey[Unit]("assembly")
   
-  val assemblyExclude           = SettingKey[Seq[File] => Seq[File]]("assembly-exclude")  
-  val assemblyOutputPath        = SettingKey[File]("assembly-output-path")
-  val assemblyJarName           = SettingKey[String]("assembly-jar-name")
-  val assemblyConflictingFiles  = SettingKey[File => List[File]]("assembly-conflicting-files") 
+  val jarName           = SettingKey[String]("jar-name")
+  val outputPath        = SettingKey[File]("output-path")
+  val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("excluded-files")  
+  val conflictingFiles  = SettingKey[Seq[File] => Seq[File]]("conflicting-files")  
   
   private def assemblyTask: Initialize[Task[Unit]] =
-    (test, packageOptions, cacheDirectory, assemblyOutputPath,
-        fullClasspath, assemblyExclude, assemblyConflictingFiles, streams) map {
+    (test, packageOptions, cacheDirectory, outputPath,
+        fullClasspath, excludedFiles, conflictingFiles, streams) map {
       (test, options, cacheDir, jarPath, cp, exclude, conflicting, s) =>
         IO.withTemporaryDirectory { tempDir =>
           val srcs = assemblyPaths(tempDir, cp, exclude, conflicting, s.log)
@@ -35,17 +35,13 @@ object AssemblyPlugin extends Plugin {
       } getOrElse {os}      
     }
 
-  private def excludePaths(base: Seq[File]): Seq[File] =
+  private def assemblyExcludedFiles(base: Seq[File]): Seq[File] =
     ((base / "META-INF" ** "*") --- // generally ignore the hell out of META-INF
       (base / "META-INF" / "services" ** "*") --- // include all service providers
       (base / "META-INF" / "maven" ** "*")).get // include all Maven POMs and such
-      
-  private def conflictingFiles(path: File) = List((path / "META-INF" / "LICENSE"),
-                                                  (path / "META-INF" / "license"),
-                                                  (path / "META-INF" / "License"))      
-          
+            
   private def assemblyPaths(tempDir: File, classpath: Classpath,
-      exclude: Seq[File] => Seq[File], conflicting: File => List[File], log: Logger) = {
+      exclude: Seq[File] => Seq[File], conflicting: Seq[File] => Seq[File], log: Logger) = {
     import sbt.classpath.ClasspathUtilities
 
     val (libs, directories) = classpath.map(_.data).partition(ClasspathUtilities.isArchive)
@@ -54,7 +50,7 @@ object AssemblyPlugin extends Plugin {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
       IO.unzip(jar, tempDir)
-      IO.delete(conflicting(tempDir))
+      IO.delete(conflicting(Seq(tempDir)))
       val servicesDir = tempDir / "META-INF" / "services"
       if (servicesDir.asFile.exists) {
        for (service <- (servicesDir ** "*").get) {
@@ -89,14 +85,14 @@ object AssemblyPlugin extends Plugin {
   
   override lazy val settings = inConfig(Assembly)(Seq(
     assembly <<= assemblyTask,
+    jarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
+    outputPath <<= (target, jarName) { (t, s) => t / s },
     test <<= (test in Test) map { x => x },
     mainClass <<= (mainClass in Runtime) map { x => x},
     fullClasspath <<= (fullClasspath in Runtime) map { x => x },
     packageOptions <<= assemblyPackageOptionsTask,
-    assemblyExclude := excludePaths _,
-    assemblyOutputPath <<= (target, assemblyJarName) { (t, s) => t / s },
-    assemblyJarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
-    assemblyConflictingFiles := conflictingFiles _
+    excludedFiles := assemblyExcludedFiles _,
+    conflictingFiles := assemblyExcludedFiles _
   )) ++
   Seq(
     assembly <<= (assembly in Assembly) map { x => x }
