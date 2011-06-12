@@ -8,7 +8,7 @@ import scala.io.Source
 import Project.Initialize
 
 object AssemblyPlugin extends Plugin {  
-  val Assembly = config("assembly")
+  val Assembly = config("assembly") extend(Runtime)
   val assembly = TaskKey[Unit]("assembly")
   
   val assemblyExclude           = SettingKey[Seq[File] => Seq[File]]("assembly-exclude")  
@@ -17,8 +17,8 @@ object AssemblyPlugin extends Plugin {
   val assemblyConflictingFiles  = SettingKey[File => List[File]]("assembly-conflicting-files") 
   
   private def assemblyTask: Initialize[Task[Unit]] =
-    (test in Assembly, packageOptions in Assembly, cacheDirectory in Assembly, assemblyOutputPath,
-        fullClasspath in Assembly, assemblyExclude, assemblyConflictingFiles, streams) map {
+    (test, packageOptions, cacheDirectory, assemblyOutputPath,
+        fullClasspath, assemblyExclude, assemblyConflictingFiles, streams) map {
       (test, options, cacheDir, jarPath, cp, exclude, conflicting, s) =>
         IO.withTemporaryDirectory { tempDir =>
           val srcs = assemblyPaths(tempDir, cp, exclude, conflicting, s.log)
@@ -28,7 +28,7 @@ object AssemblyPlugin extends Plugin {
     }
   
   private def assemblyPackageOptionsTask: Initialize[Task[Seq[PackageOption]]] =
-    (packageOptions, mainClass in Assembly) map { (os, mainClass) =>
+    (packageOptions in Compile, mainClass in Assembly) map { (os, mainClass) =>
       mainClass map { s =>
         os find { o => o.isInstanceOf[Package.MainClass] } map { _ => os
         } getOrElse { Package.MainClass(s) +: os }
@@ -87,15 +87,18 @@ object AssemblyPlugin extends Plugin {
     descendants x relativeTo(base)
   }
   
-  override lazy val settings = Seq(
+  override lazy val settings = inConfig(Assembly)(Seq(
     assembly <<= assemblyTask,
-    test in Assembly <<= (test in Test) map { x => x },
-    mainClass in Assembly <<= (mainClass in Runtime) map { x => x },
-    packageOptions in Assembly <<= assemblyPackageOptionsTask,
+    test <<= (test in Test) map { x => x },
+    mainClass <<= (mainClass in Runtime) map { x => x},
+    fullClasspath <<= (fullClasspath in Runtime) map { x => x },
+    packageOptions <<= assemblyPackageOptionsTask,
     assemblyExclude := excludePaths _,
     assemblyOutputPath <<= (target, assemblyJarName) { (t, s) => t / s },
     assemblyJarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
-    fullClasspath in Assembly <<= (fullClasspath in Runtime) map { x => x },
     assemblyConflictingFiles := conflictingFiles _
+  )) ++
+  Seq(
+    assembly <<= (assembly in Assembly) map { x => x }
   )
 }
