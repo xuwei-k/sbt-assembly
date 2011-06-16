@@ -21,10 +21,19 @@ Requirements
 How To Use
 ----------
 
-Specify sbt-assembly as a dependency in
-`project/plugins/build.sbt`:
+Specify sbt-assembly as a dependency in `project/plugins/build.sbt`:
 
     libraryDependencies += "com.eed3si9n" %% "sbt-assembly" % "0.2-SNAPSHOT"
+    
+Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.scala`:
+
+    import sbt._
+
+    object Plugins extends Build {
+      lazy val root = Project("root", file(".")) dependsOn(
+        uri("git://github.com/eed3si9n/sbt-assembly.git")
+      )
+    }
 
 (You may need to check this project's tags to see what the most recent release
 is. I'm notoriously crap about updating the version numbers in my READMEs.)
