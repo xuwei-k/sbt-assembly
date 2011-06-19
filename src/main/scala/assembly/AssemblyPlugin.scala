@@ -9,7 +9,7 @@ import Project.Initialize
 
 object AssemblyPlugin extends Plugin {  
   val Assembly = config("assembly") extend(Runtime)
-  val assembly = TaskKey[File]("assembly")
+  val assembly = TaskKey[File]("assembly", "Builds a single-file deployable jar.")
   
   val jarName           = SettingKey[String]("jar-name")
   val outputPath        = SettingKey[File]("output-path")
