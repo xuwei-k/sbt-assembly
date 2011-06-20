@@ -80,7 +80,7 @@ object AssemblyPlugin extends Plugin {
     }
 
     val base = tempDir +: directories
-    val descendants = ((base ** "*") --- exclude(base)).get filter {_.isFile}
+    val descendants = ((base ** (-DirectoryFilter)) --- exclude(base)).get
     descendants x relativeTo(base)
   }
   
