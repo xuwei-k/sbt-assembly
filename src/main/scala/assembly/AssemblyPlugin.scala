@@ -88,9 +88,9 @@ object AssemblyPlugin extends Plugin {
     assembly <<= assemblyTask,
     jarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
     outputPath <<= (target, jarName) { (t, s) => t / s },
-    test <<= (test in Test) map { x => x },
-    mainClass <<= (mainClass in Runtime) map { x => x},
-    fullClasspath <<= (fullClasspath in Runtime) map { x => x },
+    test <<= (test in Test).identity,
+    mainClass <<= (mainClass in Runtime).identity,
+    fullClasspath <<= (fullClasspath in Runtime).identity,
     packageOptions <<= assemblyPackageOptionsTask,
     excludedFiles := assemblyExcludedFiles _,
     conflictingFiles := assemblyExcludedFiles _
