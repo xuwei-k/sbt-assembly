@@ -96,6 +96,6 @@ object AssemblyPlugin extends Plugin {
     conflictingFiles := assemblyExcludedFiles _
   )) ++
   Seq(
-    assembly <<= (assembly in Assembly) map { x => x }
+    assembly <<= (assembly in Assembly).identity
   )
 }
