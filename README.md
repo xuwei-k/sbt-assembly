@@ -3,7 +3,7 @@ sbt-assembly
 
 *Deploy fat JARs. Restart processes.*
 
-sbt-assembly is a sbt 0.10 port of and awesome sbt plugin by codahale:
+sbt-assembly is a sbt 0.10 port of an awesome sbt plugin by codahale:
 
 > assembly-sbt is a [simple-build-tool](http://code.google.com/p/simple-build-tool/)
 plugin for building a single JAR file of your project which includes all of its
