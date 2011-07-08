@@ -85,7 +85,8 @@ object AssemblyPlugin extends Plugin {
   }
   
   override lazy val settings = inConfig(Assembly)(Seq(
-    assembly <<= assemblyTask,
+    assembly <<= packageBin.identity,
+    packageBin <<= assemblyTask,
     jarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
     outputPath <<= (target, jarName) { (t, s) => t / s },
     test <<= (test in Test).identity,
