@@ -23,8 +23,8 @@ How To Use
 
 Specify sbt-assembly as a dependency in `project/plugins/build.sbt`:
 
-    libraryDependencies += "com.eed3si9n" %% "sbt-assembly" % "0.2"
-    
+    libraryDependencies <+= (sbtVersion) { sv => "com.eed3si9n" %% "sbt-assembly" % ("sbt" + sv + "_0.3") }
+
 Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.scala`:
 
     import sbt._
