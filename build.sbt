@@ -4,7 +4,7 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-version := "0.3-SNAPSHOT"
+version <<= (sbtVersion) { sv => "sbt" + sv + "_" + "0.3-SNAPSHOT" }
 
 scalacOptions := Seq("-deprecation", "-unchecked")
 
@@ -17,10 +17,10 @@ publishTo <<= version { (v: String) =>
 
 credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 
-publishArtifact in (Compile, packageBin) := false
+publishArtifact in (Compile, packageBin) := true
+
+publishArtifact in (Test, packageBin) := false
 
 publishArtifact in (Compile, packageDoc) := false
 
-publishArtifact in (Compile, packageSrc) := true
-
-publishArtifact in (Test, packageSrc) := false
+publishArtifact in (Compile, packageSrc) := false
