@@ -45,6 +45,28 @@ single JAR file: `target/scala_X.X.X/projectname-assembly-X.X.X.jar`.
 If you specify a `mainClass in Assembly` in simple-build-tool (or just let it autodetect
 one) then you'll end up with a fully executable JAR, ready to rock.
 
+You can type
+
+    > show assembly:[tab]
+
+and list the keys you can rewire.
+
+    assembly            configuration       conflicting-files   excluded-files
+    full-classpath      jar-name            main-class          output-path
+    package             package-options     streams             test
+
+For example the name of the jar can be set as follows in built.sbt:
+
+    jarName in Assembly := "something.jar"
+
+To exclude Scala files,
+
+    excludedFiles in Assembly := { (base: Seq[File]) =>
+        ((base / "scala" ** "*") +++
+        (base / "spark" ** "*") +++
+        ((base / "META-INF" ** "*") ---
+         (base / "META-INF" / "services" ** "*") ---
+         (base / "META-INF" / "maven" ** "*"))).get }
 
 License
 -------
