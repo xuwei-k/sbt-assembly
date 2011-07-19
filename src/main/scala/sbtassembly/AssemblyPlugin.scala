@@ -1,4 +1,4 @@
-package assembly
+package sbtassembly
 
 import sbt._
 import Keys._
@@ -7,7 +7,7 @@ import scala.collection.mutable
 import scala.io.Source
 import Project.Initialize
 
-object AssemblyPlugin extends Plugin {  
+object AssemblyPlugin extends Plugin {
   val Assembly = config("assembly") extend(Runtime)
   val assembly = TaskKey[File]("assembly", "Builds a single-file deployable jar.")
   
@@ -84,7 +84,7 @@ object AssemblyPlugin extends Plugin {
     descendants x relativeTo(base)
   }
   
-  override lazy val settings = inConfig(Assembly)(Seq(
+  lazy val assemblySettings = inConfig(Assembly)(Seq(
     assembly <<= packageBin.identity,
     packageBin <<= assemblyTask,
     jarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
