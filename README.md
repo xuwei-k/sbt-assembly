@@ -31,7 +31,7 @@ Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.s
 
     object Plugins extends Build {
       lazy val root = Project("root", file(".")) dependsOn(
-        uri("git://github.com/eed3si9n/sbt-assembly.git#X.X") // where X.X is tag
+        uri("git://github.com/eed3si9n/sbt-assembly.git#XX") // where XX is branch
       )
     }
 
