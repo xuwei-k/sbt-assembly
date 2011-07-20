@@ -38,6 +38,10 @@ Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.s
 (You may need to check this project's tags to see what the most recent release
 is. I'm notoriously crap about updating the version numbers in my READMEs.)
 
+Then, add the following in your `build.sbt`:
+
+    seq(sbtassembly.Plugin.assemblySettings: _*)
+
 Now you'll have an awesome new `assembly` task which will compile your project,
 run your tests, and then pack your class files and all your dependencies into a
 single JAR file: `target/scala_X.X.X/projectname-assembly-X.X.X.jar`.

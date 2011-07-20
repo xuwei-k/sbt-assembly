@@ -4,7 +4,7 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-posterousNotesVersion := "0.3-SNAPSHOT"
+posterousNotesVersion := "0.4-SNAPSHOT"
 
 version <<= (sbtVersion, posterousNotesVersion) { (sv, nv) => "sbt" + sv + "_" + nv }
 
