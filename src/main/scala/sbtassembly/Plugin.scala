@@ -7,7 +7,7 @@ import scala.collection.mutable
 import scala.io.Source
 import Project.Initialize
 
-object AssemblyPlugin extends Plugin {
+object Plugin extends sbt.Plugin {
   val Assembly = config("assembly") extend(Runtime)
   val assembly = TaskKey[File]("assembly", "Builds a single-file deployable jar.")
   
