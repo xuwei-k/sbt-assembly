@@ -23,7 +23,7 @@ How To Use
 
 Specify sbt-assembly as a dependency in `project/plugins/build.sbt`:
 
-    libraryDependencies <+= (sbtVersion) { sv => "com.eed3si9n" %% "sbt-assembly" % ("sbt" + sv + "_0.3") }
+    libraryDependencies <+= (sbtVersion) { sv => "com.eed3si9n" %% "sbt-assembly" % ("sbt" + sv + "_0.4") }
 
 Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.scala`:
 
@@ -31,7 +31,7 @@ Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.s
 
     object Plugins extends Build {
       lazy val root = Project("root", file(".")) dependsOn(
-        uri("git://github.com/eed3si9n/sbt-assembly.git")
+        uri("git://github.com/eed3si9n/sbt-assembly.git#X.X") // where X.X is tag
       )
     }
 
