@@ -84,7 +84,7 @@ object AssemblyPlugin extends Plugin {
     descendants x relativeTo(base)
   }
   
-  lazy val assemblySettings = inConfig(Assembly)(Seq(
+  lazy val assemblySettings: Seq[sbt.Project.Setting[_]] = inConfig(Assembly)(Seq(
     assembly <<= packageBin.identity,
     packageBin <<= assemblyTask,
     jarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
