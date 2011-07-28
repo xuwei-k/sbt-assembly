@@ -37,10 +37,8 @@ object Plugin extends sbt.Plugin {
     }
 
   private def assemblyExcludedFiles(base: Seq[File]): Seq[File] =
-    ((base / "META-INF" ** "*") --- // generally ignore the hell out of META-INF
-      (base / "META-INF" / "services" ** "*") --- // include all service providers
-      (base / "META-INF" / "maven" ** "*")).get // include all Maven POMs and such
-            
+    (base / "META-INF" * "*").get collect { case f if f.isFile => f }
+    
   private def assemblyPaths(tempDir: File, classpath: Classpath,
       exclude: Seq[File] => Seq[File], conflicting: Seq[File] => Seq[File], log: Logger) = {
     import sbt.classpath.ClasspathUtilities
@@ -69,7 +67,7 @@ object Plugin extends sbt.Plugin {
     }
 
     for ((service, providers) <- services) {
-      log.debug("Merging providers for %s".format(service))
+      log.info("Merging providers for %s".format(service))
       val serviceFile = (tempDir / "META-INF" / "services" / service).asFile
       val writer = new PrintWriter(serviceFile)
       for (provider <- providers.map { _.trim }.filter { !_.isEmpty }) {
