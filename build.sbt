@@ -4,9 +4,9 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-posterousNotesVersion := "0.4"
+version in Posterous := "0.4-SNAPSHOT"
 
-version <<= (sbtVersion, posterousNotesVersion) { (sv, nv) => "sbt" + sv + "_" + nv }
+version <<= (sbtVersion, version in Posterous) { (sv, nv) => "sbt" + sv + "_" + nv }
 
 scalacOptions := Seq("-deprecation", "-unchecked")
 
