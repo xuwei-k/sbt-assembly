@@ -23,24 +23,36 @@ How To Use
 
 Specify sbt-assembly as a dependency in `project/plugins/build.sbt`:
 
-    libraryDependencies <+= (sbtVersion) { sv => "com.eed3si9n" %% "sbt-assembly" % ("sbt" + sv + "_0.4") }
+```scala
+libraryDependencies <+= (sbtVersion) { sv => "com.eed3si9n" %% "sbt-assembly" % ("sbt" + sv + "_0.4") }
+```
 
 Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.scala`:
 
-    import sbt._
+```scala
+import sbt._
 
-    object Plugins extends Build {
-      lazy val root = Project("root", file(".")) dependsOn(
-        uri("git://github.com/eed3si9n/sbt-assembly.git#XX") // where XX is branch
-      )
-    }
+object Plugins extends Build {
+  lazy val root = Project("root", file(".")) dependsOn(
+    uri("git://github.com/eed3si9n/sbt-assembly.git#XX") // where XX is branch
+  )
+}
+```
 
 (You may need to check this project's tags to see what the most recent release
 is. I'm notoriously crap about updating the version numbers in my READMEs.)
 
 Then, add the following in your `build.sbt`:
 
-    seq(sbtassembly.Plugin.assemblySettings: _*)
+```scala
+seq(sbtassembly.Plugin.assemblySettings: _*)
+```
+
+or, for full configuration:
+
+```scala
+lazy val sub = Project("sub", file("sub")) settings(sbtassembly.Plugin.assemblySettings: _*)
+```
 
 Now you'll have an awesome new `assembly` task which will compile your project,
 run your tests, and then pack your class files and all your dependencies into a
@@ -61,16 +73,17 @@ and list the keys you can rewire.
 
 For example the name of the jar can be set as follows in built.sbt:
 
-    jarName in Assembly := "something.jar"
+```scala
+jarName in Assembly := "something.jar"
+```
 
 To exclude Scala files,
 
-    excludedFiles in Assembly := { (base: Seq[File]) =>
-        ((base / "scala" ** "*") +++
-        (base / "spark" ** "*") +++
-        ((base / "META-INF" ** "*") ---
-         (base / "META-INF" / "services" ** "*") ---
-         (base / "META-INF" / "maven" ** "*"))).get }
+```scala
+excludedFiles in Assembly := { (base: Seq[File]) =>
+  ((base / "scala" ** "*") +++
+  ((base / "META-INF" * "*").get collect { case f if f.isFile => f })).get }
+```
 
 License
 -------
