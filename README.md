@@ -67,9 +67,12 @@ You can type
 
 and list the keys you can rewire.
 
-    assembly            configuration       conflicting-files   excluded-files
-    full-classpath      jar-name            main-class          output-path
-    package             package-options     streams             test
+    assembly               assembly-option        configuration
+    conflicting-files      dependency-classpath   excluded-files
+    full-classpath         jar-name               main-class
+    output-path            package-dependency     package-options
+    package-scala          publish-artifact       streams
+    test
 
 For example the name of the jar can be set as follows in built.sbt:
 
@@ -77,13 +80,29 @@ For example the name of the jar can be set as follows in built.sbt:
 jarName in Assembly := "something.jar"
 ```
 
-To exclude Scala files,
+To exclude Scala library,
+
+```scala
+publishArtifact in (Assembly, packageScala) := false
+```
+
+To exclude your source files,
+
+```scala
+publishArtifact in (Assembly, packageBin) := false
+```
+
+To exclude some package,
 
 ```scala
 excludedFiles in Assembly := { (base: Seq[File]) =>
-  ((base / "scala" ** "*") +++
+  ((base / "something-to-exclude" ** "*") +++
   ((base / "META-INF" * "*").get collect { case f if f.isFile => f })).get }
 ```
+
+To make a jar containing only the dependencies, type
+
+    > assembly:package-dependency
 
 License
 -------
