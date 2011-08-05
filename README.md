@@ -95,9 +95,14 @@ publishArtifact in (Assembly, packageBin) := false
 To exclude some package,
 
 ```scala
-excludedFiles in Assembly := { (base: Seq[File]) =>
-  ((base / "something-to-exclude" ** "*") +++
-  ((base / "META-INF" * "*").get collect { case f if f.isFile => f })).get }
+excludedFiles in Assembly := { (bases: Seq[File]) =>
+  bases flatMap { base =>
+    (base / "META-INF" * "*").get collect {
+      case f if f.getName == "something" => f
+      case f if f.getName.toLowerCase == "license" => f
+      case f if f.getName.toLowerCase == "manifest.mf" => f
+    }
+  }}
 ```
 
 To make a jar containing only the dependencies, type
