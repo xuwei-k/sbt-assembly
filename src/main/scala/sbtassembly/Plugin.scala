@@ -16,8 +16,7 @@ object Plugin extends sbt.Plugin {
   val assemblyOption    = SettingKey[AssemblyOption]("assembly-option")
   val jarName           = SettingKey[String]("jar-name")
   val outputPath        = SettingKey[File]("output-path")
-  val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("excluded-files")  
-  val conflictingFiles  = SettingKey[Seq[File] => Seq[File]]("conflicting-files")  
+  val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("excluded-files") 
   
   private def assemblyTask(out: File, po: Seq[PackageOption], ao: AssemblyOption,
       classpath: Classpath, dependencies: Classpath, cacheDir: File, log: Logger): File =
@@ -30,9 +29,9 @@ object Plugin extends sbt.Plugin {
   
   private def assemblyOptionTask: Initialize[AssemblyOption] =
     (publishArtifact in (Assembly, packageBin), publishArtifact in (Assembly, packageScala),
-     publishArtifact in (Assembly, packageDependency), excludedFiles, conflictingFiles) {
-      (includeBin, includeScala, includeDeps, exclude, conflicting) =>   
-      AssemblyOption(includeBin, includeScala, includeDeps, exclude, conflicting) 
+     publishArtifact in (Assembly, packageDependency), excludedFiles) {
+      (includeBin, includeScala, includeDeps, exclude) =>   
+      AssemblyOption(includeBin, includeScala, includeDeps, exclude) 
     }
 
   private def assemblyPackageOptionsTask: Initialize[Task[Seq[PackageOption]]] =
@@ -43,8 +42,13 @@ object Plugin extends sbt.Plugin {
       } getOrElse {os}      
     }
 
-  private def assemblyExcludedFiles(base: Seq[File]): Seq[File] =
-    (base / "META-INF" * "*").get collect { case f if f.isFile => f }
+  private def assemblyExcludedFiles(bases: Seq[File]): Seq[File] =
+    bases flatMap { base =>
+      (base / "META-INF" * "*").get collect {
+        case f if f.getName.toLowerCase == "license" => f
+        case f if f.getName.toLowerCase == "manifest.mf" => f
+      }
+    }
     
   private def assemblyPaths(tempDir: File, classpath: Classpath, dependencies: Classpath,
       ao: AssemblyOption, log: Logger) = {
@@ -70,7 +74,7 @@ object Plugin extends sbt.Plugin {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
       IO.unzip(jar, tempDir)
-      IO.delete(ao.conflicting(Seq(tempDir)))
+      IO.delete(ao.exclude(Seq(tempDir)))
       val servicesDir = tempDir / "META-INF" / "services"
       if (servicesDir.asFile.exists) {
        for (service <- (servicesDir ** "*").get) {
@@ -131,8 +135,7 @@ object Plugin extends sbt.Plugin {
     fullClasspath <<= (fullClasspath in Runtime).identity,
     dependencyClasspath <<= (dependencyClasspath in Runtime).identity,
     packageOptions <<= assemblyPackageOptionsTask,
-    excludedFiles := assemblyExcludedFiles _,
-    conflictingFiles := assemblyExcludedFiles _
+    excludedFiles := assemblyExcludedFiles _
   )) ++
   Seq(
     assembly <<= (assembly in Assembly).identity,
@@ -145,5 +148,4 @@ object Plugin extends sbt.Plugin {
 case class AssemblyOption(includeBin: Boolean,
   includeScala: Boolean,
   includeDependency: Boolean,
-  exclude: Seq[File] => Seq[File],
-  conflicting: Seq[File] => Seq[File])
+  exclude: Seq[File] => Seq[File])
