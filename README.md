@@ -80,6 +80,12 @@ For example the name of the jar can be set as follows in built.sbt:
 jarName in Assembly := "something.jar"
 ```
 
+To skip the test during assembly,
+
+```scala
+test in Assembly := {}
+```
+
 To exclude Scala library,
 
 ```scala
