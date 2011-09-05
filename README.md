@@ -17,14 +17,23 @@ Requirements
 * Simple Build Tool
 * The burning desire to have a simple deploy procedure.
 
+Latest
+------
+0.6
 
 How To Use
 ----------
 
-Specify sbt-assembly as a dependency in `project/plugins/build.sbt`:
+For sbt 0.11, add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-libraryDependencies <+= (sbtVersion) { sv => "com.eed3si9n" %% "sbt-assembly" % ("sbt" + sv + "_0.6") }
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "X.X")
+```
+
+For sbt 0.10, add sbt-assembly as a dependency in `project/plugins/build.sbt`:
+
+```scala
+libraryDependencies <+= (sbtVersion) { sv => "com.eed3si9n" %% "sbt-assembly" % ("sbt" + sv + "_X.X") }
 ```
 
 Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.scala`:
