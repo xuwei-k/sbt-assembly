@@ -4,7 +4,7 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-version in Posterous := "0.6"
+version in Posterous := "0.7-SNAPSHOT"
 
 version <<= (sbtVersion, version in Posterous) { (sv, nv) => "sbt" + sv + "_" + nv }
 
@@ -26,3 +26,5 @@ publishArtifact in (Test, packageBin) := false
 publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false
+
+seq(ScriptedPlugin.scriptedSettings: _*)
