@@ -3,4 +3,4 @@
 $ exists target/foo.jar
 
 # check if it says hello
-> assert-assembly
+> check
