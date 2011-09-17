@@ -7,7 +7,9 @@ object ScriptedTestBuild extends Build {
   lazy val assertAssembly = TaskKey[Unit]("assert-assembly")
   
   private def assertAssemblyTask = (target) map { (target) =>
-    if (!(target / "foo.jar").exists) error("bad")
+    val process = Process("java", Seq("-jar", (target / "foo.jar").toString))
+    val out = (process!!)
+    if (out.trim != "hello") error("not hello")
     
     ()
   }
@@ -15,6 +17,6 @@ object ScriptedTestBuild extends Build {
   lazy val root = Project("main", file("."), settings = Defaults.defaultSettings ++
     Seq(assertAssembly <<= assertAssemblyTask,
         version := "0.1") ++
-    sbtassembly.Plugin.assemblySettings ++
+    Assembly.settings ++
     Seq(Assembly.jarName in Assembly := "foo.jar"))   
 }
