@@ -17,12 +17,13 @@ object Plugin extends sbt.Plugin {
   lazy val jarName           = SettingKey[String]("jar-name")
   lazy val outputPath        = SettingKey[File]("output-path")
   lazy val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("excluded-files")
-  lazy val excludedJars      = SettingKey[Seq[Attributed[File]]]("excluded-jars")
+  lazy val excludedJars      = TaskKey[Classpath]("excluded-jars")
   
   private def assemblyTask(out: File, po: Seq[PackageOption], ao: AssemblyOption,
-      classpath: Classpath, dependencies: Classpath, cacheDir: File, log: Logger): File =
+      classpath: Classpath, dependencies: Classpath, excludedJars: Classpath,
+      cacheDir: File, log: Logger): File =
     IO.withTemporaryDirectory { tempDir =>
-      val srcs = assemblyPaths(tempDir, classpath, dependencies, ao, log)
+      val srcs = assemblyPaths(tempDir, classpath, dependencies, ao, excludedJars, log)
       val config = new Package.Configuration(srcs, out, po)
       Package(config, cacheDir, log)
       out
@@ -30,9 +31,9 @@ object Plugin extends sbt.Plugin {
 
   private def assemblyOptionTask: Initialize[AssemblyOption] =
     (publishArtifact in (Assembly, packageBin), publishArtifact in (Assembly, packageScala),
-     publishArtifact in (Assembly, packageDependency), excludedFiles, excludedJars) {
-      (includeBin, includeScala, includeDeps, exclude, excludedJars) =>   
-      AssemblyOption(includeBin, includeScala, includeDeps, exclude, excludedJars) 
+     publishArtifact in (Assembly, packageDependency), excludedFiles) {
+      (includeBin, includeScala, includeDeps, exclude) =>   
+      AssemblyOption(includeBin, includeScala, includeDeps, exclude) 
     }
 
   private def assemblyPackageOptionsTask: Initialize[Task[Seq[PackageOption]]] =
@@ -54,13 +55,13 @@ object Plugin extends sbt.Plugin {
   // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
   // which jars exactly belong to the deps for packageDependency option.
   private def assemblyPaths(tempDir: File, classpath: Classpath, dependencies: Classpath,
-      ao: AssemblyOption, log: Logger) = {
+      ao: AssemblyOption, ej: Classpath, log: Logger) = {
     import sbt.classpath.ClasspathUtilities
 
     val (libs, dirs) = classpath.map(_.data).partition(ClasspathUtilities.isArchive)
     val (depLibs, depDirs) = dependencies.map(_.data).partition(ClasspathUtilities.isArchive)
     val services = mutable.Map[String, mutable.ArrayBuffer[String]]()
-    val excludedJars = ao.excludedJars map {_.data}
+    val excludedJars = ej map {_.data}
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.asFile =>None
       case jar if List("scala-library.jar", "scala-compiler.jar") contains jar.asFile.getName =>
@@ -114,24 +115,24 @@ object Plugin extends sbt.Plugin {
   
   lazy val assemblySettings: Seq[sbt.Project.Setting[_]] = inConfig(Assembly)(Seq(
     assembly <<= (test, outputPath, packageOptions, assemblyOption, 
-        fullClasspath, dependencyClasspath, cacheDirectory, streams) map {
-      (test, out, po, ao, cp, deps, cacheDir, s) =>
-        assemblyTask(out, po, ao, cp, deps, cacheDir, s.log) },
+        fullClasspath, dependencyClasspath, excludedJars, cacheDirectory, streams) map {
+      (test, out, po, ao, cp, deps, ej, cacheDir, s) =>
+        assemblyTask(out, po, ao, cp, deps, ej, cacheDir, s.log) },
 
     packageScala <<= (outputPath, packageOptions in Runtime, assemblyOption, 
-        fullClasspath, dependencyClasspath, cacheDirectory, streams) map {
-      (out, po, ao, cp, deps, cacheDir, s) =>
+        fullClasspath, dependencyClasspath, excludedJars, cacheDirectory, streams) map {
+      (out, po, ao, cp, deps, ej, cacheDir, s) =>
         assemblyTask(out, po,
           ao.copy(includeBin = false, includeScala = true, includeDependency = false),
-          cp, deps, cacheDir, s.log) },
+          cp, deps, ej, cacheDir, s.log) },
 
     packageDependency <<= (outputPath, packageOptions in Runtime, assemblyOption, 
-        fullClasspath, dependencyClasspath, cacheDirectory, streams) map {
-      (out, po, ao, cp, deps, cacheDir, s) =>
+        fullClasspath, dependencyClasspath, excludedJars, cacheDirectory, streams) map {
+      (out, po, ao, cp, deps, ej, cacheDir, s) =>
         assemblyTask(out, po,
           ao.copy(includeBin = false, includeScala = false, includeDependency = true),
-          cp, deps, cacheDir, s.log) },
-
+          cp, deps, ej, cacheDir, s.log) },
+    
     assemblyOption <<= assemblyOptionTask,
     jarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
     outputPath <<= (target, jarName) { (t, s) => t / s },
@@ -154,5 +155,4 @@ object Plugin extends sbt.Plugin {
 case class AssemblyOption(includeBin: Boolean,
   includeScala: Boolean,
   includeDependency: Boolean,
-  exclude: Seq[File] => Seq[File],
-  excludedJars: Seq[Attributed[File]])
+  exclude: Seq[File] => Seq[File])
