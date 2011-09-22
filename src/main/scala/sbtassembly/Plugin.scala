@@ -17,6 +17,7 @@ object Plugin extends sbt.Plugin {
   lazy val jarName           = SettingKey[String]("jar-name")
   lazy val outputPath        = SettingKey[File]("output-path")
   lazy val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("excluded-files")
+  lazy val excludedJars      = SettingKey[Seq[Attributed[File]]]("excluded-jars")
   
   private def assemblyTask(out: File, po: Seq[PackageOption], ao: AssemblyOption,
       classpath: Classpath, dependencies: Classpath, cacheDir: File, log: Logger): File =
@@ -29,9 +30,9 @@ object Plugin extends sbt.Plugin {
 
   private def assemblyOptionTask: Initialize[AssemblyOption] =
     (publishArtifact in (Assembly, packageBin), publishArtifact in (Assembly, packageScala),
-     publishArtifact in (Assembly, packageDependency), excludedFiles) {
-      (includeBin, includeScala, includeDeps, exclude) =>   
-      AssemblyOption(includeBin, includeScala, includeDeps, exclude) 
+     publishArtifact in (Assembly, packageDependency), excludedFiles, excludedJars) {
+      (includeBin, includeScala, includeDeps, exclude, excludedJars) =>   
+      AssemblyOption(includeBin, includeScala, includeDeps, exclude, excludedJars) 
     }
 
   private def assemblyPackageOptionsTask: Initialize[Task[Seq[PackageOption]]] =
@@ -50,6 +51,8 @@ object Plugin extends sbt.Plugin {
       }
     }
 
+  // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
+  // which jars exactly belong to the deps for packageDependency option.
   private def assemblyPaths(tempDir: File, classpath: Classpath, dependencies: Classpath,
       ao: AssemblyOption, log: Logger) = {
     import sbt.classpath.ClasspathUtilities
@@ -57,7 +60,9 @@ object Plugin extends sbt.Plugin {
     val (libs, dirs) = classpath.map(_.data).partition(ClasspathUtilities.isArchive)
     val (depLibs, depDirs) = dependencies.map(_.data).partition(ClasspathUtilities.isArchive)
     val services = mutable.Map[String, mutable.ArrayBuffer[String]]()
+    val excludedJars = ao.excludedJars map {_.data}
     val libsFiltered = libs flatMap {
+      case jar if excludedJars contains jar.asFile =>None
       case jar if List("scala-library.jar", "scala-compiler.jar") contains jar.asFile.getName =>
         if (ao.includeScala) Some(jar) else None
       case jar if depLibs contains jar.asFile =>
@@ -135,7 +140,8 @@ object Plugin extends sbt.Plugin {
     fullClasspath <<= (fullClasspath in Runtime).identity,
     dependencyClasspath <<= (dependencyClasspath in Runtime).identity,
     packageOptions <<= assemblyPackageOptionsTask,
-    excludedFiles := assemblyExcludedFiles _
+    excludedFiles := assemblyExcludedFiles _,
+    excludedJars := Nil
   )) ++
   Seq(
     assembly <<= (assembly in Assembly).identity,
@@ -148,4 +154,5 @@ object Plugin extends sbt.Plugin {
 case class AssemblyOption(includeBin: Boolean,
   includeScala: Boolean,
   includeDependency: Boolean,
-  exclude: Seq[File] => Seq[File])
+  exclude: Seq[File] => Seq[File],
+  excludedJars: Seq[Attributed[File]])

@@ -22,14 +22,8 @@ unmanagedJars in Test <++= baseDirectory map { base =>
    (base / "lib" / "test" ** "*.jar").classpath
 }
 
-dependencyClasspath in Assembly <<= (dependencyClasspath in Assembly, baseDirectory) map { (deps, base) =>
-  val compile = (base / "lib" / "compile" ** "*.jar").get
-  deps filter { d => !(compile contains d.data) }
-}
-
-fullClasspath in Assembly <<= (fullClasspath in Assembly, baseDirectory) map { (cp, base) =>
-  val compile = (base / "lib" / "compile" ** "*.jar").get
-  cp filter { d => !(compile contains d.data) }
+excludedJars in Assembly <<= baseDirectory{ base => 
+  (base / "lib" / "compile" ** "*.jar").classpath
 }
 
 jarName in Assembly := "foo.jar"
