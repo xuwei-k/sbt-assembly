@@ -1,0 +1,5 @@
+- Adds `excludedJars` setting to skip certain jars.
+
+      excludedJars in Assembly <<= baseDirectory { base => 
+        (base / "lib" / "compile" ** "*.jar").classpath
+      }
