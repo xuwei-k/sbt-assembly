@@ -1,0 +1,13 @@
+- Adds `excludedJars` setting to skip certain jars.
+
+Sample usage:
+
+      excludedJars in Assembly <<= baseDirectory { base => 
+        (base / "lib" / "compile" ** "*.jar").classpath
+      }
+
+or
+
+      excludedJars in Assembly <<= (fullClasspath in Assembly) map { cp => 
+        cp filter {_.data.getName == "compile-0.1.0.jar"}
+      }
