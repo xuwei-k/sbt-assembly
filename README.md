@@ -54,63 +54,67 @@ is. I'm notoriously crap about updating the version numbers in my READMEs.)
 Then, add the following in your `build.sbt`:
 
 ```scala
-seq(sbtassembly.Plugin.assemblySettings: _*)
+import AssemblyKeys._ // put this at the top of the file
+
+seq(assemblySettings: _*)
 ```
 
 or, for full configuration:
 
 ```scala
-lazy val sub = Project("sub", file("sub")) settings(sbtassembly.Plugin.assemblySettings: _*)
+lazy val sub = Project("sub", file("sub"),
+  settings = Project.defaultSettings ++ sbtassembly.Plugin.assemblySettings ++ Seq(...))
 ```
 
 Now you'll have an awesome new `assembly` task which will compile your project,
 run your tests, and then pack your class files and all your dependencies into a
 single JAR file: `target/scala_X.X.X/projectname-assembly-X.X.X.jar`.
 
-If you specify a `mainClass in Assembly` in simple-build-tool (or just let it autodetect
+If you specify a `mainClass in assembly` in simple-build-tool (or just let it autodetect
 one) then you'll end up with a fully executable JAR, ready to rock.
 
-You can type
+Here is the list of the keys you can rewire for `assembly` task.
 
-    > show assembly:[tab]
+    target                        assembly-jar-name             test
+    assembly-option               main-class                    full-classpath
+    dependency-classpath          assembly-excluded-files       assembly-excluded-jars
 
-and list the keys you can rewire.
-
-    assembly               assembly-option        configuration
-    conflicting-files      dependency-classpath   excluded-files
-    full-classpath         jar-name               main-class
-    output-path            package-dependency     package-options
-    package-scala          publish-artifact       streams
-    test
-
-For example the name of the jar can be set as follows in built.sbt:
+For example the name of the jar can be set as follows in build.sbt:
 
 ```scala
-jarName in Assembly := "something.jar"
+jarName in assembly := "something.jar"
 ```
 
 To skip the test during assembly,
 
 ```scala
-test in Assembly := {}
+test in assembly := {}
 ```
 
 To exclude Scala library,
 
 ```scala
-publishArtifact in (Assembly, packageScala) := false
+assembleArtifact in packageScala := false
 ```
 
 To exclude your source files,
 
 ```scala
-publishArtifact in (Assembly, packageBin) := false
+assembleArtifact in packageBin := false
 ```
 
-To exclude some package,
+To exclude some jar file,
 
 ```scala
-excludedFiles in Assembly := { (bases: Seq[File]) =>
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
+  cp filter {_.data.getName == "compile-0.1.0.jar"}
+}
+```
+
+To exclude some class file,
+
+```scala
+excludedFiles in assembly := { (bases: Seq[File]) =>
   bases flatMap { base =>
     (base / "META-INF" * "*").get collect {
       case f if f.getName == "something" => f
@@ -122,7 +126,7 @@ excludedFiles in Assembly := { (bases: Seq[File]) =>
 
 To make a jar containing only the dependencies, type
 
-    > assembly:package-dependency
+    > package-dependency
 
 License
 -------

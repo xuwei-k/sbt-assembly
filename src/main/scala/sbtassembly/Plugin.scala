@@ -8,16 +8,21 @@ import scala.io.Source
 import Project.Initialize
 
 object Plugin extends sbt.Plugin {
-  val Assembly = config("assembly") extend(Runtime)
-  lazy val assembly = TaskKey[File]("assembly", "Builds a single-file deployable jar.")
-  lazy val packageScala      = TaskKey[File]("package-scala", "Produces the scala artifact.")
-  lazy val packageDependency = TaskKey[File]("package-dependency", "Produces the dependency artifact.")
+  import AssemblyKeys._
+    
+  object AssemblyKeys {
+    lazy val assembly = TaskKey[File]("assembly", "Builds a single-file deployable jar.")
+    lazy val packageScala      = TaskKey[File]("assembly-package-scala", "Produces the scala artifact.")
+    lazy val packageDependency = TaskKey[File]("assembly-package-dependency", "Produces the dependency artifact.")
   
-  lazy val assemblyOption    = SettingKey[AssemblyOption]("assembly-option")
-  lazy val jarName           = SettingKey[String]("jar-name")
-  lazy val outputPath        = SettingKey[File]("output-path")
-  lazy val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("excluded-files")
-  lazy val excludedJars      = TaskKey[Classpath]("excluded-jars")
+    lazy val assembleArtifact  = SettingKey[Boolean]("assembly-assemble-artifact", "Enables (true) or disables (false) assembling an artifact.")
+    lazy val assemblyOption    = SettingKey[AssemblyOption]("assembly-option")
+    lazy val jarName           = SettingKey[String]("assembly-jar-name")
+    lazy val defaultJarName    = SettingKey[String]("assembly-default-jar-name")
+    lazy val outputPath        = SettingKey[File]("assembly-output-path")
+    lazy val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("assembly-excluded-files")
+    lazy val excludedJars      = TaskKey[Classpath]("assembly-excluded-jars")
+  }
   
   private def assemblyTask(out: File, po: Seq[PackageOption], ao: AssemblyOption,
       classpath: Classpath, dependencies: Classpath, excludedJars: Classpath,
@@ -28,22 +33,7 @@ object Plugin extends sbt.Plugin {
       Package(config, cacheDir, log)
       out
     }
-
-  private def assemblyOptionTask: Initialize[AssemblyOption] =
-    (publishArtifact in (Assembly, packageBin), publishArtifact in (Assembly, packageScala),
-     publishArtifact in (Assembly, packageDependency), excludedFiles) {
-      (includeBin, includeScala, includeDeps, exclude) =>   
-      AssemblyOption(includeBin, includeScala, includeDeps, exclude) 
-    }
-
-  private def assemblyPackageOptionsTask: Initialize[Task[Seq[PackageOption]]] =
-    (packageOptions in Compile, mainClass in Assembly) map { (os, mainClass) =>
-      mainClass map { s =>
-        os find { o => o.isInstanceOf[Package.MainClass] } map { _ => os
-        } getOrElse { Package.MainClass(s) +: os }
-      } getOrElse {os}      
-    }
-
+  
   private def assemblyExcludedFiles(bases: Seq[File]): Seq[File] =
     bases flatMap { base =>
       (base / "META-INF" * "*").get collect {
@@ -113,43 +103,57 @@ object Plugin extends sbt.Plugin {
     descendants x relativeTo(base)
   }
   
-  lazy val assemblySettings: Seq[sbt.Project.Setting[_]] = inConfig(Assembly)(Seq(
-    assembly <<= (test, outputPath, packageOptions, assemblyOption, 
-        fullClasspath, dependencyClasspath, excludedJars, cacheDirectory, streams) map {
+  lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
+    assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly, assemblyOption in assembly, 
+        fullClasspath in assembly, dependencyClasspath in assembly, excludedJars in assembly, cacheDirectory, streams) map {
       (test, out, po, ao, cp, deps, ej, cacheDir, s) =>
         assemblyTask(out, po, ao, cp, deps, ej, cacheDir, s.log) },
 
-    packageScala <<= (outputPath, packageOptions in Runtime, assemblyOption, 
-        fullClasspath, dependencyClasspath, excludedJars, cacheDirectory, streams) map {
+    packageScala <<= (outputPath in assembly, packageOptions, assemblyOption in assembly, 
+        fullClasspath in assembly, dependencyClasspath in assembly, excludedJars in assembly, cacheDirectory, streams) map {
       (out, po, ao, cp, deps, ej, cacheDir, s) =>
         assemblyTask(out, po,
           ao.copy(includeBin = false, includeScala = true, includeDependency = false),
           cp, deps, ej, cacheDir, s.log) },
 
-    packageDependency <<= (outputPath, packageOptions in Runtime, assemblyOption, 
-        fullClasspath, dependencyClasspath, excludedJars, cacheDirectory, streams) map {
+    packageDependency <<= (outputPath in assembly, packageOptions in assembly, assemblyOption in assembly, 
+        fullClasspath in assembly, dependencyClasspath in assembly, excludedJars in assembly, cacheDirectory, streams) map {
       (out, po, ao, cp, deps, ej, cacheDir, s) =>
         assemblyTask(out, po,
           ao.copy(includeBin = false, includeScala = false, includeDependency = true),
           cp, deps, ej, cacheDir, s.log) },
     
-    assemblyOption <<= assemblyOptionTask,
-    jarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
-    outputPath <<= (target, jarName) { (t, s) => t / s },
-    test <<= (test in Test).identity,
-    mainClass <<= (mainClass in Runtime).identity,
-    fullClasspath <<= (fullClasspath in Runtime).identity,
-    dependencyClasspath <<= (dependencyClasspath in Runtime).identity,
-    packageOptions <<= assemblyPackageOptionsTask,
-    excludedFiles := assemblyExcludedFiles _,
-    excludedJars := Nil
-  )) ++
-  Seq(
-    assembly <<= (assembly in Assembly).identity,
-    publishArtifact in (Assembly, packageBin) := true,
-    publishArtifact in (Assembly, packageScala) := true,
-    publishArtifact in (Assembly, packageDependency) := true
+    test in assembly <<= (test in Test).identity,
+    
+    assemblyOption in assembly <<= (assembleArtifact in packageBin,
+        assembleArtifact in packageScala, assembleArtifact in packageDependency, excludedFiles in assembly) {
+      (includeBin, includeScala, includeDeps, exclude) =>   
+      AssemblyOption(includeBin, includeScala, includeDeps, exclude) 
+    },
+    
+    packageOptions in assembly <<= (packageOptions in Compile, mainClass in assembly) map {
+      (os, mainClass) =>
+        mainClass map { s =>
+          os find { o => o.isInstanceOf[Package.MainClass] } map { _ => os
+          } getOrElse { Package.MainClass(s) +: os }
+        } getOrElse {os}      
+    },
+    
+    outputPath in assembly <<= (target in assembly, jarName in assembly) { (t, s) => t / s },
+    target in assembly <<= target.identity,
+    jarName in assembly <<= (jarName in assembly) or (defaultJarName in assembly).identity,
+    defaultJarName in assembly <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
+    mainClass in assembly <<= mainClass or (mainClass in Runtime).identity,
+    fullClasspath in assembly <<= fullClasspath or (fullClasspath in Runtime).identity,
+    dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime).identity,
+    excludedFiles in assembly := assemblyExcludedFiles _,
+    excludedJars in assembly := Nil,
+    assembleArtifact in packageBin := true,
+    assembleArtifact in packageScala := true,
+    assembleArtifact in packageDependency := true    
   )
+  
+  lazy val assemblySettings: Seq[sbt.Project.Setting[_]] = baseAssemblySettings
 }
 
 case class AssemblyOption(includeBin: Boolean,

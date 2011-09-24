@@ -1,6 +1,8 @@
+import AssemblyKeys._
+
 version := "0.1"
 
-seq(sbtassembly.Plugin.assemblySettings: _*)
+seq(assemblySettings: _*)
 
 scalaVersion := "2.9.1"
 
@@ -27,11 +29,11 @@ unmanagedJars in Test <++= baseDirectory map { base =>
 //  (base / "lib" / "compile" ** "*.jar").classpath
 // }
 
-excludedJars in Assembly <<= (fullClasspath in Assembly) map { cp => 
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
   cp filter {_.data.getName == "compile-0.1.0.jar"}
 }
 
-jarName in Assembly := "foo.jar"
+jarName in assembly := "foo.jar"
 
 TaskKey[Unit]("check") <<= (target) map { (target) =>
   val process = sbt.Process("java", Seq("-jar", (target / "foo.jar").toString))
