@@ -130,15 +130,15 @@ object Plugin extends sbt.Plugin {
     assemblyOption <<= assemblyOptionTask,
     jarName <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
     outputPath <<= (target, jarName) { (t, s) => t / s },
-    test <<= (test in Test).identity,
-    mainClass <<= (mainClass in Runtime).identity,
-    fullClasspath <<= (fullClasspath in Runtime).identity,
-    dependencyClasspath <<= (dependencyClasspath in Runtime).identity,
+    test <<= (test in Test),
+    mainClass <<= (mainClass in Runtime),
+    fullClasspath <<= (fullClasspath in Runtime),
+    dependencyClasspath <<= (dependencyClasspath in Runtime),
     packageOptions <<= assemblyPackageOptionsTask,
     excludedFiles := assemblyExcludedFiles _
   )) ++
   Seq(
-    assembly <<= (assembly in Assembly).identity,
+    assembly <<= (assembly in Assembly),
     publishArtifact in (Assembly, packageBin) := true,
     publishArtifact in (Assembly, packageScala) := true,
     publishArtifact in (Assembly, packageDependency) := true
