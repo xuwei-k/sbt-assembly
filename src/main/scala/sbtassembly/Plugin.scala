@@ -123,6 +123,7 @@ object Plugin extends sbt.Plugin {
           ao.copy(includeBin = false, includeScala = false, includeDependency = true),
           cp, deps, ej, cacheDir, s.log) },
     
+    test <<= test or (test in Test).identity,
     test in assembly <<= (test in Test).identity,
     
     assemblyOption in assembly <<= (assembleArtifact in packageBin,
