@@ -103,6 +103,12 @@ object Plugin extends sbt.Plugin {
     descendants x relativeTo(base)
   }
   
+  implicit def wrapTaskKey[T](key: TaskKey[T]): WrappedTaskKey[T] = WrappedTaskKey(key) 
+  case class WrappedTaskKey[A](key: TaskKey[A]) {
+    def orr[T >: A](rhs: Initialize[Task[T]]): Initialize[Task[T]] =
+      (key.? zipWith rhs)( (x,y) => (x :^: y :^: KNil) map Scoped.hf2( _ getOrElse _ ))
+  }
+  
   lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
     assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly, assemblyOption in assembly, 
         fullClasspath in assembly, dependencyClasspath in assembly, excludedJars in assembly, cacheDirectory, streams) map {
@@ -123,8 +129,8 @@ object Plugin extends sbt.Plugin {
           ao.copy(includeBin = false, includeScala = false, includeDependency = true),
           cp, deps, ej, cacheDir, s.log) },
     
-    test <<= test or (test in Test).identity,
-    test in assembly <<= (test in Test).identity,
+    test <<= test orr (test in Test),
+    test in assembly <<= (test in Test),
     
     assemblyOption in assembly <<= (assembleArtifact in packageBin,
         assembleArtifact in packageScala, assembleArtifact in packageDependency, excludedFiles in assembly) {
@@ -141,12 +147,17 @@ object Plugin extends sbt.Plugin {
     },
     
     outputPath in assembly <<= (target in assembly, jarName in assembly) { (t, s) => t / s },
-    target in assembly <<= target.identity,
-    jarName in assembly <<= (jarName in assembly) or (defaultJarName in assembly).identity,
+    target in assembly <<= target,
+    
+    jarName in assembly <<= (jarName in assembly) or (defaultJarName in assembly),
     defaultJarName in assembly <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
-    mainClass in assembly <<= mainClass or (mainClass in Runtime).identity,
-    fullClasspath in assembly <<= fullClasspath or (fullClasspath in Runtime).identity,
-    dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime).identity,
+    
+    mainClass in assembly <<= mainClass orr (mainClass in Runtime),
+    
+    fullClasspath in assembly <<= fullClasspath orr (fullClasspath in Runtime),
+    
+    dependencyClasspath in assembly <<= dependencyClasspath orr (dependencyClasspath in Runtime),
+    
     excludedFiles in assembly := assemblyExcludedFiles _,
     excludedJars in assembly := Nil,
     assembleArtifact in packageBin := true,

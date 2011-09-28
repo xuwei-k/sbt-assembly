@@ -19,7 +19,7 @@ Requirements
 
 Latest
 ------
-0.6
+0.7.0
 
 How To Use
 ----------
@@ -27,13 +27,7 @@ How To Use
 For sbt 0.11, add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "X.X")
-```
-
-For sbt 0.10, add sbt-assembly as a dependency in `project/plugins/build.sbt`:
-
-```scala
-libraryDependencies <+= (sbtVersion) { sv => "com.eed3si9n" %% "sbt-assembly" % ("sbt" + sv + "_X.X") }
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "X.X.X")
 ```
 
 Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.scala`:
@@ -102,7 +96,7 @@ To exclude your source files,
 assembleArtifact in packageBin := false
 ```
 
-To exclude some jar file,
+To exclude some jar file, first consider using `"provided"` dependency. The dependency will be part of compilation, but excluded from the runtime. Next, try creating a custom configuration that describes your classpath. If all efforts fail, here's a way to exclude jars:
 
 ```scala
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
