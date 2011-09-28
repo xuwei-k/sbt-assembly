@@ -103,7 +103,7 @@ To exclude your source files,
 assembleArtifact in packageBin := false
 ```
 
-To exclude some jar file,
+To exclude some jar file, first consider using `"provided"` dependency. The dependency will be part of compilation, but excluded from the runtime. Next, you could try creating a custom configuration that describes the classpath. If all efforts fail, here's a way to exclude jars:
 
 ```scala
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
