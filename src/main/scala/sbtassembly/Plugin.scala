@@ -53,19 +53,21 @@ object Plugin extends sbt.Plugin {
     val services = mutable.Map[String, mutable.ArrayBuffer[String]]()
     val excludedJars = ej map {_.data}
     val libsFiltered = libs flatMap {
-      case jar if excludedJars contains jar.asFile =>None
+      case jar if excludedJars contains jar.asFile => None
       case jar if List("scala-library.jar", "scala-compiler.jar") contains jar.asFile.getName =>
         if (ao.includeScala) Some(jar) else None
       case jar if depLibs contains jar.asFile =>
         if (ao.includeDependency) Some(jar) else None
-      case jar => Some(jar)
+      case jar =>
+        if (ao.includeBin) Some(jar) else None
     }
     val dirsFiltered = dirs flatMap {
-      case jar if depLibs contains jar.asFile =>
-        if (ao.includeDependency) Some(jar) else None
-      case jar => Some(jar) 
+      case dir if depLibs contains dir.asFile =>
+        if (ao.includeDependency) Some(dir) else None
+      case dir =>
+        if (ao.includeBin) Some(dir) else None
     }
-
+    
     for(jar <- libsFiltered) {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))

@@ -19,7 +19,7 @@ Requirements
 
 Latest
 ------
-0.7.0
+0.7.1
 
 How To Use
 ----------
@@ -119,7 +119,7 @@ excludedFiles in assembly := { (bases: Seq[File]) =>
 
 To make a jar containing only the dependencies, type
 
-    > package-dependency
+    > assembly-package-dependency
 
 License
 -------

@@ -1,0 +1,2 @@
+## bug fixes
+- Fixes exclusion of binary via `packageDependency`, `assembleArtifact in packageBin`, etc.

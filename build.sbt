@@ -6,7 +6,7 @@ organization := "com.eed3si9n"
 
 // version <<= (sbtVersion, version in Posterous) { (sv, nv) => "sbt" + sv + "_" + nv }
 
-version := "0.7.0"
+version := "0.7.1-SNAPSHOT"
 
 scalacOptions := Seq("-deprecation", "-unchecked")
 
