@@ -63,7 +63,9 @@ Now you'll have an awesome new `assembly` task which will compile your project,
 run your tests, and then pack your class files and all your dependencies into a
 single JAR file: `target/scala_X.X.X/projectname-assembly-X.X.X.jar`.
 
-If you specify a `mainClass in assembly` in simple-build-tool (or just let it autodetect
+    > assembly
+
+If you specify a `mainClass in assembly` in build.sbt (or just let it autodetect
 one) then you'll end up with a fully executable JAR, ready to rock.
 
 Here is the list of the keys you can rewire for `assembly` task.
