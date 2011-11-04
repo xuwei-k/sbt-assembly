@@ -56,7 +56,13 @@ seq(assemblySettings: _*)
 or, for full configuration:
 
 ```scala
-lazy val sub = Project("sub", file("sub")) settings(sbtassembly.Plugin.assemblySettings: _*)
+import sbtassembly.Plugin._
+import AssemblyKeys._
+
+lazy val sub = Project("sub", file("sub"),
+  settings = buildSettings ++ assemblySettings ++
+             Seq( // your settings here
+             ))
 ```
 
 Now you'll have an awesome new `assembly` task which will compile your project,
