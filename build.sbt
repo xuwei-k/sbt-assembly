@@ -6,7 +6,7 @@ organization := "com.eed3si9n"
 
 // version <<= (sbtVersion, version in Posterous) { (sv, nv) => "sbt" + sv + "_" + nv }
 
-version := "0.7.1"
+version := "0.7.2"
 
 scalacOptions := Seq("-deprecation", "-unchecked")
 
@@ -27,4 +27,4 @@ publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false
 
-seq(ScriptedPlugin.scriptedSettings: _*)
+// seq(ScriptedPlugin.scriptedSettings: _*)
