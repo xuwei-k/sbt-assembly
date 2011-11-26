@@ -8,6 +8,10 @@ organization := "com.eed3si9n"
 
 version := "0.7.2"
 
+description := "sbt plugin to create a single fat jar"
+
+licenses := Seq("MIT License" -> url("https://github.com/sbt/sbt-assembly/blob/master/LICENSE"))
+
 scalacOptions := Seq("-deprecation", "-unchecked")
 
 publishMavenStyle := true
@@ -26,5 +30,11 @@ publishArtifact in (Test, packageBin) := false
 publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false
+
+seq(lsSettings :_*)
+
+LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
+
+licenses in LsKeys.lsync <<= licenses
 
 // seq(ScriptedPlugin.scriptedSettings: _*)
