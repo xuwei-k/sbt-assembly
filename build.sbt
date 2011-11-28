@@ -37,4 +37,4 @@ LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
 
 licenses in LsKeys.lsync <<= licenses
 
-// seq(ScriptedPlugin.scriptedSettings: _*)
+seq(ScriptedPlugin.scriptedSettings: _*)
