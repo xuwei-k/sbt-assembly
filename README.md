@@ -129,6 +129,12 @@ To make a jar containing only the dependencies, type
 
     > assembly-package-dependency
 
+To set an explicit main class,
+
+```scala
+mainClass in assembly := Some("com.example.Main")
+```
+
 License
 -------
 
