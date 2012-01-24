@@ -23,9 +23,9 @@ Latest
 For sbt 0.11, add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.7.2")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.7.3")
 
-resolver += Resolver.url("sbt-plugin-releases",
+resolvers += Resolver.url("sbt-plugin-releases",
   new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns)
 ```
 
