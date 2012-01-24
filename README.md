@@ -19,16 +19,18 @@ Requirements
 
 Latest
 ------
-0.7.2
-
-How To Use
-----------
 
 For sbt 0.11, add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "X.X.X")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.7.2")
+
+resolver += Resolver.url("sbt-plugin-releases",
+  new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns)
 ```
+
+How To Use
+----------
 
 Or, specify sbt-assembly.git as a dependency in `project/plugins/project/build.scala`:
 

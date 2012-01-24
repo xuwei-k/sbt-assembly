@@ -99,9 +99,10 @@ object Plugin extends sbt.Plugin {
       }
       writer.close()
     }
-
+    
     val base = tempDir +: dirsFiltered
-    val descendants = ((base ** (-DirectoryFilter)) --- ao.exclude(base)).get
+    val descendants = ((base ** (-DirectoryFilter)) --- ao.exclude(base)).get filter { _.exists }
+    
     descendants x relativeTo(base)
   }
   
