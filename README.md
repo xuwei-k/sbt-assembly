@@ -100,7 +100,7 @@ To exclude Scala library,
 assembleArtifact in packageScala := false
 ```
 
-To exclude your source files,
+To exclude exclude the class files from the main sources,
 
 ```scala
 assembleArtifact in packageBin := false
