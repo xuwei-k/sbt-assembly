@@ -20,22 +20,21 @@ publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false
 
-seq(lsSettings :_*)
+// seq(lsSettings :_*)
 
-LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
+// LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
 
-licenses in LsKeys.lsync <<= licenses
+// licenses in LsKeys.lsync <<= licenses
 
 seq(ScriptedPlugin.scriptedSettings: _*)
 
 publishMavenStyle := false
 
-publishTo := Some(Resolver.url("sbt-plugin-releases",
-  new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns))
-
-// publishTo <<= version { (v: String) =>
-//   if(v endsWith "-SNAPSHOT") Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/snapshots/")
-//   else Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/")
-// }
+publishTo <<= (version) { version: String =>
+   val scalasbt = "http://scalasbt.artifactoryonline.com/scalasbt/"
+   val (name, u) = if (version.contains("-SNAPSHOT")) ("sbt-plugin-snapshots", scalasbt+"sbt-plugin-snapshots")
+                   else ("sbt-plugin-releases", scalasbt+"sbt-plugin-releases")
+   Some(Resolver.url(name, url(u))(Resolver.ivyStylePatterns))
+}
 
 credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
