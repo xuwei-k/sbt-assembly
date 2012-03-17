@@ -29,6 +29,12 @@ resolvers += Resolver.url("sbt-plugin-releases",
   new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns)
 ```
 
+For sbt 0.12.0-M2, add the following to `project/plugins.sbt`:
+
+```
+libraryDependencies += Defaults.sbtPluginExtra("com.eed3si9n" % "sbt-assembly" % "0.7.3", "0.12.0-M2", "2.9.1")
+```
+
 How To Use
 ----------
 
