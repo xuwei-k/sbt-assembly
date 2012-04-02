@@ -22,13 +22,13 @@ object Plugin extends sbt.Plugin {
     lazy val outputPath        = SettingKey[File]("assembly-output-path")
     lazy val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("assembly-excluded-files")
     lazy val excludedJars      = TaskKey[Classpath]("assembly-excluded-jars")
+    lazy val assembledMappings = TaskKey[File => Seq[(File, String)]]("assembly-assembled-mappings")
   }
   
-  private def assemblyTask(out: File, po: Seq[PackageOption], ao: AssemblyOption,
-      classpath: Classpath, dependencies: Classpath, excludedJars: Classpath,
+  private def assemblyTask(out: File, po: Seq[PackageOption], mappings: File => Seq[(File, String)],
       cacheDir: File, log: Logger): File =
     IO.withTemporaryDirectory { tempDir =>
-      val srcs = assemblyPaths(tempDir, classpath, dependencies, ao, excludedJars, log)
+      val srcs = mappings(tempDir)
       val config = new Package.Configuration(srcs, out, po)
       Package(config, cacheDir, log)
       out
@@ -47,7 +47,7 @@ object Plugin extends sbt.Plugin {
 
   // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
   // which jars exactly belong to the deps for packageDependency option.
-  private def assemblyPaths(tempDir: File, classpath: Classpath, dependencies: Classpath,
+  private def assemblyAssembledMappings(tempDir: File, classpath: Classpath, dependencies: Classpath,
       ao: AssemblyOption, ej: Classpath, log: Logger) = {
     import sbt.classpath.ClasspathUtilities
 
@@ -116,25 +116,37 @@ object Plugin extends sbt.Plugin {
   }
   
   lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
-    assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly, assemblyOption in assembly, 
-        fullClasspath in assembly, dependencyClasspath in assembly, excludedJars in assembly, cacheDirectory, streams) map {
-      (test, out, po, ao, cp, deps, ej, cacheDir, s) =>
-        assemblyTask(out, po, ao, cp, deps, ej, cacheDir, s.log) },
-
-    packageScala <<= (outputPath in assembly, packageOptions, assemblyOption in assembly, 
-        fullClasspath in assembly, dependencyClasspath in assembly, excludedJars in assembly, cacheDirectory, streams) map {
-      (out, po, ao, cp, deps, ej, cacheDir, s) =>
-        assemblyTask(out, po,
-          ao.copy(includeBin = false, includeScala = true, includeDependency = false),
-          cp, deps, ej, cacheDir, s.log) },
-
-    packageDependency <<= (outputPath in assembly, packageOptions in assembly, assemblyOption in assembly, 
-        fullClasspath in assembly, dependencyClasspath in assembly, excludedJars in assembly, cacheDirectory, streams) map {
-      (out, po, ao, cp, deps, ej, cacheDir, s) =>
-        assemblyTask(out, po,
-          ao.copy(includeBin = false, includeScala = false, includeDependency = true),
-          cp, deps, ej, cacheDir, s.log) },
+    assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly,
+        assembledMappings in assembly, cacheDirectory, streams) map {
+      (test, out, po, am, cacheDir, s) =>
+        assemblyTask(out, po, am, cacheDir, s.log) },
     
+    assembledMappings in assembly <<= (assemblyOption in assembly, fullClasspath in assembly, dependencyClasspath in assembly,
+        excludedJars in assembly, streams) map {
+      (ao, cp, deps, ej, s) => (tempDir: File) => assemblyAssembledMappings(tempDir, cp, deps, ao, ej, s.log) },
+
+    packageScala <<= (outputPath in assembly, packageOptions,
+        assembledMappings in packageScala, cacheDirectory, streams) map {
+      (out, po, am, cacheDir, s) => assemblyTask(out, po, am, cacheDir, s.log) },
+
+    assembledMappings in packageScala <<= (assemblyOption in assembly, fullClasspath in assembly, dependencyClasspath in assembly,
+        excludedJars in assembly, streams) map {
+      (ao, cp, deps, ej, s) => (tempDir: File) =>
+        assemblyAssembledMappings(tempDir, cp, deps,
+          ao.copy(includeBin = false, includeScala = true, includeDependency = false),
+          ej, s.log) },
+
+    packageDependency <<= (outputPath in assembly, packageOptions in assembly,
+        assembledMappings in packageDependency, cacheDirectory, streams) map {
+      (out, po, am, cacheDir, s) => assemblyTask(out, po, am, cacheDir, s.log) },
+    
+    assembledMappings in packageDependency <<= (assemblyOption in assembly, fullClasspath in assembly, dependencyClasspath in assembly,
+        excludedJars in assembly, streams) map {
+      (ao, cp, deps, ej, s) => (tempDir: File) =>
+        assemblyAssembledMappings(tempDir, cp, deps,
+          ao.copy(includeBin = false, includeScala = false, includeDependency = true),
+          ej, s.log) },
+
     test <<= test orr (test in Test),
     test in assembly <<= (test in Test),
     

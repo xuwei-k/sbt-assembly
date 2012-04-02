@@ -58,7 +58,7 @@ Then, add the following in your `build.sbt`:
 ```scala
 import AssemblyKeys._ // put this at the top of the file
 
-seq(assemblySettings: _*)
+assemblySettings
 ```
 
 or, for full configuration:

@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 version := "0.1"
 
-seq(assemblySettings: _*)
+assemblySettings
 
 jarName in assembly := "foo.jar"
 
