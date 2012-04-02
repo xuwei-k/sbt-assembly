@@ -4,7 +4,7 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-version := "0.7.3"
+version := "0.7.4"
 
 description := "sbt plugin to create a single fat jar"
 
@@ -20,11 +20,12 @@ publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false
 
-// seq(lsSettings :_*)
+lsSettings
 
-// LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
+LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
 
-// licenses in LsKeys.lsync <<= licenses
+(externalResolvers in LsKeys.lsync) := Seq(
+  "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases")
 
 seq(ScriptedPlugin.scriptedSettings: _*)
 
