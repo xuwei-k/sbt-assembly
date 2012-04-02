@@ -36,10 +36,13 @@ object Plugin extends sbt.Plugin {
   
   private def assemblyExcludedFiles(bases: Seq[File]): Seq[File] =
     bases flatMap { base =>
-      (base / "META-INF" * "*").get collect {
+      ((base * "*").get collect {
+        case f if f.getName.toLowerCase == "license" => f
+      }) ++
+      ((base / "META-INF" * "*").get collect {
         case f if f.getName.toLowerCase == "license" => f
         case f if f.getName.toLowerCase == "manifest.mf" => f
-      }
+      }) 
     }
 
   // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
