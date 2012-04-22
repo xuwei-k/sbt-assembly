@@ -24,7 +24,7 @@ object Plugin extends sbt.Plugin {
     lazy val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("assembly-excluded-files")
     lazy val excludedJars      = TaskKey[Classpath]("assembly-excluded-jars")
     lazy val assembledMappings = TaskKey[File => Seq[(File, String)]]("assembly-assembled-mappings")
-    lazy val mergeStrategy     = SettingKey[String => MergeStrategy]("merge-strategy", "mapping from archive member path to merge strategy")
+    lazy val mergeStrategy     = SettingKey[String => MergeStrategy]("assembly-merge-strategy", "mapping from archive member path to merge strategy")
   }
   
   /**
@@ -38,7 +38,7 @@ object Plugin extends sbt.Plugin {
     val pickFirst: MergeStrategy = (tmp, files) => files.head
     val pickLast: MergeStrategy = (tmp, files) => files.last
     val error: MergeStrategy = (tmp, files) => throw new RuntimeException("found multiple files for same target path:" + files.mkString("\n", "\n", ""))
-    val append: MergeStrategy = { (tmp, files) =>
+    val concat: MergeStrategy = { (tmp, files) =>
       val file = File.createTempFile("sbtMergeTarget", ".tmp", tmp)
       val out = new FileOutputStream(file)
       try {
@@ -54,6 +54,11 @@ object Plugin extends sbt.Plugin {
       val file = File.createTempFile("sbtMergeTarget", ".tmp", tmp)
       IO.writeLines(file, unique, IO.utf8)
       file
+    }
+    val mustEqual: MergeStrategy = { (tmp, files) =>
+      val fingerprints = Set() ++ (files map (sha1content))
+      if (fingerprints.size != 1) throw new RuntimeException("different file contents found in the following:" + files.mkString("\n", "\n", ""))
+      files.head
     }
   }
   
@@ -80,7 +85,8 @@ object Plugin extends sbt.Plugin {
       }) 
     }
   
-  private val sha1 = MessageDigest.getInstance("SHA-1")
+  private def sha1 = MessageDigest.getInstance("SHA-1")
+  private def sha1content(f: File) = sha1.digest(IO.readBytes(f)).toSeq
 
   // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
   // which jars exactly belong to the deps for packageDependency option.
@@ -108,7 +114,6 @@ object Plugin extends sbt.Plugin {
     }
     
     def sha1name(f: File): String = {
-      sha1.reset()
       val bytes = f.getCanonicalPath.getBytes
       val digest = sha1.digest(bytes)
       ("" /: digest)(_ + "%02x".format(_))
@@ -147,9 +152,9 @@ object Plugin extends sbt.Plugin {
       (ao, cp, deps, ej, s) => (tempDir: File) => assemblyAssembledMappings(tempDir, cp, deps, ao, ej, s.log) },
       
     mergeStrategy in assembly := { 
-        case "reference.conf" => MergeStrategy.append
+        case "reference.conf" => MergeStrategy.concat
         case n if n.startsWith("META-INF/services/") => MergeStrategy.uniqueLines
-        case _ => MergeStrategy.error
+        case _ => MergeStrategy.mustEqual
       },
 
     packageScala <<= (outputPath in assembly, packageOptions,
