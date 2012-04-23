@@ -148,8 +148,8 @@ What about Conflicts?
 
 If multiple files share the same relative path (e.g. a resource named
 `application.conf` in multiple dependency JARs), the default strategy is to
-verify that all candidates have the same contents and error out if that is not
-the case. This behavior can be configured on a per-path basis using either one
+verify that all candidates have the same contents and error out otherwise.
+This behavior can be configured on a per-path basis using either one
 of the following built-in strategies or writing a custom one:
 
 * `MergeStrategy.first` picks the first of the conflicting files in classpath order
