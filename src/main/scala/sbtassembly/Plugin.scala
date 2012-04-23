@@ -33,32 +33,54 @@ object Plugin extends sbt.Plugin {
    * packaging) and the sequence of source files, and it shall return the
    * file to be included in the assembly (or throw an exception).
    */
-  type MergeStrategy = (File, Seq[File]) => File
+  type MergeStrategy = (File, Seq[File]) => (Either[String, File], String)
   object MergeStrategy {
-    val pickFirst: MergeStrategy = (tmp, files) => files.head
-    val pickLast: MergeStrategy = (tmp, files) => files.last
-    val error: MergeStrategy = (tmp, files) => throw new RuntimeException("found multiple files for same target path:" + files.mkString("\n", "\n", ""))
+
+    val first: MergeStrategy = (tmp, files) => (Right(files.head), "first")
+    
+    val last: MergeStrategy = (tmp, files) => (Right(files.last), "last")
+    
+    val error: MergeStrategy = (tmp, files) =>
+      (Left("found multiple files for same target path:" + files.map(filename(tmp, _)).mkString("\n", "\n", "")), "error")
+    
     val concat: MergeStrategy = { (tmp, files) =>
       val file = File.createTempFile("sbtMergeTarget", ".tmp", tmp)
       val out = new FileOutputStream(file)
       try {
         files foreach (f => IO.transfer(f, out))
-        file
+        (Right(file), "concat")
       } finally {
         out.close()
       }
     }
-    val uniqueLines: MergeStrategy = { (tmp, files) =>
+    
+    val filterDistinctLines: MergeStrategy = { (tmp, files) =>
       val lines = files flatMap (IO.readLines(_, IO.utf8))
       val unique = (Vector.empty[String] /: lines)((v, l) => if (v contains l) v else v :+ l)
       val file = File.createTempFile("sbtMergeTarget", ".tmp", tmp)
       IO.writeLines(file, unique, IO.utf8)
-      file
+      (Right(file), "filterDistinctLines")
     }
-    val mustEqual: MergeStrategy = { (tmp, files) =>
+    
+    val deduplicate: MergeStrategy = { (tmp, files) =>
       val fingerprints = Set() ++ (files map (sha1content))
-      if (fingerprints.size != 1) throw new RuntimeException("different file contents found in the following:" + files.mkString("\n", "\n", ""))
-      files.head
+      val result =
+        if (fingerprints.size == 1) Right(files.head)
+        else Left("different file contents found in the following:" + files.map(filename(tmp, _)).mkString("\n", "\n", ""))
+      (result, "deduplicate")
+    }
+  }
+  
+  private val PathRE = "([^/]+)/(.*)".r
+  private def filename(tempDir: File, f: File): String = {
+    val baseURI = tempDir.getCanonicalFile.toURI
+    val otherURI = f.getCanonicalFile.toURI
+    baseURI.relativize(otherURI) match {
+      case x if x.isAbsolute => f.getCanonicalPath
+      case relative =>
+        val PathRE(head, tail) = relative.getPath
+        val jarName = IO.read(tempDir / (head + ".jarName"), IO.utf8)
+        jarName + ":" + tail
     }
   }
   
@@ -67,7 +89,15 @@ object Plugin extends sbt.Plugin {
     IO.withTemporaryDirectory { tempDir =>
       val srcs: Seq[(File, String)] = mappings(tempDir).groupBy(_._2).map{
         case (_, files) if files.size == 1 => files.head
-        case (name, files) => (mergeStrategy(name)(tempDir, files map (_._1)), name)
+        case (name, files) =>
+          val result = mergeStrategy(name)(tempDir, files map (_._1)) match {
+            case (Right(f), n) =>
+              log.info("merging '%s' with strategy '%s'".format(name, n))
+              f
+            case (Left(err), n) =>
+              throw new RuntimeException(n + ": " + err)
+          }
+          (result, name)
       }(scala.collection.breakOut)
       val config = new Package.Configuration(srcs, out, po)
       Package(config, cacheDir, log)
@@ -122,7 +152,9 @@ object Plugin extends sbt.Plugin {
     val jarDirs = for(jar <- libsFiltered) yield {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
-      val dest = tempDir / sha1name(jar)
+      val hash = sha1name(jar)
+      IO.write(tempDir / (hash + ".jarName"), jar.getCanonicalPath, IO.utf8, false)
+      val dest = tempDir / hash
       dest.mkdir()
       IO.unzip(jar, dest)
       IO.delete(ao.exclude(Seq(dest)))
@@ -153,8 +185,8 @@ object Plugin extends sbt.Plugin {
       
     mergeStrategy in assembly := { 
         case "reference.conf" => MergeStrategy.concat
-        case n if n.startsWith("META-INF/services/") => MergeStrategy.uniqueLines
-        case _ => MergeStrategy.mustEqual
+        case n if n.startsWith("META-INF/services/") => MergeStrategy.filterDistinctLines
+        case _ => MergeStrategy.deduplicate
       },
 
     packageScala <<= (outputPath in assembly, packageOptions,

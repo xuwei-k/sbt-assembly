@@ -14,9 +14,9 @@ object B extends Build {
       mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) ⇒
         {
           case "a" ⇒ MergeStrategy.concat
-          case "b" ⇒ MergeStrategy.pickFirst
-          case "c" ⇒ MergeStrategy.pickLast
-          case "d" ⇒ MergeStrategy.uniqueLines
+          case "b" ⇒ MergeStrategy.first
+          case "c" ⇒ MergeStrategy.last
+          case "d" ⇒ MergeStrategy.filterDistinctLines
           case x   ⇒ old(x)
         }
       },
