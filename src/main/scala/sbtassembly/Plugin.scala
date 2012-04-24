@@ -204,6 +204,7 @@ object Plugin extends sbt.Plugin {
     mergeStrategy in assembly := { 
         case "reference.conf" => MergeStrategy.concat
         case n if n.startsWith("META-INF/services/") => MergeStrategy.filterDistinctLines
+        case "META-INF/spring.schemas" | "META-INF/spring.handlers" => MergeStrategy.filterDistinctLines
         case _ => MergeStrategy.deduplicate
       },
 
