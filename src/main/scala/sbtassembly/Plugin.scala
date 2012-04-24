@@ -72,25 +72,11 @@ object Plugin extends sbt.Plugin {
   }
   
   private def filename(tempDir: File, f: File): String =
-    mergeSource(tempDir, f) match {
+    AssemblyUtils.sourceOfFileForMerge(tempDir, f) match {
       case (path, None) => path.getCanonicalPath
       case (jar, Some(subJarPath)) => jar + ":" + subJarPath
     }
 
-  private val PathRE = "([^/]+)/(.*)".r
-  def mergeSource(tempDir: File, f: File): (File, Option[String]) = {
-    val baseURI = tempDir.getCanonicalFile.toURI
-    val otherURI = f.getCanonicalFile.toURI
-    baseURI.relativize(otherURI) match {
-      case x if x.isAbsolute =>
-        (f, None)
-      case relative =>
-        val PathRE(head, tail) = relative.getPath
-        val jarName = IO.read(tempDir / (head + ".jarName"), IO.utf8)
-        (new File(jarName), Some(tail))
-    }
-  }
-  
   private def assemblyTask(out: File, po: Seq[PackageOption], mappings: File => Seq[(File, String)],
       mergeStrategy: String => MergeStrategy, cacheDir: File, log: Logger): File =
     IO.withTemporaryDirectory { tempDir =>
