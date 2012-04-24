@@ -41,7 +41,7 @@ object Plugin extends sbt.Plugin {
     val last: MergeStrategy = (tmp, files) => (Right(files.last), "last")
     
     val error: MergeStrategy = (tmp, files) =>
-      (Left("found multiple files for same target path:" + files.map(filename(tmp, _)).mkString("\n", "\n", "")), "error")
+      (Left("found multiple files for same target path:" + filenames(tmp, files).mkString("\n", "\n", "")), "error")
     
     val concat: MergeStrategy = { (tmp, files) =>
       val file = File.createTempFile("sbtMergeTarget", ".tmp", tmp)
@@ -66,15 +66,17 @@ object Plugin extends sbt.Plugin {
       val fingerprints = Set() ++ (files map (sha1content))
       val result =
         if (fingerprints.size == 1) Right(files.head)
-        else Left("different file contents found in the following:" + files.map(filename(tmp, _)).mkString("\n", "\n", ""))
+        else Left("different file contents found in the following:" + filenames(tmp, files).mkString("\n", "\n", ""))
       (result, "deduplicate")
     }
   }
   
-  private def filename(tempDir: File, f: File): String =
-    AssemblyUtils.sourceOfFileForMerge(tempDir, f) match {
-      case (path, None) => path.getCanonicalPath
-      case (jar, Some(subJarPath)) => jar + ":" + subJarPath
+  private def filenames(tempDir: File, fs: Seq[File]): Seq[String] =
+    for(f <- fs) yield {
+      AssemblyUtils.sourceOfFileForMerge(tempDir, f) match {
+        case (path, None) => path.getCanonicalPath
+        case (jar, Some(subJarPath)) => jar + ":" + subJarPath
+      }
     }
 
   private def assemblyTask(out: File, po: Seq[PackageOption], mappings: File => Seq[(File, String)],
