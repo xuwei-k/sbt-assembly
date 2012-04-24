@@ -106,7 +106,7 @@ object Plugin extends sbt.Plugin {
 
   private def isLicenseFile(f: File): Boolean =
     f.getName.toLowerCase match {
-      case "licence" | "licence.txt" | "notice" | "notice.txt" => true
+      case "license" | "licence" | "license.txt" | "licence.txt" | "notice" | "notice.txt" => true
       case _ => false
     }
 
