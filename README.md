@@ -23,7 +23,7 @@ Latest
 For sbt 0.11, add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.7.4")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.0")
 
 resolvers += Resolver.url("sbt-plugin-releases",
   new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns)
@@ -174,7 +174,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 where the default is to
 
 * `concat` "reference.conf",
-* `filterDistinctLines` everything below "META-INF/services" and
+* `filterDistinctLines` everything below META-INF/services, META-INF/spring.schemas, META-INF/spring.handlers and
 * `deduplicate` the rest.
 
 License
