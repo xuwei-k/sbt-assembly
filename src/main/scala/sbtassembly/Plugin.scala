@@ -71,16 +71,23 @@ object Plugin extends sbt.Plugin {
     }
   }
   
+  private def filename(tempDir: File, f: File): String =
+    mergeSource(tempDir, f) match {
+      case (path, None) => path.getCanonicalPath
+      case (jar, Some(subJarPath)) => jar + ":" + subJarPath
+    }
+
   private val PathRE = "([^/]+)/(.*)".r
-  private def filename(tempDir: File, f: File): String = {
+  def mergeSource(tempDir: File, f: File): (File, Option[String]) = {
     val baseURI = tempDir.getCanonicalFile.toURI
     val otherURI = f.getCanonicalFile.toURI
     baseURI.relativize(otherURI) match {
-      case x if x.isAbsolute => f.getCanonicalPath
+      case x if x.isAbsolute =>
+        (f, None)
       case relative =>
         val PathRE(head, tail) = relative.getPath
         val jarName = IO.read(tempDir / (head + ".jarName"), IO.utf8)
-        jarName + ":" + tail
+        (new File(jarName), Some(tail))
     }
   }
   
