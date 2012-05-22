@@ -6,6 +6,8 @@ organization := "com.eed3si9n"
 
 version := "0.8.1"
 
+CrossBuilding.crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12.0-Beta2")
+
 description := "sbt plugin to create a single fat jar"
 
 licenses := Seq("MIT License" -> url("https://github.com/sbt/sbt-assembly/blob/master/LICENSE"))
