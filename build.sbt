@@ -20,14 +20,14 @@ publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false
 
-// lsSettings
+lsSettings
 
-// LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
+LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
 
-// (externalResolvers in LsKeys.lsync) := Seq(
-//   "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases")
+(externalResolvers in LsKeys.lsync) := Seq(
+  "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases")
 
-seq(ScriptedPlugin.scriptedSettings: _*)
+// ScriptedPlugin.scriptedSettings
 
 publishMavenStyle := false
 
