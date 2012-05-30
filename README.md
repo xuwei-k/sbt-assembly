@@ -193,6 +193,11 @@ from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,
 which takes the temporary directory and one of the files passed into the
 strategy as parameters.
 
+Development Notes
+-----------------
+
+Please use [global .gitigore](http://help.github.com/ignore-files/) instead of adding editor junk files to `.gitignore`.
+
 License
 -------
 
