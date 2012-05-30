@@ -4,7 +4,7 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-version := "0.8.2-SNAPSHOT"
+version := "0.8.2"
 
 CrossBuilding.crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12.0-Beta2")
 
@@ -29,10 +29,10 @@ LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
 (externalResolvers in LsKeys.lsync) := Seq(
   "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases")
 
-CrossBuilding.scriptedSettings
+// CrossBuilding.scriptedSettings
 // ScriptedPlugin.scriptedSettings
 
-scriptedBufferLog := false
+// scriptedBufferLog := false
 
 publishMavenStyle := false
 
