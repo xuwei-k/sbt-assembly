@@ -1,4 +1,7 @@
 #!/bin/bash
 for i in 1 2 3; do
-  zip -jr ../../lib/$i.jar $i
+  # rm ../../lib/$i.jar
+  cd $i
+  zip -r ../../../lib/$i.jar .
+  cd ..
 done

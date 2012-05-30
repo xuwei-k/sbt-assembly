@@ -119,18 +119,7 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
 }
 ```
 
-To exclude some class file,
-
-```scala
-excludedFiles in assembly := { (bases: Seq[File]) =>
-  bases flatMap { base =>
-    (base / "META-INF" * "*").get collect {
-      case f if f.getName == "something" => f
-      case f if f.getName.toLowerCase == "license" => f
-      case f if f.getName.toLowerCase == "manifest.mf" => f
-    }
-  }}
-```
+To exclude specific files, customize merge strategy.
 
 To make a jar containing only the dependencies, type
 
@@ -142,8 +131,8 @@ To set an explicit main class,
 mainClass in assembly := Some("com.example.Main")
 ```
 
-What about Conflicts?
----------------------
+Merge Strategy
+--------------
 
 If multiple files share the same relative path (e.g. a resource named
 `application.conf` in multiple dependency JARs), the default strategy is to
@@ -151,20 +140,23 @@ verify that all candidates have the same contents and error out otherwise.
 This behavior can be configured on a per-path basis using either one
 of the following built-in strategies or writing a custom one:
 
-* `MergeStrategy.first` picks the first of the conflicting files in classpath order
-* `MergeStrategy.last` picks the last one
-* `MergeStrategy.error` bails out with an error message
 * `MergeStrategy.deduplicate` is the default described above
-* `MergeStrategy.concat` simply concatenates all conflicting files and includes the result
+* `MergeStrategy.first` picks the first of the matching files in classpath order
+* `MergeStrategy.last` picks the last one
+* `MergeStrategy.singleOrError` bails out with an error message on conflict
+* `MergeStrategy.concat` simply concatenates all matching files and includes the result
 * `MergeStrategy.filterDistinctLines` also concatenates, but leaves out duplicates along the way
+* `MergeStrategy.rename` renames the files originating from jar files
+* `MergeStrategy.discard` simply discards matching files
 
 The mapping of path names to merge strategies is done via the setting
 `assembly-merge-strategy` which can be augmented like so:
 
-```
+```scala
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case "application.conf" => MergeStrategy.concat
+    case "unwanted.txt"     => MergeStrategy.discard
     case x => old(x)
   }
 }
@@ -172,9 +164,29 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 
 where the default is to
 
-* `concat` "reference.conf",
-* `filterDistinctLines` everything below META-INF/services, META-INF/spring.schemas, META-INF/spring.handlers and
-* `deduplicate` the rest.
+```scala
+mergeStrategy in assembly := { 
+  case "reference.conf" =>
+    MergeStrategy.concat
+  case n if isReadme(n) || isLicenseFile(n) =>
+    MergeStrategy.rename
+  case inf if inf.startsWith("META-INF/") =>
+    inf.slice("META-INF/".size, inf.size).toLowerCase match {
+      case "manifest.mf" | "index.list" | "dependencies" =>
+        MergeStrategy.discard
+      case n if n.endsWith(".sf") || n.endsWith(".dsa") =>
+        MergeStrategy.discard
+      case n if n startsWith "plexus/" =>
+        MergeStrategy.discard
+      case n if n startsWith "services/" =>
+        MergeStrategy.filterDistinctLines
+      case "spring.schemas" | "spring.handlers" =>
+        MergeStrategy.filterDistinctLines
+      case _ => MergeStrategy.deduplicate
+    }
+  case _ => MergeStrategy.deduplicate
+}
+```
 
 Custom `MergeStrategy`s can find out where a particular file comes
 from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,

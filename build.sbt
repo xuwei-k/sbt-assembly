@@ -29,7 +29,10 @@ LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
 (externalResolvers in LsKeys.lsync) := Seq(
   "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases")
 
+CrossBuilding.scriptedSettings
 // ScriptedPlugin.scriptedSettings
+
+scriptedBufferLog := false
 
 publishMavenStyle := false
 

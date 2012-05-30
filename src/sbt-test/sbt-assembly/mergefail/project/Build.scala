@@ -11,7 +11,7 @@ object B extends Build {
       version := "0.1",
       jarName in assembly := "foo.jar",
       mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => {
-          case _ => MergeStrategy.error
+          case _ => MergeStrategy.singleOrError
         }
       }
     ))

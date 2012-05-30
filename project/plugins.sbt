@@ -13,4 +13,4 @@ resolvers ++= Seq(
 
 addSbtPlugin("me.lessis" % "ls-sbt" % "0.1.1")
 
-addSbtPlugin("net.virtual-void" % "sbt-cross-building" % "0.6.0")
+addSbtPlugin("net.virtual-void" % "sbt-cross-building" % "0.6.1-SNAPSHOT")

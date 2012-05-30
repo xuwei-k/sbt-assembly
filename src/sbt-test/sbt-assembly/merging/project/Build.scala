@@ -17,6 +17,8 @@ object B extends Build {
           case "b" ⇒ MergeStrategy.first
           case "c" ⇒ MergeStrategy.last
           case "d" ⇒ MergeStrategy.filterDistinctLines
+          case "e" ⇒ MergeStrategy.deduplicate
+          case "f" ⇒ MergeStrategy.discard
           case x   ⇒ old(x)
         }
       },
@@ -28,6 +30,11 @@ object B extends Build {
           mustContain(dir / "c", Seq("1", "3"))
           mustContain(dir / "d", Seq("1", "2", "3"))
           mustContain(dir / "e", Seq("1"))
+          mustNotExist(dir / "f")
+          mustContain(dir / "README", Seq("resources"))
+          mustContain(dir / "README_1", Seq("1"))
+          mustContain(dir / "LICENSE", Seq("resources"))
+          mustContain(dir / "LICENSE_1" / "a", Seq("1"))
         }
       }))
 
@@ -36,5 +43,8 @@ object B extends Build {
     if (lines != l)
       throw new Exception("file " + f + " had wrong content:\n" + lines.mkString("\n") +
         "\n*** instead of ***\n" + l.mkString("\n"))
+  }
+  private def mustNotExist(f: File) {
+    if (f.exists) sys.error("file" + f + " exists!")
   }
 }
