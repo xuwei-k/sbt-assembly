@@ -35,6 +35,7 @@ object Plugin extends sbt.Plugin {
    */
   abstract class MergeStrategy extends Function1[(File, String, Seq[File]), Either[String, Seq[(File, String)]]] {
     def name: String
+    def notifyThreshold = 2
   }
 
   // (File, Seq[File]) => (Either[String, File], String)
@@ -109,11 +110,14 @@ object Plugin extends sbt.Plugin {
         FileExtension.replaceFirstIn(source, "") +
           "_" + FileExtension.replaceFirstIn(jar.getName, "") +
           FileExtension.findFirstIn(source).getOrElse("")
+
+      override def notifyThreshold = 1
     }
     val discard: MergeStrategy = new MergeStrategy {
       val name = "discard"
       def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
         Right(Nil)   
+      override def notifyThreshold = 1
     }
   }
   
@@ -135,7 +139,9 @@ object Plugin extends sbt.Plugin {
         case (name, files) =>
           val strategy = strats(name)
           if (strategy == MergeStrategy.rename) {
-            log.info("Merging '%s' with strategy '%s'".format(name, strategy.name))
+            if (files.size >= strategy.notifyThreshold) {
+              log.info("Merging '%s' with strategy '%s'".format(name, strategy.name))
+            }
             strategy.apply(tempDir, name, files map (_._1)) match {
               case Right(f)  => f
               case Left(err) => throw new RuntimeException(strategy.name + ": " + err)
@@ -150,7 +156,7 @@ object Plugin extends sbt.Plugin {
         case (name, files) =>
           val strategy = strats(name)
           if (strategy != MergeStrategy.rename) {
-            if ((files.size > 1) || (strategy != MergeStrategy.deduplicate)) {
+            if (files.size >= strategy.notifyThreshold) {
               log.info("Merging '%s' with strategy '%s'".format(name, strategy.name))
             }
             strategy.apply((tempDir, name, files map (_._1))) match {
