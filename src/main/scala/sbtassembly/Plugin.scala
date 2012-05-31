@@ -95,7 +95,8 @@ object Plugin extends sbt.Plugin {
       val name = "rename"
       def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
         Right(args._3 flatMap { f =>
-          if(f.isDirectory) Seq(f -> args._2)
+          if(!f.exists) Seq.empty
+          else if(f.isDirectory && (f ** "*.class").get.nonEmpty) Seq(f -> args._2)
           else AssemblyUtils.sourceOfFileForMerge(args._1, f) match {
             case (dir, base, path, false) => Seq(f -> args._2)
             case (jar, base, path, true) =>
