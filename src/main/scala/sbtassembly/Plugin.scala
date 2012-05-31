@@ -216,7 +216,7 @@ object Plugin extends sbt.Plugin {
       dest
     }
     
-    val jarDirs = for(jar <- libsFiltered) yield {
+    val jarDirs = for(jar <- libsFiltered.sorted) yield {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
       val hash = sha1name(jar)
