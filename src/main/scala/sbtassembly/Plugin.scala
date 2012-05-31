@@ -243,7 +243,7 @@ object Plugin extends sbt.Plugin {
   private val LicenseFile = """(.*/)?(license|licence|notice|copying)([.]\w+)?$""".r
   private def isLicenseFile(fileName: String): Boolean =
     fileName.toLowerCase match {
-      case LicenseFile(x, y, z) => true
+      case LicenseFile(_, _, ext) if ext != ".class" => true // DISLIKE
       case _ => false
     }
 
