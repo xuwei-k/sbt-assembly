@@ -1,6 +1,6 @@
 ## no more throwing out licenses
 
-Prior to this release, sbt-assembly has been excluding readme and license files by default. It was initially implemented this way probaby due to the high likelihood of path conflict.
+Prior to this release, sbt-assembly has been excluding readme and license files by default. It was initially implemented this way probaby due to the high likelihood of path conflict (e.g. some.jar includes `META-INF/LICENSE/x` and you also include `META-INF/LICENSE`).
 
 Excluding these files from the assembly jar may result to the violation of the licenses especially if it is used to redistribute the software.
 
