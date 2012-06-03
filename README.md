@@ -25,13 +25,13 @@ For sbt 0.11.2 and 0.11.3, add sbt-assembly as a dependency in `project/plugins.
 ```scala
 resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.2")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.3")
 ```
 
 For sbt 0.12.0-Beta2, add the following to `project/plugins.sbt`:
 
 ```
-libraryDependencies += Defaults.sbtPluginExtra("com.eed3si9n" % "sbt-assembly" % "0.8.2", "0.12.0-Beta2", "2.9.2")
+libraryDependencies += Defaults.sbtPluginExtra("com.eed3si9n" % "sbt-assembly" % "0.8.3", "0.12.0-Beta2", "2.9.2")
 ```
 
 How To Use
