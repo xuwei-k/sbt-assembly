@@ -24,11 +24,6 @@ unmanagedJars in Test <++= baseDirectory map { base =>
    (base / "lib" / "test" ** "*.jar").classpath
 }
 
-
-// excludedJars in Assembly <<= baseDirectory { base => 
-//  (base / "lib" / "compile" ** "*.jar").classpath
-// }
-
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
   cp filter {_.data.getName == "compile-0.1.0.jar"}
 }
