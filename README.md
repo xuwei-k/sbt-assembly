@@ -17,7 +17,7 @@ Requirements
 * Simple Build Tool
 * The burning desire to have a simple deploy procedure.
 
-Using Published Builds
+Using Published Plugin
 ----------------------
 
 For sbt 0.11.2 and 0.11.3, add sbt-assembly as a dependency in `project/plugins.sbt`:
@@ -34,8 +34,8 @@ For sbt 0.12.0-Beta2, add the following to `project/plugins.sbt`:
 libraryDependencies += Defaults.sbtPluginExtra("com.eed3si9n" % "sbt-assembly" % "0.8.3", "0.12.0-Beta2", "2.9.2")
 ```
 
-Using Git
----------
+Using Source Dependency
+-----------------------
 
 Alternately, you can have sbt checkout and build the plugin's source from version control.
 
@@ -46,7 +46,7 @@ import sbt._
 
 object Plugins extends Build {
   lazy val root = Project("root", file(".")) dependsOn(
-    uri("git://github.com/sbt/sbt-assembly.git#XX") // where XX is branch
+    uri("git://github.com/sbt/sbt-assembly.git#XX") // where XX is tag or sha1
   )
 }
 ```
