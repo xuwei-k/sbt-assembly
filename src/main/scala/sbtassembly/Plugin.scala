@@ -241,19 +241,28 @@ object Plugin extends sbt.Plugin {
       (key.? zipWith rhs)( (x,y) => (x :^: y :^: KNil) map Scoped.hf2( _ getOrElse _ ))
   }
 
-  private val LicenseFile = """(.*/)?(license|licence|notice|copying)([.]\w+)?$""".r
+  private val LicenseFile = """(license|licence|notice|copying)([.]\w+)?$""".r
   private def isLicenseFile(fileName: String): Boolean =
     fileName.toLowerCase match {
-      case LicenseFile(_, _, ext) if ext != ".class" => true // DISLIKE
+      case LicenseFile(_, ext) if ext != ".class" => true // DISLIKE
       case _ => false
     }
 
-  private val ReadMe = """(.*/)?(readme)([.]\w+)?$""".r
+  private val ReadMe = """(readme)([.]\w+)?$""".r
   private def isReadme(fileName: String): Boolean =
     fileName.toLowerCase match {
-      case ReadMe(x, y, z) => true
+      case ReadMe(_, ext) if ext != ".class" => true
       case _ => false
     }
+
+  private object PathList {
+    private val sysFileSep = System.getProperty("file.separator")
+    def unapply(path: String): Option[List[String]] = {
+      val split = path.split(if (sysFileSep.equals( """\""")) """\\""" else sysFileSep)
+      if (split.size == 0) None
+      else Some(split.toList)
+    }
+  }
 
   lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
     assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly,
@@ -268,19 +277,19 @@ object Plugin extends sbt.Plugin {
     mergeStrategy in assembly := { 
       case "reference.conf" =>
         MergeStrategy.concat
-      case n if isReadme(n) || isLicenseFile(n) =>
+      case PathList(ps) if isReadme(ps.last) || isLicenseFile(ps.last) =>
         MergeStrategy.rename
-      case inf if inf.startsWith("META-INF/") =>
-        inf.slice("META-INF/".size, inf.size).toLowerCase match {
-          case "manifest.mf" | "index.list" | "dependencies" =>
+      case PathList("META-INF" :: xs) =>
+        (xs map {_.toLowerCase}) match {
+          case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
             MergeStrategy.discard
-          case n if n.endsWith(".sf") || n.endsWith(".dsa") =>
+          case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
             MergeStrategy.discard
-          case n if n startsWith "plexus/" =>
+          case "plexus" :: xs =>
             MergeStrategy.discard
-          case n if n startsWith "services/" =>
+          case "services" :: xs =>
             MergeStrategy.filterDistinctLines
-          case "spring.schemas" | "spring.handlers" =>
+          case ("spring.schemas" :: Nil) | ("spring.handlers" :: Nil) =>
             MergeStrategy.filterDistinctLines
           case _ => MergeStrategy.deduplicate
         }
