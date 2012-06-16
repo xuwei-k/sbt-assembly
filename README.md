@@ -177,19 +177,19 @@ where the default is to
 mergeStrategy in assembly := { 
   case "reference.conf" =>
     MergeStrategy.concat
-  case n if isReadme(n) || isLicenseFile(n) =>
+  case PathList(ps) if isReadme(ps.last) || isLicenseFile(ps.last) =>
     MergeStrategy.rename
-  case inf if inf.startsWith("META-INF/") =>
-    inf.slice("META-INF/".size, inf.size).toLowerCase match {
-      case "manifest.mf" | "index.list" | "dependencies" =>
+  case PathList("META-INF" :: xs) =>
+    (xs map {_.toLowerCase}) match {
+      case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
         MergeStrategy.discard
-      case n if n.endsWith(".sf") || n.endsWith(".dsa") =>
+      case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
         MergeStrategy.discard
-      case n if n startsWith "plexus/" =>
+      case "plexus" :: xs =>
         MergeStrategy.discard
-      case n if n startsWith "services/" =>
+      case "services" :: xs =>
         MergeStrategy.filterDistinctLines
-      case "spring.schemas" | "spring.handlers" =>
+      case ("spring.schemas" :: Nil) | ("spring.handlers" :: Nil) =>
         MergeStrategy.filterDistinctLines
       case _ => MergeStrategy.deduplicate
     }
