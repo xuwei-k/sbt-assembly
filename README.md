@@ -37,6 +37,8 @@ libraryDependencies += Defaults.sbtPluginExtra("com.eed3si9n" % "sbt-assembly" %
 Using Git
 ---------
 
+Alternately, you can have sbt checkout and build the plugin's source from version control.
+
 Specify sbt-assembly.git as a dependency in `project/project/build.scala`:
 
 ```scala
