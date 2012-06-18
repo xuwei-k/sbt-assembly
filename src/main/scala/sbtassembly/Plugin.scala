@@ -257,7 +257,7 @@ object Plugin extends sbt.Plugin {
 
   private object PathList {
     private val sysFileSep = System.getProperty("file.separator")
-    def unapply(path: String): Option[List[String]] = {
+    def unapplySeq(path: String): Option[List[String]] = {
       val split = path.split(if (sysFileSep.equals( """\""")) """\\""" else sysFileSep)
       if (split.size == 0) None
       else Some(split.toList)
@@ -277,9 +277,9 @@ object Plugin extends sbt.Plugin {
     mergeStrategy in assembly := { 
       case "reference.conf" =>
         MergeStrategy.concat
-      case PathList(ps) if isReadme(ps.last) || isLicenseFile(ps.last) =>
+      case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
         MergeStrategy.rename
-      case PathList("META-INF" :: xs) =>
+      case PathList("META-INF", xs @ _*) =>
         (xs map {_.toLowerCase}) match {
           case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
             MergeStrategy.discard
