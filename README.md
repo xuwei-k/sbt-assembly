@@ -177,9 +177,9 @@ where the default is to
 mergeStrategy in assembly := { 
   case "reference.conf" =>
     MergeStrategy.concat
-  case PathList(ps) if isReadme(ps.last) || isLicenseFile(ps.last) =>
+  case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
     MergeStrategy.rename
-  case PathList("META-INF" :: xs) =>
+  case PathList("META-INF", xs @ _*) =>
     (xs map {_.toLowerCase}) match {
       case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
         MergeStrategy.discard
