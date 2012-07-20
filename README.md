@@ -20,18 +20,12 @@ Requirements
 Using Published Plugin
 ----------------------
 
-For sbt 0.11.2 and 0.11.3, add sbt-assembly as a dependency in `project/plugins.sbt`:
+For sbt 0.11.2, 0.11.3, and 0.12.x add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
 resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.3")
-```
-
-For sbt 0.12.0-Beta2, add the following to `project/plugins.sbt`:
-
-```
-libraryDependencies += Defaults.sbtPluginExtra("com.eed3si9n" % "sbt-assembly" % "0.8.3", "0.12.0-Beta2", "2.9.2")
 ```
 
 Using Source Dependency
