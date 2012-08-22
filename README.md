@@ -158,6 +158,7 @@ The mapping of path names to merge strategies is done via the setting
 ```scala
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
+    case PathList("javax", "servlet", xs @ _*) => MergeStrategy.first
     case "application.conf" => MergeStrategy.concat
     case "unwanted.txt"     => MergeStrategy.discard
     case x => old(x)
@@ -165,7 +166,9 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 }
 ```
 
-where the default is to
+By the way, the first case pattern in the above using `PathList(...)` is how you can pick `javax/servlet/*` from the first jar. If the default `MergeStrategy.deduplicate` is not working for you that likely means you have multiple versions of some library is being pulled by your dependency. The real solution is to fix that dependency tree. You can work around it by `MergeStrategy.first` but don't be surprised when you see `ClassNotFoundException`.
+
+Here is the default:
 
 ```scala
 mergeStrategy in assembly := { 
