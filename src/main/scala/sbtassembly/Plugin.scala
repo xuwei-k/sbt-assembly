@@ -255,7 +255,7 @@ object Plugin extends sbt.Plugin {
       case _ => false
     }
 
-  private object PathList {
+  object PathList {
     private val sysFileSep = System.getProperty("file.separator")
     def unapplySeq(path: String): Option[List[String]] = {
       val split = path.split(if (sysFileSep.equals( """\""")) """\\""" else sysFileSep)
