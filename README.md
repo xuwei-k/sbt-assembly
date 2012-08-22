@@ -166,7 +166,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 }
 ```
 
-By the way, the first case pattern in the above using `PathList(...)` is how you can pick `javax/servlet/*` from the first jar. If the default `MergeStrategy.deduplicate` is not working for you that likely means you have multiple versions of some library is being pulled by your dependency. The real solution is to fix that dependency tree. You can work around it by `MergeStrategy.first` but don't be surprised when you see `ClassNotFoundException`.
+By the way, the first case pattern in the above using `PathList(...)` is how you can pick `javax/servlet/*` from the first jar. If the default `MergeStrategy.deduplicate` is not working for you, that likely means you have multiple versions of some library pulled by your dependency graph. The real solution is to fix that dependency graph. You can work around it by `MergeStrategy.first` but don't be surprised when you see `ClassNotFoundException`.
 
 Here is the default:
 
