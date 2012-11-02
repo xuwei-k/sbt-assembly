@@ -4,9 +4,9 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-version := "0.8.4"
+version := "0.8.5-SNAPSHOT"
 
-// CrossBuilding.crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12.0-Beta2")
+CrossBuilding.crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12")
 
 description := "sbt plugin to create a single fat jar"
 
@@ -22,10 +22,10 @@ publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false
 
-// CrossBuilding.scriptedSettings
-ScriptedPlugin.scriptedSettings
+CrossBuilding.scriptedSettings
+// ScriptedPlugin.scriptedSettings
 
-scriptedLaunchOpts ++= Seq("-Xmx1024M", "-XX:MaxPermSize=256M")
+// scriptedLaunchOpts ++= Seq("-Xmx1024M", "-XX:MaxPermSize=256M")
 
 scriptedBufferLog := false
 
