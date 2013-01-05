@@ -336,9 +336,7 @@ object Plugin extends sbt.Plugin {
     assembledMappings in packageScala <<= (assemblyOption in packageScala, fullClasspath in assembly, dependencyClasspath in assembly,
         excludedJars in assembly, streams) map {
       (ao, cp, deps, ej, s) => (tempDir: File) =>
-        assemblyAssembledMappings(tempDir, cp, deps,
-          ao.copy(includeBin = false, includeScala = true, includeDependency = false),
-          ej, s.log) },
+        assemblyAssembledMappings(tempDir, cp, deps, ao, ej, s.log) },
 
     packageDependency <<= (target in assembly, jarName in packageDependency, packageOptions in assembly,
         assembledMappings in packageDependency, mergeStrategy in assembly,
@@ -348,9 +346,7 @@ object Plugin extends sbt.Plugin {
     assembledMappings in packageDependency <<= (assemblyOption in packageDependency, fullClasspath in assembly, dependencyClasspath in assembly,
         excludedJars in assembly, streams) map {
       (ao, cp, deps, ej, s) => (tempDir: File) =>
-        assemblyAssembledMappings(tempDir, cp, deps,
-          ao.copy(includeBin = false, includeScala = false, includeDependency = true),
-          ej, s.log) },
+        assemblyAssembledMappings(tempDir, cp, deps, ao, ej, s.log) },
 
     test <<= test orr (test in Test),
     test in assembly <<= (test in Test),
