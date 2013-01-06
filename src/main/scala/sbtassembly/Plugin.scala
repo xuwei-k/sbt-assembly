@@ -20,6 +20,7 @@ object Plugin extends sbt.Plugin {
     lazy val assemblyOption    = SettingKey[AssemblyOption]("assembly-option")
     lazy val jarName           = SettingKey[String]("assembly-jar-name")
     lazy val defaultJarName    = SettingKey[String]("assembly-default-jar-name")
+    lazy val outputPath        = SettingKey[File]("assembly-output-path")
     lazy val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("assembly-excluded-files")
     lazy val excludedJars      = TaskKey[Classpath]("assembly-excluded-jars")
     lazy val assembledMappings = TaskKey[File => Seq[(File, String)]]("assembly-assembled-mappings")
@@ -296,11 +297,11 @@ object Plugin extends sbt.Plugin {
   }
 
   lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
-    assembly <<= (test in assembly, target in assembly, jarName in assembly, packageOptions in assembly,
+    assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly,
         assembledMappings in assembly, mergeStrategy in assembly,
         assemblyDirectory in assembly, cacheDirectory, streams) map {
-      (test, out, jar, po, am, ms, tempDir, cacheDir, s) =>
-        assemblyTask(out / jar, po, am, ms, tempDir, cacheDir, s.log) },
+      (test, out, po, am, ms, tempDir, cacheDir, s) =>
+        assemblyTask(out, po, am, ms, tempDir, cacheDir, s.log) },
     
     assembledMappings in assembly <<= (assemblyOption in assembly, fullClasspath in assembly, dependencyClasspath in assembly,
         excludedJars in assembly, streams) map {
@@ -328,20 +329,20 @@ object Plugin extends sbt.Plugin {
       case _ => MergeStrategy.deduplicate
     },
 
-    packageScala <<= (target in assembly, jarName in packageScala, packageOptions,
+    packageScala <<= (outputPath in packageScala, packageOptions,
         assembledMappings in packageScala, mergeStrategy in assembly,
         assemblyDirectory in assembly, cacheDirectory, streams) map {
-      (out, jar, po, am, ms, tempDir, cacheDir, s) => assemblyTask(out / jar, po, am, ms, tempDir, cacheDir, s.log) },
+      (out, po, am, ms, tempDir, cacheDir, s) => assemblyTask(out, po, am, ms, tempDir, cacheDir, s.log) },
 
     assembledMappings in packageScala <<= (assemblyOption in packageScala, fullClasspath in assembly, dependencyClasspath in assembly,
         excludedJars in assembly, streams) map {
       (ao, cp, deps, ej, s) => (tempDir: File) =>
         assemblyAssembledMappings(tempDir, cp, deps, ao, ej, s.log) },
 
-    packageDependency <<= (target in assembly, jarName in packageDependency, packageOptions in assembly,
+    packageDependency <<= (outputPath in packageDependency, packageOptions in assembly,
         assembledMappings in packageDependency, mergeStrategy in assembly,
         assemblyDirectory in assembly, cacheDirectory, streams) map {
-      (out, jar, po, am, ms, tempDir, cacheDir, s) => assemblyTask(out / jar, po, am, ms, tempDir, cacheDir, s.log) },
+      (out, po, am, ms, tempDir, cacheDir, s) => assemblyTask(out, po, am, ms, tempDir, cacheDir, s.log) },
     
     assembledMappings in packageDependency <<= (assemblyOption in packageDependency, fullClasspath in assembly, dependencyClasspath in assembly,
         excludedJars in assembly, streams) map {
@@ -372,12 +373,16 @@ object Plugin extends sbt.Plugin {
     },
     
     assemblyDirectory in assembly <<= cacheDirectory / "assembly",
+    outputPath in assembly <<= (target in assembly, jarName in assembly) { (t, s) => t / s },
+    outputPath in packageScala <<= (target in assembly, jarName in packageScala) { (t, s) => t / s },
+    outputPath in packageDependency <<= (target in assembly, jarName in packageDependency) { (t, s) => t / s },
     target in assembly <<= target,
     
     jarName in assembly <<= (jarName in assembly) or (defaultJarName in assembly),
-    jarName in packageScala <<= (jarName in packageScala) or (Project.value("scala-library-assembly.jar")),
+    jarName in packageScala <<= (jarName in packageScala) or (defaultJarName in packageScala),
     jarName in packageDependency <<= (jarName in packageDependency) or (defaultJarName in packageDependency),
 
+    defaultJarName in packageScala <<= (scalaVersion) { (scalaVersion) => "scala-library-" + scalaVersion + "-assembly.jar" },
     defaultJarName in packageDependency <<= (name, version) { (name, version) => name + "-assembly-" + version + "-deps.jar" },
     defaultJarName in assembly <<= (name, version) { (name, version) => name + "-assembly-" + version + ".jar" },
     
