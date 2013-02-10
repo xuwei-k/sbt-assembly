@@ -214,8 +214,8 @@ object Plugin extends sbt.Plugin {
       ao: AssemblyOption, ej: Classpath, log: Logger) = {
     import sbt.classpath.ClasspathUtilities
 
-    val (libs, dirs) = classpath.map(_.data).partition(ClasspathUtilities.isArchive)
-    val (depLibs, depDirs) = dependencies.map(_.data).partition(ClasspathUtilities.isArchive)
+    val (libs, dirs) = classpath.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
+    val (depLibs, depDirs) = dependencies.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
     val excludedJars = ej map {_.data}
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.asFile => None
@@ -249,7 +249,7 @@ object Plugin extends sbt.Plugin {
       dest
     }
     
-    val jarDirs = for(jar <- libsFiltered.sorted) yield {
+    val jarDirs = for(jar <- libsFiltered) yield {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
       val hash = sha1name(jar)
