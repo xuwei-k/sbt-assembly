@@ -26,6 +26,7 @@ object Plugin extends sbt.Plugin {
     lazy val assembledMappings = TaskKey[File => Seq[(File, String)]]("assembly-assembled-mappings")
     lazy val mergeStrategy     = SettingKey[String => MergeStrategy]("assembly-merge-strategy", "mapping from archive member path to merge strategy")
     lazy val assemblyDirectory = SettingKey[File]("assembly-directory")
+    lazy val assemblyCacheOutput = SettingKey[Boolean]("assembly-cache-output")
   }
   
   /**
@@ -135,12 +136,12 @@ object Plugin extends sbt.Plugin {
     }
 
   private def assemblyTask(out: File, po: Seq[PackageOption], mappings: File => Seq[(File, String)],
-      strats: String => MergeStrategy, tempDir: File, cacheDir: File, log: Logger): File =
-    Assembly(out, po, mappings, strats, tempDir, cacheDir, log)
+      strats: String => MergeStrategy, tempDir: File, cacheOutput: Boolean, cacheDir: File, log: Logger): File =
+    Assembly(out, po, mappings, strats, tempDir, cacheOutput, cacheDir, log)
 
   object Assembly {
     def apply(out: File, po: Seq[PackageOption], mappings: File => Seq[(File, String)],
-        strats: String => MergeStrategy, tempDir: File, cacheDir: File, log: Logger): File = {
+        strats: String => MergeStrategy, tempDir: File, cacheOutput: Boolean, cacheDir: File, log: Logger): File = {
       import Tracked.{inputChanged, outputChanged}
       import Types.:+:
       import Cache._
@@ -164,8 +165,12 @@ object Plugin extends sbt.Plugin {
           else log.info("Assembly up to date: " + jar.file)        
         }
       }
-      val inputs = sha1.digest((ms map {_._1} map {hash.apply}).toString.getBytes("UTF-8")).toSeq
-      cachedMakeJar(inputs)(() => exists(out))
+      lazy val inputs = sha1.digest((ms map {_._1} map {hash.apply}).toString.getBytes("UTF-8")).toSeq
+      if (cacheOutput) {
+        log.info("Checking every *.class file's SHA-1. This could take very long time.")
+        cachedMakeJar(inputs)(() => exists(out))  
+      }
+      else makeJar
       out
     }
     def applyStrategies(srcs: Seq[(File, String)], strats: String => MergeStrategy,
@@ -299,10 +304,12 @@ object Plugin extends sbt.Plugin {
   lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
     assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly,
         assembledMappings in assembly, mergeStrategy in assembly,
-        assemblyDirectory in assembly, cacheDirectory, streams) map {
-      (test, out, po, am, ms, tempDir, cacheDir, s) =>
-        assemblyTask(out, po, am, ms, tempDir, cacheDir, s.log) },
+        assemblyDirectory in assembly, assemblyCacheOutput in assembly, cacheDirectory, streams) map {
+      (test, out, po, am, ms, tempDir, co, cacheDir, s) =>
+        assemblyTask(out, po, am, ms, tempDir, co, cacheDir, s.log) },
     
+    assemblyCacheOutput in assembly := false,
+
     assembledMappings in assembly <<= (assemblyOption in assembly, fullClasspath in assembly, dependencyClasspath in assembly,
         excludedJars in assembly, streams) map {
       (ao, cp, deps, ej, s) => (tempDir: File) => assemblyAssembledMappings(tempDir, cp, deps, ao, ej, s.log) },
@@ -331,8 +338,8 @@ object Plugin extends sbt.Plugin {
 
     packageScala <<= (outputPath in packageScala, packageOptions,
         assembledMappings in packageScala, mergeStrategy in assembly,
-        assemblyDirectory in assembly, cacheDirectory, streams) map {
-      (out, po, am, ms, tempDir, cacheDir, s) => assemblyTask(out, po, am, ms, tempDir, cacheDir, s.log) },
+        assemblyDirectory in assembly, assemblyCacheOutput in assembly, cacheDirectory, streams) map {
+      (out, po, am, ms, tempDir, co, cacheDir, s) => assemblyTask(out, po, am, ms, tempDir, co, cacheDir, s.log) },
 
     assembledMappings in packageScala <<= (assemblyOption in packageScala, fullClasspath in assembly, dependencyClasspath in assembly,
         excludedJars in assembly, streams) map {
@@ -341,8 +348,8 @@ object Plugin extends sbt.Plugin {
 
     packageDependency <<= (outputPath in packageDependency, packageOptions in assembly,
         assembledMappings in packageDependency, mergeStrategy in assembly,
-        assemblyDirectory in assembly, cacheDirectory, streams) map {
-      (out, po, am, ms, tempDir, cacheDir, s) => assemblyTask(out, po, am, ms, tempDir, cacheDir, s.log) },
+        assemblyDirectory in assembly, assemblyCacheOutput in assembly, cacheDirectory, streams) map {
+      (out, po, am, ms, tempDir, co, cacheDir, s) => assemblyTask(out, po, am, ms, tempDir, co, cacheDir, s.log) },
     
     assembledMappings in packageDependency <<= (assemblyOption in packageDependency, fullClasspath in assembly, dependencyClasspath in assembly,
         excludedJars in assembly, streams) map {

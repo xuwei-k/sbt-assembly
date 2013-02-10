@@ -199,13 +199,24 @@ from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,
 which takes the temporary directory and one of the files passed into the
 strategy as parameters.
 
+Cached Output
+-------------
+
+If you wish to cache the fat JAR so its timestamp changes only when the input changes, set the following setting:
+
+```scala
+assemblyCacheOutput in assembly := true
+```
+
+Currently this feature requires checking the SHA-1 hash of all *.class including that of dependencies, and thus it could take [very long time](https://github.com/sbt/sbt-assembly/issues/68)!
+
 Publishing
 ----------
 
 If you wish to publish your assembled artifact along with the `publish` task
 and all of the other artifacts, you can add an `assembly` classifier (or other):
 
-```
+```scala
 artifact in (Compile, assembly) ~= { art =>
   art.copy(`classifier` = Some("assembly"))
 }
@@ -221,6 +232,6 @@ Please use [global .gitignore](http://help.github.com/ignore-files/) instead of 
 License
 -------
 
-Copyright (c) 2010-2011 e.e d3si9n, Coda Hale
+Copyright (c) 2010-2013 e.e d3si9n, Coda Hale
 
 Published under The MIT License, see LICENSE

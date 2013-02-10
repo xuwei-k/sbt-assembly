@@ -1,0 +1,11 @@
+## optional caching
+
+0.8.6 rolls back the default caching behavior that was introduced in 0.8.5. When no files are changed, it was checking SHA-1 for every *.class file and taking very long time for some projects. [#68][68]
+
+Instead, 0.8.6 introduces a new setting that can enable the caching:
+
+```
+assemblyCacheOutput in assembly := true
+```
+
+  [68]: https://github.com/sbt/sbt-assembly/issues/68
