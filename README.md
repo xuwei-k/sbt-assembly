@@ -68,10 +68,12 @@ import sbtassembly.Plugin._
 import AssemblyKeys._
 
 lazy val sub = Project("sub", file("sub"),
-  settings = buildSettings ++ assemblySettings ++
-             Seq( // your settings here
-             ))
+  settings = buildSettings ++ assemblySettings) settings(
+    // your settings here
+  )
 ```
+
+Note: Due to [SI-3488](https://issues.scala-lang.org/browse/SI-3488), you have to put your settings in `settings(...)` method esp. if you rewire `mergeStrategy`. 
 
 Now you'll have an awesome new `assembly` task which will compile your project,
 run your tests, and then pack your class files and all your dependencies into a
