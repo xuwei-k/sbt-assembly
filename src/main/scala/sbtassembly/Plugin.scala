@@ -128,12 +128,12 @@ object Plugin extends sbt.Plugin {
   private val FileExtension = """([.]\w+)$""".r
 
   private def filenames(tempDir: File, fs: Seq[File]): Seq[String] =
-    for(f <- fs) yield {
+    (for(f <- fs.par) yield {
       AssemblyUtils.sourceOfFileForMerge(tempDir, f) match {
         case (path, base, subDirPath, false) => subDirPath
         case (jar, base, subJarPath, true) => jar + ":" + subJarPath
       }
-    }
+    }).toIndexedSeq
 
   private def assemblyTask(out: File, po: Seq[PackageOption], mappings: File => Seq[(File, String)],
       strats: String => MergeStrategy, tempDir: File, cacheOutput: Boolean, cacheDir: File, log: Logger): File =
@@ -175,7 +175,7 @@ object Plugin extends sbt.Plugin {
     }
     def applyStrategies(srcs: Seq[(File, String)], strats: String => MergeStrategy,
         tempDir: File, log: Logger): Seq[(File, String)] = {
-      val renamed = srcs.groupBy(_._2).flatMap {
+      val renamed = srcs.groupBy(_._2).par.flatMap {
         case (name, files) =>
           val strategy = strats(name)
           if (strategy == MergeStrategy.rename) {
@@ -219,8 +219,8 @@ object Plugin extends sbt.Plugin {
       ao: AssemblyOption, ej: Classpath, log: Logger) = {
     import sbt.classpath.ClasspathUtilities
 
-    val (libs, dirs) = classpath.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
-    val (depLibs, depDirs) = dependencies.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
+    val (libs, dirs) = classpath.map(_.data).sorted.par.partition(ClasspathUtilities.isArchive)
+    val depLibs = dependencies.map(_.data).sorted.par.partition(ClasspathUtilities.isArchive)._1.toIndexedSeq
     val excludedJars = ej map {_.data}
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.asFile => None
@@ -266,7 +266,7 @@ object Plugin extends sbt.Plugin {
       dest
     }
 
-    val base = dirsFiltered ++ jarDirs
+    val base = (dirsFiltered ++ jarDirs) toIndexedSeq
     val descendants = ((base ** "*") --- ao.exclude(base) --- base).get filter { _.exists }
     
     descendants x relativeTo(base)
