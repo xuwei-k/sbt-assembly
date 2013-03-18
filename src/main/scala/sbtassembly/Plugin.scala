@@ -128,7 +128,7 @@ object Plugin extends sbt.Plugin {
   private val FileExtension = """([.]\w+)$""".r
 
   private def filenames(tempDir: File, fs: Seq[File]): Seq[String] =
-    (for(f <- fs.par) yield {
+    (for(f <- fs) yield {
       AssemblyUtils.sourceOfFileForMerge(tempDir, f) match {
         case (path, base, subDirPath, false) => subDirPath
         case (jar, base, subJarPath, true) => jar + ":" + subJarPath
@@ -219,8 +219,8 @@ object Plugin extends sbt.Plugin {
       ao: AssemblyOption, ej: Classpath, log: Logger) = {
     import sbt.classpath.ClasspathUtilities
 
-    val (libs, dirs) = classpath.map(_.data).sorted.par.partition(ClasspathUtilities.isArchive)
-    val depLibs = dependencies.map(_.data).sorted.par.partition(ClasspathUtilities.isArchive)._1.toIndexedSeq
+    val (libs, dirs) = classpath.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
+    val depLibs = dependencies.map(_.data).sorted.partition(ClasspathUtilities.isArchive)._1
     val excludedJars = ej map {_.data}
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.asFile => None
@@ -254,7 +254,7 @@ object Plugin extends sbt.Plugin {
       dest
     }
     
-    val jarDirs = for(jar <- libsFiltered) yield {
+    val jarDirs = for(jar <- libsFiltered.par) yield {
       val jarName = jar.asFile.getName
       log.info("Including %s".format(jarName))
       val hash = sha1name(jar)
@@ -266,7 +266,7 @@ object Plugin extends sbt.Plugin {
       dest
     }
 
-    val base = (dirsFiltered ++ jarDirs) toIndexedSeq
+    val base = dirsFiltered ++ jarDirs
     val descendants = ((base ** "*") --- ao.exclude(base) --- base).get filter { _.exists }
     
     descendants x relativeTo(base)
