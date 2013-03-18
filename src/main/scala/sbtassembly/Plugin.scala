@@ -128,12 +128,12 @@ object Plugin extends sbt.Plugin {
   private val FileExtension = """([.]\w+)$""".r
 
   private def filenames(tempDir: File, fs: Seq[File]): Seq[String] =
-    (for(f <- fs) yield {
+    for(f <- fs) yield {
       AssemblyUtils.sourceOfFileForMerge(tempDir, f) match {
         case (path, base, subDirPath, false) => subDirPath
         case (jar, base, subJarPath, true) => jar + ":" + subJarPath
       }
-    }).toIndexedSeq
+    }
 
   private def assemblyTask(out: File, po: Seq[PackageOption], mappings: File => Seq[(File, String)],
       strats: String => MergeStrategy, tempDir: File, cacheOutput: Boolean, cacheDir: File, log: Logger): File =
