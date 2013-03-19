@@ -30,8 +30,8 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
 
 jarName in assembly := "foo.jar"
 
-TaskKey[Unit]("check") <<= (target) map { (target) =>
-  val process = sbt.Process("java", Seq("-jar", (target / "foo.jar").toString))
+TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
+  val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
   val out = (process!!)
   if (out.trim != "hello") error("unexpected output: " + out)
   ()

@@ -383,7 +383,7 @@ object Plugin extends sbt.Plugin {
     outputPath in assembly <<= (target in assembly, jarName in assembly) { (t, s) => t / s },
     outputPath in packageScala <<= (target in assembly, jarName in packageScala) { (t, s) => t / s },
     outputPath in packageDependency <<= (target in assembly, jarName in packageDependency) { (t, s) => t / s },
-    target in assembly <<= target,
+    target in assembly <<= crossTarget,
     
     jarName in assembly <<= (jarName in assembly) or (defaultJarName in assembly),
     jarName in packageScala <<= (jarName in packageScala) or (defaultJarName in packageScala),
