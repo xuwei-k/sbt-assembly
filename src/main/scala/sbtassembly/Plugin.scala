@@ -175,7 +175,7 @@ object Plugin extends sbt.Plugin {
     }
     def applyStrategies(srcs: Seq[(File, String)], strats: String => MergeStrategy,
         tempDir: File, log: Logger): Seq[(File, String)] = {
-      val renamed = srcs.groupBy(_._2).par.flatMap {
+      val renamed = srcs.groupBy(_._2).flatMap {
         case (name, files) =>
           val strategy = strats(name)
           if (strategy == MergeStrategy.rename) {
