@@ -1,0 +1,6 @@
+### enhancements and bug fixes
+
+- a part of the assemblying process is parallelized for some speedup, contributed by [@emchristiansen][@emchristiansen] as [#73][73].
+
+  [@emchristiansen]: https://github.com/emchristiansen
+  [73]: https://github.com/sbt/sbt-assembly/pull/73
