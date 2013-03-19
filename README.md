@@ -23,7 +23,7 @@ Using Published Plugin
 For sbt 0.12.x add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.6")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.7")
 ```
 
 Using Source Dependency
