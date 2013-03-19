@@ -20,7 +20,8 @@ object Plugin extends sbt.Plugin {
     lazy val assemblyOption    = SettingKey[AssemblyOption]("assembly-option")
     lazy val jarName           = SettingKey[String]("assembly-jar-name")
     lazy val defaultJarName    = SettingKey[String]("assembly-default-jar-name")
-    lazy val outputPath        = SettingKey[File]("assembly-output-path")
+    lazy val computedJarName   = TaskKey[String]("assembly-computed-jar-name")
+    lazy val outputPath        = TaskKey[File]("assembly-output-path")
     lazy val excludedFiles     = SettingKey[Seq[File] => Seq[File]]("assembly-excluded-files")
     lazy val excludedJars      = TaskKey[Classpath]("assembly-excluded-jars")
     lazy val assembledMappings = TaskKey[File => Seq[(File, String)]]("assembly-assembled-mappings")
@@ -380,10 +381,14 @@ object Plugin extends sbt.Plugin {
     },
     
     assemblyDirectory in assembly <<= cacheDirectory / "assembly",
-    outputPath in assembly <<= (target in assembly, jarName in assembly) { (t, s) => t / s },
-    outputPath in packageScala <<= (target in assembly, jarName in packageScala) { (t, s) => t / s },
-    outputPath in packageDependency <<= (target in assembly, jarName in packageDependency) { (t, s) => t / s },
+    outputPath in assembly <<= (target in assembly, computedJarName in assembly) map { (t, s) => t / s },
+    outputPath in packageScala <<= (target in assembly, computedJarName in packageScala) map { (t, s) => t / s },
+    outputPath in packageDependency <<= (target in assembly, computedJarName in packageDependency) map { (t, s) => t / s },
     target in assembly <<= target,
+
+    computedJarName in assembly <<= (jarName in assembly) map { n => n },
+    computedJarName in packageScala <<= (jarName in packageScala) map { n => n },
+    computedJarName in packageDependency <<= (jarName in packageDependency) map { n => n },
     
     jarName in assembly <<= (jarName in assembly) or (defaultJarName in assembly),
     jarName in packageScala <<= (jarName in packageScala) or (defaultJarName in packageScala),
