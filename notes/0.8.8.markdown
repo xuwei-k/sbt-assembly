@@ -1,0 +1,6 @@
+### enhancements and bug fixes
+
+- `jarName in assembly` is changed to a task key, contributed by [@dchenbecker][@dchenbecker] as [#74][74].
+
+  [74]: https://github.com/sbt/sbt-assembly/pull/74
+  [@dchenbecker]: https://github.com/dchenbecker
