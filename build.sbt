@@ -6,7 +6,7 @@ organization := "com.eed3si9n"
 
 version := "0.8.8-SNAPSHOT"
 
-CrossBuilding.crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12")
+// CrossBuilding.crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12")
 
 description := "sbt plugin to create a single fat jar"
 
@@ -40,9 +40,9 @@ publishTo <<= (version) { version: String =>
 
 credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
 
-lsSettings
+// lsSettings
 
-LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
+// LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
 
-(externalResolvers in LsKeys.lsync) := Seq(
-  "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases")
+// (externalResolvers in LsKeys.lsync) := Seq(
+//   "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases")
