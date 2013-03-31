@@ -293,6 +293,28 @@ object Plugin extends sbt.Plugin {
     }
   }
 
+  val defaultMergeStrategy: String => MergeStrategy = { 
+    case "reference.conf" =>
+      MergeStrategy.concat
+    case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
+      MergeStrategy.rename
+    case PathList("META-INF", xs @ _*) =>
+      (xs map {_.toLowerCase}) match {
+        case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
+          MergeStrategy.discard
+        case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
+          MergeStrategy.discard
+        case "plexus" :: xs =>
+          MergeStrategy.discard
+        case "services" :: xs =>
+          MergeStrategy.filterDistinctLines
+        case ("spring.schemas" :: Nil) | ("spring.handlers" :: Nil) =>
+          MergeStrategy.filterDistinctLines
+        case _ => MergeStrategy.deduplicate
+      }
+    case _ => MergeStrategy.deduplicate
+  }
+
   lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
     assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly,
         assembledMappings in assembly, mergeStrategy in assembly,
@@ -306,27 +328,7 @@ object Plugin extends sbt.Plugin {
         excludedJars in assembly, streams) map {
       (ao, cp, deps, ej, s) => (tempDir: File) => assemblyAssembledMappings(tempDir, cp, deps, ao, ej, s.log) },
       
-    mergeStrategy in assembly := { 
-      case "reference.conf" =>
-        MergeStrategy.concat
-      case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
-        MergeStrategy.rename
-      case PathList("META-INF", xs @ _*) =>
-        (xs map {_.toLowerCase}) match {
-          case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
-            MergeStrategy.discard
-          case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
-            MergeStrategy.discard
-          case "plexus" :: xs =>
-            MergeStrategy.discard
-          case "services" :: xs =>
-            MergeStrategy.filterDistinctLines
-          case ("spring.schemas" :: Nil) | ("spring.handlers" :: Nil) =>
-            MergeStrategy.filterDistinctLines
-          case _ => MergeStrategy.deduplicate
-        }
-      case _ => MergeStrategy.deduplicate
-    },
+    mergeStrategy in assembly := defaultMergeStrategy,
 
     packageScala <<= (outputPath in packageScala, packageOptions,
         assembledMappings in packageScala, mergeStrategy in assembly,
