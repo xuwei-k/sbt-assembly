@@ -145,8 +145,6 @@ object Plugin extends sbt.Plugin {
       import Tracked.{inputChanged, outputChanged}
       import Types.:+:
       import Cache._
-      import sbinary.{DefaultProtocol, Format}
-      import DefaultProtocol._
       import FileInfo.{hash, exists}
 
       IO.delete(tempDir)
@@ -271,12 +269,6 @@ object Plugin extends sbt.Plugin {
     
     descendants x relativeTo(base)
   }
-  
-  implicit def wrapTaskKey[T](key: TaskKey[T]): WrappedTaskKey[T] = WrappedTaskKey(key) 
-  case class WrappedTaskKey[A](key: TaskKey[A]) {
-    def orr[T >: A](rhs: Initialize[Task[T]]): Initialize[Task[T]] =
-      (key.? zipWith rhs)( (x,y) => (x :^: y :^: KNil) map Scoped.hf2( _ getOrElse _ ))
-  }
 
   private val LicenseFile = """(license|licence|notice|copying)([.]\w+)?$""".r
   private def isLicenseFile(fileName: String): Boolean =
@@ -294,7 +286,7 @@ object Plugin extends sbt.Plugin {
 
   object PathList {
     private val sysFileSep = System.getProperty("file.separator")
-    def unapplySeq(path: String): Option[List[String]] = {
+    def unapplySeq(path: String): Option[Seq[String]] = {
       val split = path.split(if (sysFileSep.equals( """\""")) """\\""" else sysFileSep)
       if (split.size == 0) None
       else Some(split.toList)
@@ -356,7 +348,7 @@ object Plugin extends sbt.Plugin {
       (ao, cp, deps, ej, s) => (tempDir: File) =>
         assemblyAssembledMappings(tempDir, cp, deps, ao, ej, s.log) },
 
-    test <<= test orr (test in Test),
+    test <<= test or (test in Test),
     test in assembly <<= (test in Test),
     
     assemblyOption in assembly <<= (assembleArtifact in packageBin,
@@ -393,11 +385,11 @@ object Plugin extends sbt.Plugin {
     defaultJarName in packageDependency <<= (name, version) map { (name, version) => name + "-assembly-" + version + "-deps.jar" },
     defaultJarName in assembly <<= (name, version) map { (name, version) => name + "-assembly-" + version + ".jar" },
     
-    mainClass in assembly <<= mainClass orr (mainClass in Runtime),
+    mainClass in assembly <<= mainClass or (mainClass in Runtime),
     
-    fullClasspath in assembly <<= fullClasspath orr (fullClasspath in Runtime),
+    fullClasspath in assembly <<= fullClasspath or (fullClasspath in Runtime),
     
-    dependencyClasspath in assembly <<= dependencyClasspath orr (dependencyClasspath in Runtime),
+    dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime),
     
     excludedFiles in assembly := assemblyExcludedFiles _,
     excludedJars in assembly := Nil,
