@@ -20,7 +20,7 @@ publishArtifact in (Test, packageBin) := false
 
 publishArtifact in (Compile, packageDoc) := false
 
-publishArtifact in (Compile, packageSrc) := false
+publishArtifact in (Compile, packageSrc) := true
 
 // CrossBuilding.scriptedSettings
 ScriptedPlugin.scriptedSettings
