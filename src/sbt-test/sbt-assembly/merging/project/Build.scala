@@ -11,6 +11,7 @@ object B extends Build {
     settings = Defaults.defaultSettings ++ assemblySettings ++ Seq(
       version := "0.1",
       jarName in assembly := "foo.jar",
+      scalaVersion := "2.9.1",
       mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) ⇒
         {
           case "a" ⇒ MergeStrategy.concat
@@ -22,9 +23,9 @@ object B extends Build {
           case x   ⇒ old(x)
         }
       },
-      TaskKey[Unit]("check") <<= (target) map { (target) ⇒
+      TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) ⇒
         IO.withTemporaryDirectory { dir ⇒
-          IO.unzip(target / "foo.jar", dir)
+          IO.unzip(crossTarget / "foo.jar", dir)
           mustContain(dir / "a", Seq("1", "2", "1", "3"))
           mustContain(dir / "b", Seq("1"))
           mustContain(dir / "c", Seq("1", "3"))
