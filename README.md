@@ -23,7 +23,7 @@ Using Published Plugin
 For sbt 0.12.x add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.7")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.8")
 ```
 
 Using Source Dependency
@@ -53,7 +53,7 @@ First, make sure that you've added the plugin to your build (either the publishe
 builds or source from Git).
 
 
-Now, add the following in your `build.sbt`:
+If you're using `build.sbt` add this:
 
 ```scala
 import AssemblyKeys._ // put this at the top of the file
@@ -61,16 +61,26 @@ import AssemblyKeys._ // put this at the top of the file
 assemblySettings
 ```
 
-or, for full configuration:
+If you are using `build.scala`:
 
 ```scala
+import sbt._
+import Keys._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 
-lazy val sub = Project("sub", file("sub"),
-  settings = buildSettings ++ assemblySettings) settings(
-    // your settings here
+object Builds extends Build {
+  lazy val buildSettings = Defaults.defaultSettings ++ Seq(
+    version := "0.1-SNAPSHOT",
+    organization := "com.example",
+    scalaVersion := "2.10.1"
   )
+
+  lazy val app = Project("app", file("app"),
+    settings = buildSettings ++ assemblySettings) settings(
+      // your settings here
+    )
+}
 ```
 
 Note: Due to [SI-3488](https://issues.scala-lang.org/browse/SI-3488), you have to put your settings in `settings(...)` method esp. if you rewire `mergeStrategy`. 
