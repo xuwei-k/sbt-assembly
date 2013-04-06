@@ -38,6 +38,8 @@ object Plugin extends sbt.Plugin {
   abstract class MergeStrategy extends Function1[(File, String, Seq[File]), Either[String, Seq[(File, String)]]] {
     def name: String
     def notifyThreshold = 2
+    def detailLogLevel = Level.Warn
+    def summaryLogLevel = Level.Warn
   }
 
   // (File, Seq[File]) => (Either[String, File], String)
@@ -92,6 +94,8 @@ object Plugin extends sbt.Plugin {
           else Left("different file contents found in the following:" +
               filenames(args._1, args._3).mkString("\n", "\n", ""))
         }
+      override def detailLogLevel = Level.Debug
+      override def summaryLogLevel = Level.Info
     }
     val rename: MergeStrategy = new MergeStrategy {
       val name = "rename"
@@ -173,36 +177,41 @@ object Plugin extends sbt.Plugin {
     }
     def applyStrategies(srcs: Seq[(File, String)], strats: String => MergeStrategy,
         tempDir: File, log: Logger): Seq[(File, String)] = {
-      val renamed = srcs.groupBy(_._2).flatMap {
-        case (name, files) =>
-          val strategy = strats(name)
-          if (strategy == MergeStrategy.rename) {
-            if (files.size >= strategy.notifyThreshold) {
-              log.info("Merging '%s' with strategy '%s'".format(name, strategy.name))
-            }
-            strategy.apply(tempDir, name, files map (_._1)) match {
-              case Right(f)  => f
-              case Left(err) => throw new RuntimeException(strategy.name + ": " + err)
-            }
-          } else files
+      val counts = scala.collection.mutable.Map[MergeStrategy, Int]().withDefaultValue(0)
+      def applyStrategy(strategy: MergeStrategy, name: String, files: Seq[(File, String)]): Seq[(File, String)] = {
+        if (files.size >= strategy.notifyThreshold) {
+          log.log(strategy.detailLogLevel, "Merging '%s' with strategy '%s'".format(name, strategy.name))
+          counts(strategy) += 1
+        }
+        strategy((tempDir, name, files map (_._1))) match {
+          case Right(f)  => f
+          case Left(err) => throw new RuntimeException(strategy.name + ": " + err)
+        }
+      }
+      val renamed = srcs.groupBy(_._2).flatMap { case (name, files) =>
+        val strategy = strats(name)
+        if (strategy == MergeStrategy.rename) applyStrategy(strategy, name, files)
+        else files
       } (scala.collection.breakOut)
       // this step is necessary because some dirs may have been renamed above
       val cleaned: Seq[(File, String)] = renamed filter { pair =>
         (!pair._1.isDirectory) && pair._1.exists
       }
-      val mod: Seq[(File, String)] = cleaned.groupBy(_._2).flatMap {
-        case (name, files) =>
-          val strategy = strats(name)
-          if (strategy != MergeStrategy.rename) {
-            if (files.size >= strategy.notifyThreshold) {
-              log.info("Merging '%s' with strategy '%s'".format(name, strategy.name))
-            }
-            strategy.apply((tempDir, name, files map (_._1))) match {
-              case Right(f)  => f
-              case Left(err) => throw new RuntimeException(strategy.name + ": " + err)
-            }
-          } else files
+      val mod: Seq[(File, String)] = cleaned.groupBy(_._2).flatMap { case (name, files) =>
+        val strategy = strats(name)
+        if (strategy != MergeStrategy.rename) applyStrategy(strategy, name, files)
+        else files
       } (scala.collection.breakOut)
+      counts.keysIterator.toList.sortBy(_.name) foreach { strat =>
+        val count = counts(strat)
+        log.log(strat.summaryLogLevel, "Strategy '%s' was applied to ".format(strat.name) + (count match {
+          case 1 => "a file"
+          case n => n.toString + " files"
+        }) + (strat.detailLogLevel match {
+          case Level.Debug => " (Run the task at debug level to see details)"
+          case _ => ""
+        })) 
+      }
       mod
     }
   }

@@ -1,6 +1,21 @@
-### enhancements and bug fixes
+### breaking: jarName is now a task
 
-- `jarName in assembly` is changed to a task key, contributed by [@dchenbecker][@dchenbecker] as [#74][74].
+Good news for those who wants to generate jar name dynamically. Thanks to [@dchenbecker][@dchenbecker], `jarName in assembly` is now a task [#74][74].
+
+### quieter output
+
+Previously sbt-assemlby displayed info-level log message every time it resolved file conflicts (some people include jars into jars). For most of the files, the conflicts are merged by default using a strategy called 'deduplicate', which allows duplicates as long as the *content* of the file is identical. In some projects reportedly it fills up 50,000 lines of "Merging xyz" log according to [@hrjet][@hrjet] in [#76][76].
+
+sbt-assembly 0.8.8 will now demote 'deduplicate' logs to debug-level, and promote all other strategies to warning-level. It will also display a summary at the end:
+
+    [warn] Merging 'README' with strategy 'rename'
+    [warn] Merging 'LICENSE' with strategy 'rename'
+    [warn] Merging 'META-INF/MANIFEST.MF' with strategy 'discard'
+    [info] Strategy 'deduplicate' was applied to a file (Run the task at debug level to see details)
+    [warn] Strategy 'discard' was applied to a file
+    [warn] Strategy 'rename' was applied to 2 files
 
   [74]: https://github.com/sbt/sbt-assembly/pull/74
+  [76]: https://github.com/sbt/sbt-assembly/issues/76
   [@dchenbecker]: https://github.com/dchenbecker
+  [@hrjet]: https://github.com/hrjet
