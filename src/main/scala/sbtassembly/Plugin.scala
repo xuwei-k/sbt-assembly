@@ -151,8 +151,7 @@ object Plugin extends sbt.Plugin {
       import Cache._
       import FileInfo.{hash, exists}
 
-      IO.delete(tempDir)
-      tempDir.mkdir()
+      if ( !tempDir.exists ) tempDir.mkdir()
       val ms = applyStrategies(mappings(tempDir), strats, tempDir, log)
       def makeJar {
         val config = new Package.Configuration(ms, out, po)
@@ -263,13 +262,26 @@ object Plugin extends sbt.Plugin {
     
     val jarDirs = for(jar <- libsFiltered.par) yield {
       val jarName = jar.asFile.getName
-      log.info("Including %s".format(jarName))
-      val hash = sha1name(jar)
-      IO.write(tempDir / (hash + ".jarName"), jar.getCanonicalPath, IO.utf8, false)
+      
+      val hash = sha1name(jar) + sha1content(jar)
+      val jarNamePath = tempDir / (hash + ".jarName")
       val dest = tempDir / hash
-      dest.mkdir()
-      IO.unzip(jar, dest)
-      IO.delete(ao.exclude(Seq(dest)))
+      
+      // If the jar name path does not exist, or is not for this jar, unzip the jar
+      if ( !jarNamePath.exists || IO.read(jarNamePath) != jar.getCanonicalPath )
+      {
+        log.info("Including: %s".format(jarName))
+        IO.delete(dest)
+        dest.mkdir()
+        IO.unzip(jar, dest)
+        IO.delete(ao.exclude(Seq(dest)))
+        
+        // Write the jarNamePath at the end to minimise the chance of having a
+        // corrupt cache if the user aborts the build midway through
+        IO.write(jarNamePath, jar.getCanonicalPath, IO.utf8, false)
+      }
+      else log.info("Including from cache: %s".format(jarName))
+      
       dest
     }
 
