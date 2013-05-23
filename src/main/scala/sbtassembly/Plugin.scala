@@ -176,7 +176,7 @@ object Plugin extends sbt.Plugin {
       val cachedMakeJar = inputChanged(cacheDir / "assembly-inputs") { (inChanged, inputs: Seq[Byte]) =>
         outputChanged(cacheDir / "assembly-outputs") { (outChanged, jar: PlainFileInfo) => 
           if (inChanged) {
-            log.info("SHA-1: " + inputs)
+            log.info("SHA-1: " + inputs.map( b => "%02x".format(b) ).mkString)
           } // if
           if (inChanged || outChanged) makeJar
           else log.info("Assembly up to date: " + jar.file)        
@@ -185,7 +185,7 @@ object Plugin extends sbt.Plugin {
 
       lazy val inputs = sha1.digest((mappingSets flatMap { _.dependencyFiles } map {hash.apply}).toString.getBytes("UTF-8")).toSeq
       if (cacheOutput) {
-        log.info("Checking every *.class/*.jar file's SHA-1. This could take very long time.")
+        log.info("Checking every *.class/*.jar file's SHA-1.")
         cachedMakeJar(inputs)(() => exists(out))  
       }
       else makeJar
