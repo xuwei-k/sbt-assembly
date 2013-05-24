@@ -370,7 +370,7 @@ object Plugin extends sbt.Plugin {
       (test, out, po, am, ms, tempDir, co, cacheDir, acu, s) =>
         assemblyTask(out, po, am, ms, tempDir, co, cacheDir, acu, s.log) },
     
-    assemblyCacheOutput in assembly := false,
+    assemblyCacheOutput in assembly := true,
     
     assemblyCacheUnzip in assembly  := true,
 
