@@ -23,7 +23,7 @@ Using Published Plugin
 For sbt 0.12.x add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.8")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.0")
 ```
 
 Using Source Dependency
@@ -181,27 +181,27 @@ By the way, the first case pattern in the above using `PathList(...)` is how you
 Here is the default:
 
 ```scala
-mergeStrategy in assembly := { 
-  case "reference.conf" =>
-    MergeStrategy.concat
-  case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
-    MergeStrategy.rename
-  case PathList("META-INF", xs @ _*) =>
-    (xs map {_.toLowerCase}) match {
-      case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
-        MergeStrategy.discard
-      case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
-        MergeStrategy.discard
-      case "plexus" :: xs =>
-        MergeStrategy.discard
-      case "services" :: xs =>
-        MergeStrategy.filterDistinctLines
-      case ("spring.schemas" :: Nil) | ("spring.handlers" :: Nil) =>
-        MergeStrategy.filterDistinctLines
-      case _ => MergeStrategy.deduplicate
-    }
-  case _ => MergeStrategy.deduplicate
-}
+  val defaultMergeStrategy: String => MergeStrategy = { 
+    case "reference.conf" | "rootdoc.txt" =>
+      MergeStrategy.concat
+    case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
+      MergeStrategy.rename
+    case PathList("META-INF", xs @ _*) =>
+      (xs map {_.toLowerCase}) match {
+        case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
+          MergeStrategy.discard
+        case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
+          MergeStrategy.discard
+        case "plexus" :: xs =>
+          MergeStrategy.discard
+        case "services" :: xs =>
+          MergeStrategy.filterDistinctLines
+        case ("spring.schemas" :: Nil) | ("spring.handlers" :: Nil) =>
+          MergeStrategy.filterDistinctLines
+        case _ => MergeStrategy.deduplicate
+      }
+    case _ => MergeStrategy.deduplicate
+  }
 ```
 
 Custom `MergeStrategy`s can find out where a particular file comes
@@ -212,19 +212,17 @@ strategy as parameters.
 Caching
 -------
 
-By default for performance reasons, the result of unzipping any dependency jars to disk is cached from run-to-run. This feature can be disabled by setting
+By default for performance reasons, the result of unzipping any dependency jars to disk is cached from run-to-run. This feature can be disabled by setting:
 
 ```scala
 assemblyCacheUnzip in assembly := false
 ```
 
-If you wish to cache the fat JAR so its timestamp changes only when the input changes, set the following setting:
+In addition the fat JAR is cached so its timestamp changes only when the input changes. This feature requires checking the SHA-1 hash of all *.class files, and the hash of all dependency *.jar files. If there are a large number of class files, this could take a long time, although with hashing of jar files, rather than their contents, the speed has recently been [improved](https://github.com/sbt/sbt-assembly/issues/68). This feature can be disabled by setting:
 
 ```scala
-assemblyCacheOutput in assembly := true
+assemblyCacheOutput in assembly := false
 ```
-
-This feature requires checking the SHA-1 hash of all *.class files, and the hash of all dependency *.jar files. If there are a large number of class files, this could take a long time, although with hashing of jar files, rather than their contents, the speed has recently been [improved](https://github.com/sbt/sbt-assembly/issues/68).
 
 Publishing
 ----------
