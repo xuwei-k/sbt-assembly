@@ -1,18 +1,19 @@
 ### Speed improvements
 
-sbt-assembly 0.9.0 intoduces new caching behavior contributed by [@d40cht][@d40cht] as [#83][83]. sbt-assembly unzips each dependency jar before re-assembling the contents of each jar into a single jar.
+sbt-assembly unzips each dependency jar before re-assembling the contents of each jar into a fat jar. 0.9.0 intoduces new caching behavior contributed by [@d40cht][@d40cht] (Alex Wilson) as [#83][83]. 
 
-- Previously unzipping happened for each `assembly`, but now the unzipped result is cached. This provides good performance improvements. The new boolean option `cacheUnzip in assembly` (default `true`) can be set to `false` to disable this behavior.
-- In addition, `assemblyCacheOutput` has been modified so the jar itself is sha1 hashed (significantly quicker), instead of individual contents, to determine whether `assembly` needs to be re-run. This too is set to `true` by default.
-- In combination, these two options can reduce the run-time of the second invocation of assembly (when nothing has changed) by up to 5 times on sample test projects.
+- Previously unzipping happened for each `assembly`, but now the unzipped result is cached (`cacheUnzip in assembly`). This provides good performance improvements.
+- In addition, `assemblyCacheOutput` has been modified so the jar itself is sha1 hashed (significantly quicker), instead of individual contents.
+- In combination, these two options reduces the run-time of the second invocation of `assembly` by up to 5x! (ymmv)
 
-Example run-times for a large-ish build, with multiple (eleven) projects with assembly target are below. The commands run for each build were: `;clean;package` (untimed) and then three runs of `assembly`:
+Example run-times for a large-ish build, with multiple (eleven) projects with assembly target are below:
 
-Run number | No caching | Cache unzip | Cache unzip + output
----- | --- | --- | ---
-1st | 99s | 101s | 85s
-2nd | 119s | 34s | 12s
-3rd | 102s | 32s | 12s
+<table>
+  <tr><th>Run number</th><th>No caching</th><th>Cache unzip</th><th>Cache unzip + output</th></tr>
+  <tr><td>1st</td><td>99s</td><td>101s</td><td>85s</td></tr>
+  <tr><td>2nd</td><td>119s</td><td>34s</td><td>12s</td></tr>
+  <tr><td>3rd</td><td>102s</td><td>32s</td><td>12s</td></tr>
+</table>
 
 ### Minor bug fixes and enhancements
 
