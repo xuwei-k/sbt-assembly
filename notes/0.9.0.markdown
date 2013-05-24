@@ -14,6 +14,11 @@ Run number | No caching | Cache unzip | Cache unzip + cache output
 2nd | 119s | 34s | 12s
 3rd | 102s | 32s | 12s
 
-  [83]: https://github.com/sbt/sbt-assembly/pull/83
-  [@d40cht]: https://github.com/d40cht
+### Minor bug fixes and enhancements
 
+- `rootdoc.txt` is concatenating by default to work around Scala 2.10.2-RC1 jars adding `rootdoc.txt`. [#84][84] reported by [@xuwei-k][@xuwei-k].
+
+  [83]: https://github.com/sbt/sbt-assembly/pull/83
+  [84]: https://github.com/sbt/sbt-assembly/issues/84
+  [@d40cht]: https://github.com/d40cht
+  [@xuwei-k]: https://github.com/xuwei-k
