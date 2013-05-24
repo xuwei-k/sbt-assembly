@@ -16,9 +16,12 @@ Run number | No caching | Cache unzip | Cache unzip + cache output
 
 ### Minor bug fixes and enhancements
 
-- `rootdoc.txt` is concatenating by default to work around Scala 2.10.2-RC1 jars adding `rootdoc.txt`. [#84][84] reported by [@xuwei-k][@xuwei-k].
+- `MANIFEST.MF` will now contain organization and version similar to the one created by `package` task. [#79][79] reported by [@rklaehn][@rklaehn].
+- Files named `rootdoc.txt` are concatenated by default to work around Scala 2.10.2-RC1 jars adding `rootdoc.txt`. [#84][84] reported by [@xuwei-k][@xuwei-k].
 
+  [79]: https://github.com/sbt/sbt-assembly/issues/79
   [83]: https://github.com/sbt/sbt-assembly/pull/83
   [84]: https://github.com/sbt/sbt-assembly/issues/84
   [@d40cht]: https://github.com/d40cht
   [@xuwei-k]: https://github.com/xuwei-k
+  [@rklaehn]: https://github.com/rklaehn

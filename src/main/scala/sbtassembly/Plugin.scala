@@ -415,12 +415,10 @@ object Plugin extends sbt.Plugin {
       opt.copy(includeBin = false, includeScala = true, includeDependency = false)
     },
     
-    packageOptions in assembly <<= (packageOptions in Compile, mainClass in assembly) map {
-      (os, mainClass) =>
-        mainClass map { s =>
-          os find { o => o.isInstanceOf[Package.MainClass] } map { _ => os
-          } getOrElse { Package.MainClass(s) +: os }
-        } getOrElse {os}
+    packageOptions in assembly <<= (packageOptions in (Compile, packageBin), mainClass in assembly) map { (os, mainClass) =>
+      mainClass map { s =>
+        Package.MainClass(s) +: (os filterNot {_.isInstanceOf[Package.MainClass]})
+      } getOrElse {os}
     },
     
     assemblyDirectory in assembly <<= cacheDirectory / "assembly",
