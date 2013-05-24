@@ -235,7 +235,10 @@ object Plugin extends sbt.Plugin {
 
   private def assemblyExcludedFiles(bases: Seq[File]): Seq[File] = Nil  
   private def sha1 = MessageDigest.getInstance("SHA-1")
-  private def sha1content(f: File) = sha1.digest(IO.readBytes(f)).toSeq
+  private def sha1content(f: File): String =
+    Vector(sha1.digest(IO.readBytes(f)): _*) map {"%02x".format(_)} mkString
+  private def sha1name(f: File): String = 
+    Vector(sha1.digest(f.getCanonicalPath.getBytes): _*) map {"%02x".format(_)} mkString
 
   // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
   // which jars exactly belong to the deps for packageDependency option.
@@ -255,13 +258,6 @@ object Plugin extends sbt.Plugin {
       case jar =>
         if (ao.includeBin) Some(jar) else None
     }
-
-    def sha1name(f: File): String = {
-      val bytes = f.getCanonicalPath.getBytes
-      val digest = sha1.digest(bytes)
-      ("" /: digest)(_ + "%02x".format(_))
-    }
-
     val dirsFiltered = dirs flatMap {
       case dir if depLibs contains dir.asFile =>
         if (ao.includeDependency) Some(dir)
@@ -281,10 +277,9 @@ object Plugin extends sbt.Plugin {
     val jarDirs = for(jar <- libsFiltered.par) yield {
       val jarName = jar.asFile.getName
       
-      val hash = sha1name(jar) + sha1content(jar)
+      val hash = sha1name(jar) + "_" + sha1content(jar)
       val jarNamePath = tempDir / (hash + ".jarName")
       val dest = tempDir / hash
-      
       // If the jar name path does not exist, or is not for this jar, unzip the jar
       if ( !cacheUnzip || !jarNamePath.exists || IO.read(jarNamePath) != jar.getCanonicalPath )
       {
