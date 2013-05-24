@@ -342,7 +342,7 @@ object Plugin extends sbt.Plugin {
   }
 
   val defaultMergeStrategy: String => MergeStrategy = { 
-    case "reference.conf" =>
+    case "reference.conf" | "rootdoc.txt" =>
       MergeStrategy.concat
     case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
       MergeStrategy.rename
