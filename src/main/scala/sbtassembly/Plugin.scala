@@ -246,8 +246,8 @@ object Plugin extends sbt.Plugin {
       ao: AssemblyOption, ej: Classpath, cacheUnzip: Boolean, log: Logger) = {
     import sbt.classpath.ClasspathUtilities
 
-    val (libs, dirs) = classpath.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
-    val depLibs = dependencies.map(_.data).sorted.partition(ClasspathUtilities.isArchive)._1
+    val (libs, dirs) = classpath.map(_.data).sorted partition {ClasspathUtilities.isArchive(_, false)}
+    val (depLibs, _) = dependencies.map(_.data).sorted partition {ClasspathUtilities.isArchive(_, false)}
     val excludedJars = ej map {_.data}
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.asFile => None
@@ -358,7 +358,7 @@ object Plugin extends sbt.Plugin {
     case _ => MergeStrategy.deduplicate
   }
 
-  lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
+  lazy val baseAssemblySettings: Seq[sbt.Def.Setting[_]] = Seq(
     assembly <<= (test in assembly, outputPath in assembly, packageOptions in assembly,
         assembledMappings in assembly, mergeStrategy in assembly,
         assemblyDirectory in assembly, assemblyCacheOutput in assembly, cacheDirectory, assemblyCacheUnzip in assembly, streams) map {
@@ -443,7 +443,7 @@ object Plugin extends sbt.Plugin {
     assembleArtifact in packageDependency := true    
   )
   
-  lazy val assemblySettings: Seq[sbt.Project.Setting[_]] = baseAssemblySettings
+  lazy val assemblySettings: Seq[sbt.Def.Setting[_]] = baseAssemblySettings
 }
 
 case class AssemblyOption(includeBin: Boolean,
