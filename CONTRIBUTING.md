@@ -41,7 +41,7 @@ Add an optional notes section to describe your analysis.
 The subject of the bug report doesn't matter. A more descriptive subject is certainly better, but a good subject really depends on the analysis of the problem, so don't worry too much about it.
 
 ### formatting
-If possible, use github-flavored Markdown. In particular, use ````` to quote code or console outputs as follows:
+If possible, use github-flavored Markdown. In particular, use ``` to quote code or console outputs as follows:
 
     ```scala
     import sbt._
