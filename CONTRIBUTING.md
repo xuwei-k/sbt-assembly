@@ -16,7 +16,6 @@ Effective bug reports are more likely to be fixed. These guidelines explain how 
 
 - For most of the issues you encounter and enhancement ideas use [github issues][1] to report them.
 - If it's a general discussion, try [sbt mailing list][2] and ping me on twitter (@eed3si9n) about it.
-- If it's sensitive material, send me a email (eed3si9n at gmail) clearly stating that it's a sensitive material.
 
 You may think it's better to phrase a bug report as a general "question" in case it's not program's bug. Don't worry about it. The developers don't get offended by invalid bug reports.
 
