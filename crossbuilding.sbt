@@ -2,14 +2,12 @@
 
 // scalaVersion in Global := "2.10.2" 
 
+crossBuildingSettings
 
+CrossBuilding.crossSbtVersions := Seq("0.12", "0.13")
 
-// crossBuildingSettings
+CrossBuilding.scriptedSettings
 
-// CrossBuilding.crossSbtVersions := Seq("0.12", "0.13")
+scriptedLaunchOpts ++= Seq("-Xmx1024M", "-XX:MaxPermSize=256M")
 
-// CrossBuilding.scriptedSettings
-
-// scriptedLaunchOpts ++= Seq("-Xmx1024M", "-XX:MaxPermSize=256M")
-
-// scriptedBufferLog := false
+scriptedBufferLog := false
