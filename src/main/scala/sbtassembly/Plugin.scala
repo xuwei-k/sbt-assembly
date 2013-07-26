@@ -249,9 +249,10 @@ object Plugin extends sbt.Plugin {
     val (libs, dirs) = classpath.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
     val depLibs = dependencies.map(_.data).sorted.partition(ClasspathUtilities.isArchive)._1
     val excludedJars = ej map {_.data}
+    log.info(libs.toString)
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.asFile => None
-      case jar if List("scala-library.jar", "scala-compiler.jar") contains jar.asFile.getName =>
+      case jar if jar.asFile.getName startsWith "scala-" =>
         if (ao.includeScala) Some(jar) else None
       case jar if depLibs contains jar.asFile =>
         if (ao.includeDependency) Some(jar) else None
