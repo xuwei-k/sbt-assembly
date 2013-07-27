@@ -249,7 +249,6 @@ object Plugin extends sbt.Plugin {
     val (libs, dirs) = classpath.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
     val depLibs = dependencies.map(_.data).sorted.partition(ClasspathUtilities.isArchive)._1
     val excludedJars = ej map {_.data}
-    log.info(libs.toString)
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.asFile => None
       case jar if jar.asFile.getName startsWith "scala-" =>
@@ -270,6 +269,9 @@ object Plugin extends sbt.Plugin {
       val hash = sha1name(dir)
       IO.write(tempDir / (hash + "_dir.dir"), dir.getCanonicalPath, IO.utf8, false)
       val dest = tempDir / (hash + "_dir")
+      if (dest.exists) {
+        IO.delete(dest)
+      }
       dest.mkdir()
       IO.copyDirectory(dir, dest)
       dest

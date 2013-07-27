@@ -14,30 +14,33 @@ libraryDependencies += "ch.qos.logback" % "logback-classic" % "0.9.29" % "runtim
 
 assemblyCacheUnzip in assembly := true
 
-assemblyCacheOutput in assembly := false
-
-unmanagedJars in Compile <++= baseDirectory map { base =>
-   (base / "lib" / "compile" ** "*.jar").classpath
-}
-
-unmanagedJars in Runtime <++= baseDirectory map { base =>
-   (base / "lib" / "runtime" ** "*.jar").classpath
-}
-
-unmanagedJars in Test <++= baseDirectory map { base =>
-   (base / "lib" / "test" ** "*.jar").classpath
-}
-
-excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
-  cp filter {_.data.getName == "compile-0.1.0.jar"}
-}
+assemblyCacheOutput in assembly := true
 
 jarName in assembly := "foo.jar"
+
+TaskKey[Seq[File]]("genresource") <<= (unmanagedResourceDirectories in Compile) map { (dirs) =>
+  val file = dirs.head / "foo.txt"
+  IO.write(file, "bye")
+  Seq(file)
+}
+
+TaskKey[Seq[File]]("genresource2") <<= (unmanagedResourceDirectories in Compile) map { (dirs) =>
+  val file = dirs.head / "bar.txt"
+  IO.write(file, "bye")
+  Seq(file)
+}
 
 TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
   val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
   val out = (process!!)
   if (out.trim != "hello") error("unexpected output: " + out)
+  ()
+}
+
+TaskKey[Unit]("checkfoo") <<= (crossTarget) map { (crossTarget) =>
+  val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
+  val out = (process!!)
+  if (out.trim != "foo.txt") error("unexpected output: " + out)
   ()
 }
 

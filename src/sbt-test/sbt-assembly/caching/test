@@ -18,3 +18,14 @@ $ newer target/scala-2.9.1/foo.jar target/scala-2.9.1/jarHash.txt
 # on disk
 > checkhash
 $ newer target/scala-2.9.1/jarHash.txt target/scala-2.9.1/foo.jar 
+
+# generate file
+> genresource
+> assembly
+> checkfoo
+
+# delete the generated file
+$ delete src/main/resources/foo.txt
+> genresource2
+> assembly
+> check
