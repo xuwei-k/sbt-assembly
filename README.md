@@ -14,20 +14,22 @@ configuration to your deployable in the form of a WAR file.
 Requirements
 ------------
 
-* Simple Build Tool
+* sbt
 * The burning desire to have a simple deploy procedure.
 
-Using Published Plugin
-----------------------
 
-For sbt 0.12.x add sbt-assembly as a dependency in `project/plugins.sbt`:
+Setup
+-----
+
+### Using Published Plugin
+
+For sbt 0.12 and 0.13 add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.1")
 ```
 
-Using Source Dependency
------------------------
+### Using Source Dependency
 
 Alternately, you can have sbt checkout and build the plugin's source from version control.
 
@@ -46,8 +48,10 @@ object Plugins extends Build {
 (You may need to check this project's tags to see what the most recent release
 is. I'm notoriously crap about updating the version numbers in my READMEs.)
 
-Applying the Plugin to a Project (Adding the `assembly` Task)
--------------------------------------------------------------
+Usage
+-----
+
+### Applying the Plugin to a Project (Adding the `assembly` Task)
 
 First, make sure that you've added the plugin to your build (either the published
 builds or source from Git).
@@ -146,8 +150,7 @@ To set an explicit main class,
 mainClass in assembly := Some("com.example.Main")
 ```
 
-Merge Strategy
---------------
+### Merge Strategy
 
 If multiple files share the same relative path (e.g. a resource named
 `application.conf` in multiple dependency JARs), the default strategy is to
@@ -211,8 +214,7 @@ from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,
 which takes the temporary directory and one of the files passed into the
 strategy as parameters.
 
-Caching
--------
+### Caching
 
 By default for performance reasons, the result of unzipping any dependency jars to disk is cached from run-to-run. This feature can be disabled by setting:
 
@@ -226,8 +228,7 @@ In addition the fat JAR is cached so its timestamp changes only when the input c
 assemblyCacheOutput in assembly := false
 ```
 
-Publishing
-----------
+### Publishing
 
 If you wish to publish your assembled artifact along with the `publish` task
 and all of the other artifacts, you can add an `assembly` classifier (or other):
@@ -240,10 +241,10 @@ artifact in (Compile, assembly) ~= { art =>
 addArtifact(artifact in (Compile, assembly), assembly)
 ```
 
-Development Notes
------------------
+Reporting Issues & Contributing
+-------------------------------
 
-Please use [global .gitignore](http://help.github.com/ignore-files/) instead of adding editor junk files to `.gitignore`.
+Please read [Issue Reporting Guideline](CONTRIBUTING.md) carefully. Twice.
 
 License
 -------

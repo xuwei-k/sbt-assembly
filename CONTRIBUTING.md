@@ -1,7 +1,8 @@
   [1]: https://github.com/sbt/sbt-assembly/issues
   [2]: http://groups.google.com/group/simple-build-tool
 
-# issue reporting guideline
+issue reporting guideline
+-------------------------
 
 Effective bug reports are more likely to be fixed. These guidelines explain how to write such reports.
 
@@ -69,3 +70,7 @@ The above will be displayed nicely in fixed width font with Scala syntax highlig
 The ultimate way of reporting a bug is to actually fix it and send us a pull request. The same principle appies here. Document what you changed and why using reproducible cases. Please add scripted tests if possible to demonstrate your case.
 
 By sending the pull request, we assume that you agree to release your work under the license that covers this software.
+
+### .gitignore
+
+Please use [global .gitignore](http://help.github.com/ignore-files/) instead of adding editor junk files to `.gitignore`.
