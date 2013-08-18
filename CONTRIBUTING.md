@@ -29,7 +29,7 @@ First and foremost, the developers need **exact steps to reproduce your problems
 **Repro steps are the most important part of a bug report.** If the developers cannot reproduce the problem in one way or the other, the problem can't be fixed. Telling them the error messages is not enough.
 
 ### problem
-Next, describe the problem, or what you think is the problem. It might be "obvious" to you that it's a problem, but it could actually be an intentional behavior for some backward compatibility etc. For complication errors, include stack trace. More raw info the better.
+Next, describe the problem, or what you think is the problem. It might be "obvious" to you that it's a problem, but it could actually be an intentional behavior for some backward compatibility etc. When available, include stack trace. More raw info the better.
 
 ### expectation
 Same as the problem. Describe what you think should've happened.
