@@ -17,6 +17,10 @@ Requirements
 * sbt
 * The burning desire to have a simple deploy procedure.
 
+Reporting Issues & Contributing
+-------------------------------
+
+Before you email me, please read [Issue Reporting Guideline](CONTRIBUTING.md) carefully. Twice. (Don't email me)
 
 Setup
 -----
@@ -245,11 +249,6 @@ artifact in (Compile, assembly) ~= { art =>
 
 addArtifact(artifact in (Compile, assembly), assembly)
 ```
-
-Reporting Issues & Contributing
--------------------------------
-
-Please read [Issue Reporting Guideline](CONTRIBUTING.md) carefully. Twice.
 
 License
 -------
