@@ -142,7 +142,7 @@ To make a jar containing only the dependencies, type
 
     > assembly-package-dependency
 
-NOTE: If you use `-jar` option for `java`, it will ignore `-cp`, so if you have multiple jars you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
+NOTE: If you use [`-jar` option for `java`](http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/java.html#jar), it will ignore `-cp`, so if you have multiple jars you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
 
 To set an explicit main class,
 
