@@ -289,7 +289,7 @@ object Plugin extends sbt.Plugin {
         log.info("Including: %s".format(jarName))
         IO.delete(dest)
         dest.mkdir()
-        IO.unzip(jar, dest)
+        AssemblyUtils.unzip(jar, dest, log)
         IO.delete(ao.exclude(Seq(dest)))
         
         // Write the jarNamePath at the end to minimise the chance of having a
