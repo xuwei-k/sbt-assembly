@@ -195,7 +195,7 @@ from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,
 which takes the temporary directory and one of the files passed into the
 strategy as parameters.
 
-### excluding jars and files
+### Excluding jars and files
 
 To exclude Scala library,
 
