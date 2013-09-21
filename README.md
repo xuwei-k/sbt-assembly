@@ -120,34 +120,6 @@ To skip the test during assembly,
 test in assembly := {}
 ```
 
-To exclude Scala library,
-
-```scala
-assembleArtifact in packageScala := false
-```
-
-To exclude the class files from the main sources,
-
-```scala
-assembleArtifact in packageBin := false
-```
-
-To exclude some jar file, first consider using `"provided"` dependency. The dependency will be part of compilation, but excluded from the runtime. Next, try creating a custom configuration that describes your classpath. If all efforts fail, here's a way to exclude jars:
-
-```scala
-excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
-  cp filter {_.data.getName == "compile-0.1.0.jar"}
-}
-```
-
-To exclude specific files, customize merge strategy.
-
-To make a jar containing only the dependencies, type
-
-    > assembly-package-dependency
-
-NOTE: If you use [`-jar` option for `java`](http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/java.html#jar), it will ignore `-cp`, so if you have multiple jars you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
-
 To set an explicit main class,
 
 ```scala
@@ -222,6 +194,45 @@ Custom `MergeStrategy`s can find out where a particular file comes
 from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,
 which takes the temporary directory and one of the files passed into the
 strategy as parameters.
+
+### excluding jars and files
+
+To exclude Scala library,
+
+```scala
+assembleArtifact in packageScala := false
+```
+
+To exclude the class files from the main sources,
+
+```scala
+assembleArtifact in packageBin := false
+```
+
+To exclude some jar file, first consider using `"provided"` dependency. The dependency will be part of compilation and test, but excluded from the runtime. Next, try creating a custom configuration that describes your classpath. If all efforts fail, here's a way to exclude jars:
+
+```scala
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
+  cp filter {_.data.getName == "compile-0.1.0.jar"}
+}
+```
+
+To exclude specific files, customize merge strategy:
+
+```scala
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
+  {
+    case PathList("application.conf") => MergeStrategy.discard
+    case x => old(x)
+  }
+}
+```
+
+To make a jar containing only the dependencies, type
+
+    > assembly-package-dependency
+
+NOTE: If you use [`-jar` option for `java`](http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/java.html#jar), it will ignore `-cp`, so if you have multiple jars you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
 
 ### Caching
 
