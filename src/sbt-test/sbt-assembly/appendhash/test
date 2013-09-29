@@ -1,0 +1,13 @@
+# check if it generates the expected hash
+> assembly
+$ exists target/scala-2.10/foo-assembly-0.1-36cb6ed20856f73f6fd0a9182a01ed1be3698cda.jar
+
+# check if it generates the expected hash given caching
+$ delete target/scala-2.10/foo-assembly-0.1-36cb6ed20856f73f6fd0a9182a01ed1be3698cda.jar
+> assembly
+$ exists target/scala-2.10/foo-assembly-0.1-36cb6ed20856f73f6fd0a9182a01ed1be3698cda.jar
+
+> assemblyPackageDependency
+$ exists target/scala-2.10/foo-assembly-0.1-deps-41634647ccb50e55269aa81227bea572a0edfc9e.jar
+
+> check

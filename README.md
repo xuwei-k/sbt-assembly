@@ -200,13 +200,13 @@ strategy as parameters.
 To exclude Scala library,
 
 ```scala
-assembleArtifact in packageScala := false
+assemblyOption in assembly ~= { _.copy(includeScala = false) }
 ```
 
 To exclude the class files from the main sources,
 
 ```scala
-assembleArtifact in packageBin := false
+assemblyOption in assembly ~= { _.copy(includeBin = false) }
 ```
 
 To exclude some jar file, first consider using `"provided"` dependency. The dependency will be part of compilation and test, but excluded from the runtime. Next, try creating a custom configuration that describes your classpath. If all efforts fail, here's a way to exclude jars:
@@ -234,10 +234,12 @@ To make a jar containing only the dependencies, type
 
 NOTE: If you use [`-jar` option for `java`](http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/java.html#jar), it will ignore `-cp`, so if you have multiple jars you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
 
+### Content hash
+
 You can also append SHA-1 fingerprint to the assembly file name, this may help you to determine whether it has changed and, for example, if it's necessary to deploy the dependencies,
 
 ```scala
-appendContentHash in assembly-package-dependency := true
+assemblyOption in packageDependency ~= { _.copy(appendContentHash = true) }
 ```
 
 ### Caching

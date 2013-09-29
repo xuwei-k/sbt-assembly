@@ -1,0 +1,7 @@
+## Content hash
+
+sbt-assembly 0.10.0 adds an assembly option called `appendContentHash`, which appends SHA-1 fingerprint to the assembly file name.
+
+    assemblyOption in packageDependency ~= { _.copy(appendContentHash = true) }
+
+This could be used to determine whether the content has changed, and skip dependencies deployment if desired.

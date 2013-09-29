@@ -2,6 +2,8 @@ import AssemblyKeys._
 
 version := "0.1"
 
+scalaVersion := "2.10.2"
+
 assemblySettings
 
 assemblyCacheOutput in assembly := true 

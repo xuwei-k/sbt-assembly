@@ -1,5 +1,5 @@
-// ScriptedPlugin.scriptedSettings
+ScriptedPlugin.scriptedSettings
 
-// scriptedLaunchOpts ++= Seq("-Xmx1024M", "-XX:MaxPermSize=256M")
+scriptedLaunchOpts ++= Seq("-Xmx1024M", "-XX:MaxPermSize=256M")
 
-// scriptedBufferLog := false
+scriptedBufferLog := false
