@@ -4,7 +4,7 @@ import sbt._
 import Keys._
 import scala.collection.mutable
 import scala.io.Source
-import Project.Initialize
+import Def.Initialize
 import java.io.{ PrintWriter, FileOutputStream, File }
 import java.security.MessageDigest
 
@@ -23,7 +23,7 @@ object Plugin extends sbt.Plugin {
   }
     
   object AssemblyKeys {
-    lazy val assembly = TaskKey[File]("assembly", "Builds a single-file deployable jar.")
+    lazy val assembly          = TaskKey[File]("assembly", "Builds a single-file deployable jar.")
     lazy val packageScala      = TaskKey[File]("assembly-package-scala", "Produces the scala artifact.")
     lazy val packageDependency = TaskKey[File]("assembly-package-dependency", "Produces the dependency artifact.")
   
@@ -146,10 +146,6 @@ object Plugin extends sbt.Plugin {
         case (jar, base, subJarPath, true) => jar + ":" + subJarPath
       }
     }
-
-  private def assemblyTask(out: File, ao: AssemblyOption, po: Seq[PackageOption], mappings: Seq[MappingSet],
-      cacheDir: File, log: Logger): File =
-    Assembly(out, ao, po, mappings, cacheDir, log)
 
   object Assembly {
     def apply(out0: File, ao: AssemblyOption, po: Seq[PackageOption], mappings: Seq[MappingSet],
@@ -361,54 +357,45 @@ object Plugin extends sbt.Plugin {
     case _ => MergeStrategy.deduplicate
   }
 
-  lazy val baseAssemblySettings: Seq[sbt.Project.Setting[_]] = Seq(
-    assembly <<= (test in assembly, outputPath in assembly,
-        assemblyOption in assembly, packageOptions in assembly,
-        assembledMappings in assembly, cacheDirectory, streams) map {
-      (test, out, ao, po, am, cacheDir, s) =>
-        assemblyTask(out, ao, po, am, cacheDir, s.log) },
+  private def assemblyTask(key: TaskKey[File]): Initialize[Task[File]] = Def.task {
+    val t = (test in key).value
+    val s = (streams in key).value
+    Assembly((outputPath in key).value, (assemblyOption in key).value,
+      (packageOptions in key).value, (assembledMappings in key).value,
+      s.cacheDirectory, s.log)
+  }
+  private def assembledMappingsTask(key: TaskKey[File]): Initialize[Task[Seq[MappingSet]]] = Def.task {
+    val s = (streams in key).value
+    assemblyAssembledMappings(
+      (fullClasspath in assembly).value, (dependencyClasspath in assembly).value,
+      (assemblyOption in key).value, s.log)
+  }
+  lazy val baseAssemblySettings: Seq[sbt.Def.Setting[_]] = Seq(
+    assembly := assemblyTask(assembly).value,
+    assembledMappings in assembly := assembledMappingsTask(assembly).value,
+    packageScala := assemblyTask(packageScala).value,
+    assembledMappings in packageScala := assembledMappingsTask(packageScala).value,
+    packageDependency := assemblyTask(packageDependency).value,
+    assembledMappings in packageDependency := assembledMappingsTask(packageDependency).value,
 
-    assembledMappings in assembly <<= (assemblyOption in assembly,
-        fullClasspath in assembly, dependencyClasspath in assembly, streams) map {
-      (ao, cp, deps, s) => assemblyAssembledMappings(cp, deps, ao, s.log) },
+    // test
+    test in assembly := (test in Test).value,
+    test in packageScala := (test in assembly).value,
+    test in packageDependency := (test in assembly).value,
     
-    packageScala <<= (outputPath in packageScala,
-        assemblyOption in packageScala, packageOptions,
-        assembledMappings in packageScala, cacheDirectory, streams) map {
-      (out, ao, po, am, cacheDir, s) => assemblyTask(out, ao, po, am, cacheDir, s.log) },
-
-    assembledMappings in packageScala <<= (assemblyOption in packageScala,
-        fullClasspath in assembly, dependencyClasspath in assembly, streams) map {
-      (ao, cp, deps, s) => assemblyAssembledMappings(cp, deps, ao, s.log) },
-
-    packageDependency <<= (outputPath in packageDependency,
-        assemblyOption in packageDependency, packageOptions in assembly,
-        assembledMappings in packageDependency, cacheDirectory, streams) map {
-      (out, ao, po, am, cacheDir, s) =>
-        assemblyTask(out, ao, po, am, cacheDir, s.log)
-       },
-    
-    assembledMappings in packageDependency <<= (assemblyOption in packageDependency,
-        fullClasspath in assembly, dependencyClasspath in assembly, streams) map {
-      (ao, cp, deps, s) => assemblyAssembledMappings(cp, deps, ao, s.log) },
-
-    test <<= test or (test in Test),
-    test in assembly <<= (test in Test),
-    
+    // assemblyOption
     assembleArtifact in packageBin := true,
     assembleArtifact in packageScala := true,
     assembleArtifact in packageDependency := true,
     mergeStrategy in assembly := defaultMergeStrategy,
     excludedJars in assembly := Nil,
-
-    assemblyOption in assembly <<= (cacheDirectory,
-        assembleArtifact in packageBin,
+    assemblyOption in assembly <<= (assembleArtifact in packageBin,
         assembleArtifact in packageScala, assembleArtifact in packageDependency,
         mergeStrategy in assembly,
-        excludedJars in assembly) map {
-      (cacheDir, includeBin, includeScala, includeDeps, ms,
-       excludedJars) =>   
-      AssemblyOption(assemblyDirectory = cacheDir / "assembly",
+        excludedJars in assembly,
+        streams) map {
+      (includeBin, includeScala, includeDeps, ms, excludedJars, s) =>   
+      AssemblyOption(assemblyDirectory = s.cacheDirectory / "assembly",
         includeBin = includeBin,
         includeScala = includeScala,
         includeDependency = includeDeps,
@@ -419,19 +406,23 @@ object Plugin extends sbt.Plugin {
         cacheUnzip = true,
         appendContentHash = false) 
     },
-    assemblyOption in packageDependency <<= (assemblyOption in assembly) map { opt =>
-      opt.copy(includeBin = false, includeScala = true, includeDependency = true)
-    },
     assemblyOption in packageScala <<= (assemblyOption in assembly) map { opt =>
       opt.copy(includeBin = false, includeScala = true, includeDependency = false)
     },
-    
+    assemblyOption in packageDependency <<= (assemblyOption in assembly) map { opt =>
+      opt.copy(includeBin = false, includeScala = true, includeDependency = true)
+    },
+
+    // packageOptions
     packageOptions in assembly <<= (packageOptions in (Compile, packageBin), mainClass in assembly) map { (os, mainClass) =>
       mainClass map { s =>
         Package.MainClass(s) +: (os filterNot {_.isInstanceOf[Package.MainClass]})
       } getOrElse {os}
     },
+    packageOptions in packageScala := (packageOptions in (Compile, packageBin)).value,
+    packageOptions in packageDependency := (packageOptions in (Compile, packageBin)).value,
 
+    // ouputPath
     outputPath in assembly <<= (target in assembly, jarName in assembly) map { (t, s) => t / s },
     outputPath in packageScala <<= (target in assembly, jarName in packageScala) map { (t, s) => t / s },
     outputPath in packageDependency <<= (target in assembly, jarName in packageDependency) map { (t, s) => t / s },
@@ -452,7 +443,7 @@ object Plugin extends sbt.Plugin {
     dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime)
   )
   
-  lazy val assemblySettings: Seq[sbt.Project.Setting[_]] = baseAssemblySettings
+  lazy val assemblySettings: Seq[sbt.Def.Setting[_]] = baseAssemblySettings
 }
 
 case class AssemblyOption(assemblyDirectory: File,
