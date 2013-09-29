@@ -4,7 +4,7 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-version := "0.10.0-SNAPSHOT"
+version := "0.10.0"
 
 description := "sbt plugin to create a single fat jar"
 
@@ -23,7 +23,7 @@ publishArtifact in (Compile, packageSrc) := true
 publishMavenStyle := false
 
 publishTo <<= (version) { version: String =>
-   val scalasbt = "http://scalasbt.artifactoryonline.com/scalasbt/"
+   val scalasbt = "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases/"
    val (name, u) = if (version.contains("-SNAPSHOT")) ("sbt-plugin-snapshots", scalasbt+"sbt-plugin-snapshots")
                    else ("sbt-plugin-releases", scalasbt+"sbt-plugin-releases")
    Some(Resolver.url(name, url(u))(Resolver.ivyStylePatterns))

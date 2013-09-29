@@ -27,11 +27,13 @@ Setup
 
 ### Using Published Plugin
 
-For sbt 0.12 and 0.13 add sbt-assembly as a dependency in `project/plugins.sbt`:
+For sbt 0.13 add sbt-assembly as a dependency in `project/assembly.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.2")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.0")
 ```
+
+For sbt 0.12, see [sbt-assemlby 0.9.2](https://github.com/sbt/sbt-assembly/tree/0.9.2).
 
 ### Using Source Dependency
 
@@ -67,31 +69,28 @@ If you're using `build.sbt` add this:
 import AssemblyKeys._ // put this at the top of the file
 
 assemblySettings
+
+// your settings here
 ```
 
-If you are using `build.scala`:
+If you are using multi-project `build.sbt`:
 
 ```scala
-import sbt._
-import Keys._
-import sbtassembly.Plugin._
 import AssemblyKeys._
 
-object Builds extends Build {
-  lazy val buildSettings = Defaults.defaultSettings ++ Seq(
-    version := "0.1-SNAPSHOT",
-    organization := "com.example",
-    scalaVersion := "2.10.1"
+lazy val buildSettings = Seq(
+  version := "0.1-SNAPSHOT",
+  organization := "com.example",
+  scalaVersion := "2.10.1"
+)
+
+val app = (project in file("app")).
+  settings(buildSettings: _*).
+  settings(assemblySettings: _*).
+  settings(
+    // your settings here
   )
-
-  lazy val app = Project("app", file("app"),
-    settings = buildSettings ++ assemblySettings) settings(
-      // your settings here
-    )
-}
 ```
-
-Note: Due to [SI-3488](https://issues.scala-lang.org/browse/SI-3488), you have to put your settings in `settings(...)` method esp. if you rewire `mergeStrategy`. 
 
 Now you'll have an awesome new `assembly` task which will compile your project,
 run your tests, and then pack your class files and all your dependencies into a
@@ -102,11 +101,13 @@ single JAR file: `target/scala_X.X.X/projectname-assembly-X.X.X.jar`.
 If you specify a `mainClass in assembly` in build.sbt (or just let it autodetect
 one) then you'll end up with a fully executable JAR, ready to rock.
 
-Here is the list of the keys you can rewire for `assembly` task.
+Here is the list of the keys you can rewire for `assembly` task. 
 
-    target                        assembly-jar-name             test
-    assembly-option               main-class                    full-classpath
-    dependency-classpath          assembly-excluded-files       assembly-excluded-jars
+**NOTE**: Any customization must be written after `assemblySettings`.
+
+    jarName                       test                          mainClass
+    outputPath                    mergeStrategy                 assemblyOption
+    excludedJars                  assembledMappings
 
 For example the name of the jar can be set as follows in build.sbt:
 
@@ -197,18 +198,6 @@ strategy as parameters.
 
 ### Excluding jars and files
 
-To exclude Scala library,
-
-```scala
-assemblyOption in assembly ~= { _.copy(includeScala = false) }
-```
-
-To exclude the class files from the main sources,
-
-```scala
-assemblyOption in assembly ~= { _.copy(includeBin = false) }
-```
-
 To exclude some jar file, first consider using `"provided"` dependency. The dependency will be part of compilation and test, but excluded from the runtime. Next, try creating a custom configuration that describes your classpath. If all efforts fail, here's a way to exclude jars:
 
 ```scala
@@ -226,6 +215,18 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case x => old(x)
   }
 }
+```
+
+To exclude Scala library,
+
+```scala
+assemblyOption in assembly ~= { _.copy(includeScala = false) }
+```
+
+To exclude the class files from the main sources,
+
+```scala
+assemblyOption in assembly ~= { _.copy(includeBin = false) }
 ```
 
 To make a jar containing only the dependencies, type
