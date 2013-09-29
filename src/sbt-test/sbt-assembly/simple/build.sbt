@@ -6,9 +6,9 @@ scalaVersion := "2.10.2"
 
 assemblySettings
 
-assemblyCacheOutput in assembly := true 
+assemblyOption in assembly ~= { _.copy(cacheOutput = true) }
 
-assemblyCacheUnzip in assembly := true
+assemblyOption in assembly ~= { _.copy(cacheUnzip = true) }
 
 jarName in assembly := "foo.jar"
 

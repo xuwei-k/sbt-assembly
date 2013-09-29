@@ -1,7 +1,24 @@
-## Content hash
+## content hash
 
 sbt-assembly 0.10.0 adds an assembly option called `appendContentHash`, which appends SHA-1 fingerprint to the assembly file name.
 
     assemblyOption in packageDependency ~= { _.copy(appendContentHash = true) }
 
 This could be used to determine whether the content has changed, and skip dependencies deployment if desired.
+
+## breaking changes
+
+`excludedFiles` setting is removed. Use `mergeStrategy in assembly` instead:
+
+    mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
+      {
+        case PathList("application.conf") => MergeStrategy.discard
+        case x => old(x)
+      }
+    }
+
+`assemblyCacheOutput` and `assemblyCacheUnzip` are removed. Use `assemblyOption` instead:
+
+    assemblyOption in assembly ~= { _.copy(cacheOutput = false) }
+
+    assemblyOption in assembly ~= { _.copy(cacheUnzip = false) }

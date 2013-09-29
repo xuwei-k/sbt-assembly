@@ -12,9 +12,9 @@ libraryDependencies += "com.weiglewilczek.slf4s" %% "slf4s" % "1.0.7"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "0.9.29" % "runtime"
 
-assemblyCacheUnzip in assembly := true
+assemblyOption in assembly ~= { _.copy(cacheOutput = true) }
 
-assemblyCacheOutput in assembly := true
+assemblyOption in assembly ~= { _.copy(cacheUnzip = true) }
 
 jarName in assembly := "foo.jar"
 

@@ -230,7 +230,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 
 To make a jar containing only the dependencies, type
 
-    > assembly-package-dependency
+    > assemblyPackageDependency
 
 NOTE: If you use [`-jar` option for `java`](http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/java.html#jar), it will ignore `-cp`, so if you have multiple jars you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
 
@@ -247,13 +247,13 @@ assemblyOption in packageDependency ~= { _.copy(appendContentHash = true) }
 By default for performance reasons, the result of unzipping any dependency jars to disk is cached from run-to-run. This feature can be disabled by setting:
 
 ```scala
-assemblyCacheUnzip in assembly := false
+assemblyOption in assembly ~= { _.copy(cacheUnzip = false) }
 ```
 
 In addition the fat JAR is cached so its timestamp changes only when the input changes. This feature requires checking the SHA-1 hash of all *.class files, and the hash of all dependency *.jar files. If there are a large number of class files, this could take a long time, although with hashing of jar files, rather than their contents, the speed has recently been [improved](https://github.com/sbt/sbt-assembly/issues/68). This feature can be disabled by setting:
 
 ```scala
-assemblyCacheOutput in assembly := false
+assemblyOption in assembly ~= { _.copy(cacheOutput = false) }
 ```
 
 ### Publishing
