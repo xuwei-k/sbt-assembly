@@ -63,14 +63,14 @@ First, make sure that you've added the plugin to your build (either the publishe
 builds or source from Git).
 
 
-If you're using `build.sbt` add this:
+Put `assembly.sbt` at the root directory:
 
 ```scala
 import AssemblyKeys._ // put this at the top of the file
 
 assemblySettings
 
-// your settings here
+// your assembly settings here
 ```
 
 If you are using multi-project `build.sbt`:
