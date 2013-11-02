@@ -4,7 +4,7 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-version := "0.10.1-SNAPSHOT"
+version := "0.10.1"
 
 description := "sbt plugin to create a single fat jar"
 
@@ -36,4 +36,4 @@ lsSettings
 LsKeys.tags in LsKeys.lsync := Seq("sbt", "jar")
 
 (externalResolvers in LsKeys.lsync) := Seq(
-  "sbt-plugin-releases" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases")
+  "sbt-plugin-releases" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases")
