@@ -20,9 +20,9 @@ assemblyOption in packageDependency ~= { _.copy(appendContentHash = true) }
 
 TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
   val process = sbt.Process("java", Seq("-cp", 
-    (crossTarget / "foo-assembly-0.1-36cb6ed20856f73f6fd0a9182a01ed1be3698cda.jar").toString +
+    (crossTarget / "foo-assembly-0.1-7a4ebf373b385ed1badbab93d52cffdfc4587c04.jar").toString +
     java.io.File.pathSeparator +
-    (crossTarget / "foo-assembly-0.1-deps-41634647ccb50e55269aa81227bea572a0edfc9e.jar").toString,
+    (crossTarget / "foo-assembly-0.1-deps-1aa2cc229f2e93446713bf8d1c6efc1e6ddab0fe.jar").toString,
     "Main"))
   val out = (process!!)
   if (out.trim != "hello") error("unexpected output: " + out)

@@ -10,17 +10,6 @@ import java.security.MessageDigest
 
 object Plugin extends sbt.Plugin {
   import AssemblyKeys._
-
-  // Keep track of the source package of mappings that come from a jar, so we can
-  // sha1 the jar instead of the unpacked packages when determining whether to rebuild
-  case class MappingSet( sourcePackage : Option[File], mappings : Seq[(File, String)] )
-  {
-    def dependencyFiles = sourcePackage match
-    {
-      case Some(f)  => Seq(f)
-      case None     => mappings.map(_._1)
-    }
-  }
     
   object AssemblyKeys {
     lazy val assembly          = TaskKey[File]("assembly", "Builds a single-file deployable jar.")
@@ -36,6 +25,16 @@ object Plugin extends sbt.Plugin {
     lazy val assembledMappings = TaskKey[Seq[MappingSet]]("assembly-assembled-mappings")
     lazy val mergeStrategy     = SettingKey[String => MergeStrategy]("assembly-merge-strategy", "mapping from archive member path to merge strategy")
   }
+
+  // Keep track of the source package of mappings that come from a jar, so we can
+  // sha1 the jar instead of the unpacked packages when determining whether to rebuild
+  case class MappingSet(sourcePackage : Option[File], mappings : Vector[(File, String)]) {
+    def dependencyFiles: Vector[File] =
+      sourcePackage match {
+        case Some(f)  => Vector(f)
+        case None     => mappings.map(_._1)
+      }
+  }
   
   /**
    * MergeStrategy is invoked if more than one source file is mapped to the 
@@ -45,38 +44,47 @@ object Plugin extends sbt.Plugin {
    */
   abstract class MergeStrategy extends Function1[(File, String, Seq[File]), Either[String, Seq[(File, String)]]] {
     def name: String
+    def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]]
     def notifyThreshold = 2
     def detailLogLevel = Level.Warn
     def summaryLogLevel = Level.Warn
+    final def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
+      apply(args._1, args._2, args._3)
   }
 
-  // (File, Seq[File]) => (Either[String, File], String)
   object MergeStrategy {
+    @inline def createMergeTarget(tempDir: File, path: String): File = {
+      val file = new File(tempDir, "sbtMergeTarget-" + sha1string(path) + ".tmp")
+      if (file.exists) {
+        IO.delete(file)
+      }
+      file
+    }
     val first: MergeStrategy = new MergeStrategy {
       val name = "first"
-      def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
-        Right(Seq(args._3.head -> args._2))
+      def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] =
+        Right(Seq(files.head -> path))
     }
     val last: MergeStrategy = new MergeStrategy {
       val name = "last"
-      def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
-        Right(Seq(args._3.last -> args._2))
+      def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] =
+        Right(Seq(files.last -> path))
     }
     val singleOrError: MergeStrategy = new MergeStrategy {
       val name = "singleOrError"
-      def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
-        if (args._3.size == 1) Right(Seq(args._3.head -> args._2))
+      def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] =
+        if (files.size == 1) Right(Seq(files.head -> path))
         else Left("found multiple files for same target path:" +
-          filenames(args._1, args._3).mkString("\n", "\n", ""))
+          filenames(tempDir, files).mkString("\n", "\n", ""))
     }
     val concat: MergeStrategy = new MergeStrategy {
       val name = "concat"
-      def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] = {
-        val file = File.createTempFile("sbtMergeTarget", ".tmp", args._1)
+      def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] = {
+        val file = createMergeTarget(tempDir, path)
         val out = new FileOutputStream(file)
         try {
-          args._3 foreach (f => IO.transfer(f, out))
-          Right(Seq(file -> args._2))
+          files foreach (f => IO.transfer(f, out))
+          Right(Seq(file -> path))
         } finally {
           out.close()
         }
@@ -84,39 +92,39 @@ object Plugin extends sbt.Plugin {
     }
     val filterDistinctLines: MergeStrategy = new MergeStrategy {
       val name = "filterDistinctLines"
-      def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] = {
-        val lines = args._3 flatMap (IO.readLines(_, IO.utf8))
+      def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] = {
+        val lines = files flatMap (IO.readLines(_, IO.utf8))
         val unique = (Vector.empty[String] /: lines)((v, l) => if (v contains l) v else v :+ l)
-        val file = File.createTempFile("sbtMergeTarget", ".tmp", args._1)
+        val file = createMergeTarget(tempDir, path)
         IO.writeLines(file, unique, IO.utf8)
-        Right(Seq(file -> args._2))
+        Right(Seq(file -> path))
       }
     }
     val deduplicate: MergeStrategy = new MergeStrategy {
       val name = "deduplicate"
-      def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
-        if (args._3.size == 1) Right(Seq(args._3.head -> args._2))
+      def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] =
+        if (files.size == 1) Right(Seq(files.head -> path))
         else {
-          val fingerprints = Set() ++ (args._3 map (sha1content))
-          if (fingerprints.size == 1) Right(Seq(args._3.head -> args._2))
+          val fingerprints = Set() ++ (files map (sha1content))
+          if (fingerprints.size == 1) Right(Seq(files.head -> path))
           else Left("different file contents found in the following:" +
-              filenames(args._1, args._3).mkString("\n", "\n", ""))
+              filenames(tempDir, files).mkString("\n", "\n", ""))
         }
       override def detailLogLevel = Level.Debug
       override def summaryLogLevel = Level.Info
     }
     val rename: MergeStrategy = new MergeStrategy {
       val name = "rename"
-      def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
-        Right(args._3 flatMap { f =>
+      def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] =
+        Right(files flatMap { f =>
           if(!f.exists) Seq.empty
-          else if(f.isDirectory && (f ** "*.class").get.nonEmpty) Seq(f -> args._2)
-          else AssemblyUtils.sourceOfFileForMerge(args._1, f) match {
-            case (dir, base, path, false) => Seq(f -> args._2)
-            case (jar, base, path, true) =>
+          else if(f.isDirectory && (f ** "*.class").get.nonEmpty) Seq(f -> path)
+          else AssemblyUtils.sourceOfFileForMerge(tempDir, f) match {
+            case (_, _, _, false) => Seq(f -> path)
+            case (jar, base, p, true) =>
               val dest = new File(f.getParent, appendJarName(f.getName, jar))
               IO.move(f, dest)
-              val result = Seq(dest -> appendJarName(args._2, jar))
+              val result = Seq(dest -> appendJarName(path, jar))
               if (dest.isDirectory) ((dest ** (-DirectoryFilter))) x relativeTo(base)
               else result
           }
@@ -131,7 +139,7 @@ object Plugin extends sbt.Plugin {
     }
     val discard: MergeStrategy = new MergeStrategy {
       val name = "discard"
-      def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
+      def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] =
         Right(Nil)   
       override def notifyThreshold = 1
     }
@@ -154,46 +162,69 @@ object Plugin extends sbt.Plugin {
       import Types.:+:
       import Cache._
       import FileInfo.{hash, exists}
+      import java.util.jar.{Attributes, Manifest}
 
-      val ms : Seq[(File, String)] = applyStrategies(mappings, ao.mergeStrategy, ao.assemblyDirectory, log)
-      def makeJar(outPath: File) {
-        val config = new Package.Configuration(ms, outPath, po)
-        Package(config, cacheDir, log)
+      lazy val (ms: Vector[(File, String)], stratMapping: List[(String, MergeStrategy)]) = {
+        log.info("Merging files...")  
+        applyStrategies(mappings, ao.mergeStrategy, ao.assemblyDirectory, log)
       }
-      lazy val inputs = sha1.digest(
-        for {
-          m <- ms.toArray
-          b <- hash(m._1).hash // pure content hash without file name
-        } yield b)
+      def makeJar(outPath: File) {
+        import Package._
+        import collection.JavaConversions._
+        val manifest = new Manifest
+        val main = manifest.getMainAttributes
+        for(option <- po) {
+          option match {
+            case JarManifest(mergeManifest)     => Package.mergeManifests(manifest, mergeManifest)
+            case MainClass(mainClassName)       => main.put(Attributes.Name.MAIN_CLASS, mainClassName)
+            case ManifestAttributes(attrs @ _*) => main ++= attrs
+            case _                              => log.warn("Ignored unknown package option " + option)
+          }
+        }
+        Package.makeJar(ms, outPath, manifest, log)
+      }
+      lazy val inputs = {
+        log.info("Checking every *.class/*.jar file's SHA-1.")
+        val rawHashBytes = 
+          (mappings.toVector.par flatMap { m =>
+            m.sourcePackage match {
+              case Some(x) => hash(x).hash
+              case _       => (m.mappings map { x => hash(x._1).hash }).flatten
+            }
+          })
+        val pathStratBytes = 
+          (stratMapping.par flatMap { case (path, strat) =>
+            (path + strat.name).getBytes("UTF-8")
+          })
+        sha1.digest((rawHashBytes.seq ++ pathStratBytes.seq).toArray)
+      }
       lazy val out = if (ao.appendContentHash) doAppendContentHash(inputs, out0, log)
                      else out0
       val cachedMakeJar = inputChanged(cacheDir / "assembly-inputs") { (inChanged, inputs: Seq[Byte]) =>
         outputChanged(cacheDir / "assembly-outputs") { (outChanged, jar: PlainFileInfo) => 
           if (inChanged) {
-            log.info("SHA-1: " + inputs.map( b => "%02x".format(b) ).mkString)
+            log.info("SHA-1: " + bytesToString(inputs))
           } // if
           if (inChanged || outChanged) makeJar(out)
           else log.info("Assembly up to date: " + jar.file)        
         }
       }
-      if (ao.cacheOutput) {
-        log.info("Checking every *.class/*.jar file's SHA-1.")
-        cachedMakeJar(inputs)(() => exists(out))  
-      }
+      if (ao.cacheOutput) cachedMakeJar(inputs)(() => exists(out))
       else makeJar(out)
       out
     }
 
     private def doAppendContentHash(inputs: Seq[Byte], out0: File, log: Logger) = {
-      val fullSha1 = inputs.map( b => "%02x".format(b) ).mkString
+      val fullSha1 = bytesToString(inputs)
       val newName = out0.getName.replaceAll("\\.[^.]*$", "") + "-" +  fullSha1 + ".jar"
       new File(out0.getParentFile, newName)
     }
 
     def applyStrategies(srcSets: Seq[MappingSet], strats: String => MergeStrategy,
-        tempDir: File, log: Logger): Seq[(File, String)] = {
+        tempDir: File, log: Logger): (Vector[(File, String)], List[(String, MergeStrategy)]) = {
       val srcs = srcSets.flatMap( _.mappings )
       val counts = scala.collection.mutable.Map[MergeStrategy, Int]().withDefaultValue(0)
+      (tempDir * "sbtMergeTarget*").get foreach { x => IO.delete(x) }
       def applyStrategy(strategy: MergeStrategy, name: String, files: Seq[(File, String)]): Seq[(File, String)] = {
         if (files.size >= strategy.notifyThreshold) {
           log.log(strategy.detailLogLevel, "Merging '%s' with strategy '%s'".format(name, strategy.name))
@@ -213,12 +244,15 @@ object Plugin extends sbt.Plugin {
       val cleaned: Seq[(File, String)] = renamed filter { pair =>
         (!pair._1.isDirectory) && pair._1.exists
       }
-      val mod: Seq[(File, String)] = cleaned.groupBy(_._2).flatMap { case (name, files) =>
-        val strategy = strats(name)
-        if (strategy != MergeStrategy.rename) applyStrategy(strategy, name, files)
-        else files
-      } (scala.collection.breakOut)
-      counts.keysIterator.toList.sortBy(_.name) foreach { strat =>
+      val stratMapping = new mutable.ListBuffer[(String, MergeStrategy)]
+      val mod: Seq[(File, String)] =
+        cleaned.groupBy(_._2).toVector.sortBy(_._1).flatMap { case (name, files) =>
+          val strategy = strats(name)
+          stratMapping append (name -> strategy)
+          if (strategy != MergeStrategy.rename) applyStrategy(strategy, name, files)
+          else files
+        } (scala.collection.breakOut)
+      counts.keysIterator.toSeq.sortBy(_.name) foreach { strat =>
         val count = counts(strat)
         log.log(strat.summaryLogLevel, "Strategy '%s' was applied to ".format(strat.name) + (count match {
           case 1 => "a file"
@@ -228,31 +262,34 @@ object Plugin extends sbt.Plugin {
           case _ => ""
         })) 
       }
-      mod
+      (mod.toVector, stratMapping.toList)
     }
   }
 
   val defaultExcludedFiles: Seq[File] => Seq[File] = (base: Seq[File]) => Nil  
   private def sha1 = MessageDigest.getInstance("SHA-1")
-  private def sha1content(f: File): String =
-    Vector(sha1.digest(IO.readBytes(f)): _*) map {"%02x".format(_)} mkString
-  private def sha1name(f: File): String = 
-    Vector(sha1.digest(f.getCanonicalPath.getBytes): _*) map {"%02x".format(_)} mkString
+  private def sha1content(f: File): String  = bytesToSha1String(IO.readBytes(f))
+  private def sha1name(f: File): String     = sha1string(f.getCanonicalPath)
+  private def sha1string(s: String): String = bytesToSha1String(s.getBytes("UTF-8"))
+  private def bytesToSha1String(bytes: Array[Byte]): String = 
+    bytesToString(sha1.digest(bytes))
+  private def bytesToString(bytes: Seq[Byte]): String =
+    bytes map {"%02x".format(_)} mkString
 
   // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
   // which jars exactly belong to the deps for packageDependency option.
   private def assemblyAssembledMappings(classpath: Classpath, dependencies: Classpath,
-      ao: AssemblyOption, log: Logger) = {
+      ao: AssemblyOption, log: Logger): Vector[MappingSet] = {
     import sbt.classpath.ClasspathUtilities
 
     val tempDir = ao.assemblyDirectory
     if (!ao.cacheUnzip) IO.delete(tempDir)
     if (!tempDir.exists) tempDir.mkdir()
 
-    val (libs, dirs) = classpath.map(_.data).sorted.partition(ClasspathUtilities.isArchive)
-    val depLibs = dependencies.map(_.data).sorted.partition(ClasspathUtilities.isArchive)._1
+    val (libs, dirs) = classpath.map(_.data).toVector.partition(ClasspathUtilities.isArchive)
+    val depLibs      = dependencies.map(_.data).toSet.filterNot(ClasspathUtilities.isArchive)
     val excludedJars = ao.excludedJars map {_.data}
-    val libsFiltered = libs flatMap {
+    val libsFiltered = (libs flatMap {
       case jar if excludedJars contains jar.asFile => None
       case jar if jar.asFile.getName startsWith "scala-" =>
         if (ao.includeScala) Some(jar) else None
@@ -260,58 +297,58 @@ object Plugin extends sbt.Plugin {
         if (ao.includeDependency) Some(jar) else None
       case jar =>
         if (ao.includeBin) Some(jar) else None
-    }
-    val dirsFiltered = dirs flatMap {
-      case dir if depLibs contains dir.asFile =>
-        if (ao.includeDependency) Some(dir)
-        else None
-      case dir =>
-        if (ao.includeBin) Some(dir)
-        else None
-    } map { dir =>
-      val hash = sha1name(dir)
-      IO.write(tempDir / (hash + "_dir.dir"), dir.getCanonicalPath, IO.utf8, false)
-      val dest = tempDir / (hash + "_dir")
-      if (dest.exists) {
-        IO.delete(dest)
-      }
-      dest.mkdir()
-      IO.copyDirectory(dir, dest)
-      dest
-    }
-    
-    val jarDirs = for(jar <- libsFiltered.par) yield {
-      val jarName = jar.asFile.getName
-      val hash = sha1name(jar) + "_" + sha1content(jar)
-      val jarNamePath = tempDir / (hash + ".jarName")
-      val dest = tempDir / hash
-      // If the jar name path does not exist, or is not for this jar, unzip the jar
-      if (!ao.cacheUnzip || !jarNamePath.exists || IO.read(jarNamePath) != jar.getCanonicalPath )
-      {
-        log.info("Including: %s".format(jarName))
-        IO.delete(dest)
+    })
+    val dirsFiltered =
+      dirs.par flatMap {
+        case dir =>
+          if (ao.includeBin) Some(dir)
+          else None
+      } map { dir =>
+        val hash = sha1name(dir)
+        IO.write(tempDir / (hash + "_dir.dir"), dir.getCanonicalPath, IO.utf8, false)
+        val dest = tempDir / (hash + "_dir")
+        if (dest.exists) {
+          IO.delete(dest)
+        }
         dest.mkdir()
-        AssemblyUtils.unzip(jar, dest, log)
-        IO.delete(ao.excludedFiles(Seq(dest)))
-        
-        // Write the jarNamePath at the end to minimise the chance of having a
-        // corrupt cache if the user aborts the build midway through
-        IO.write(jarNamePath, jar.getCanonicalPath, IO.utf8, false)
+        IO.copyDirectory(dir, dest)
+        dest
       }
-      else log.info("Including from cache: %s".format(jarName))
+    val jarDirs =
+      (for(jar <- libsFiltered.par) yield {
+        val jarName = jar.asFile.getName
+        val hash = sha1name(jar) + "_" + sha1content(jar)
+        val jarNamePath = tempDir / (hash + ".jarName")
+        val dest = tempDir / hash
+        // If the jar name path does not exist, or is not for this jar, unzip the jar
+        if (!ao.cacheUnzip || !jarNamePath.exists || IO.read(jarNamePath) != jar.getCanonicalPath )
+        {
+          log.info("Including: %s".format(jarName))
+          IO.delete(dest)
+          dest.mkdir()
+          AssemblyUtils.unzip(jar, dest, log)
+          IO.delete(ao.excludedFiles(Seq(dest)))
+          
+          // Write the jarNamePath at the end to minimise the chance of having a
+          // corrupt cache if the user aborts the build midway through
+          IO.write(jarNamePath, jar.getCanonicalPath, IO.utf8, false)
+        }
+        else log.info("Including from cache: %s".format(jarName))
 
-      (dest, jar)
-    }
+        (dest, jar)
+      })
 
-    val base : Seq[File] = dirsFiltered ++ jarDirs.map( _._1 )
-    def getMappings(rootDir : File) = {
-      val descendendants = ((rootDir ** "*") --- ao.excludedFiles(base) --- base).get filter { _.exists }
-      descendendants x relativeTo(base)
+    log.debug("Calculate mappings...")
+    val base: Vector[File] = dirsFiltered.seq ++ (jarDirs map { _._1 })
+    def getMappings(rootDir : File): Vector[(File, String)] = {
+      val descendendants = if (!rootDir.exists) Vector()
+                           else ((rootDir ** "*") --- ao.excludedFiles(base) --- base).get
+      (descendendants x relativeTo(base)).toVector
     }
-    (dirsFiltered map { d => MappingSet(None, getMappings(d)) }) ++
-    (jarDirs map { case (d, j) => MappingSet(Some(j), getMappings(d)) })
+    val retval = (dirsFiltered map { d => MappingSet(None, getMappings(d)) }).seq ++
+                 (jarDirs map { case (d, j) => MappingSet(Some(j), getMappings(d)) })
+    retval.toVector
   }
-
   private val LicenseFile = """(license|licence|notice|copying)([.]\w+)?$""".r
   private def isLicenseFile(fileName: String): Boolean =
     fileName.toLowerCase match {
