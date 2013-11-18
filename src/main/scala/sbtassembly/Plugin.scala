@@ -182,6 +182,15 @@ object Plugin extends sbt.Plugin {
           }
         }
         Package.makeJar(ms, outPath, manifest, log)
+        if (ao.makeExecutable) {
+          val script = Seq("#!/usr/bin/env sh", "exec java -jar $0 \"$@\"")
+          val tmpFile = File.createTempFile("assemblyExec", null)
+          val jarCopy = IO.copyFile(outPath, tmpFile)
+          IO.writeLines(outPath, script, append = false)
+          val jarBytes = IO.readBytes(tmpFile)
+          IO.append(outPath, jarBytes)
+          Seq("chmod", "+x", outPath.toString).!
+        }
       }
       lazy val inputs = {
         log.info("Checking every *.class/*.jar file's SHA-1.")
@@ -441,7 +450,8 @@ object Plugin extends sbt.Plugin {
         excludedFiles = defaultExcludedFiles,
         cacheOutput = true,
         cacheUnzip = true,
-        appendContentHash = false) 
+        appendContentHash = false,
+        makeExecutable = false)
     },
     assemblyOption in packageScala <<= (assemblyOption in assembly) map { opt =>
       opt.copy(includeBin = false, includeScala = true, includeDependency = false)
@@ -492,4 +502,5 @@ case class AssemblyOption(assemblyDirectory: File,
   mergeStrategy: String => Plugin.MergeStrategy = Plugin.defaultMergeStrategy,
   cacheOutput: Boolean = true,
   cacheUnzip: Boolean = true,
-  appendContentHash: Boolean = false)
+  appendContentHash: Boolean = false,
+  makeExecutable: Boolean = false)
