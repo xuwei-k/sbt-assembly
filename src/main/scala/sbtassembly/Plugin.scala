@@ -185,6 +185,7 @@ object Plugin extends sbt.Plugin {
         Package.makeJar(ms, outPath, manifest, log)
         if (ao.prependShellScript) {
           val tmpFile = cacheDir / "assemblyExec.tmp"
+          if (tmpFile.exists()) tmpFile.delete()
           val jarCopy = IO.copyFile(outPath, tmpFile)
           IO.writeLines(outPath, prependScript, append = false)
           val jarBytes = IO.readBytes(tmpFile)
