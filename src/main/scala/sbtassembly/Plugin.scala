@@ -5,7 +5,7 @@ import Keys._
 import scala.collection.mutable
 import scala.io.Source
 import Def.Initialize
-import java.io.{ PrintWriter, FileOutputStream, File }
+import java.io.{IOException, PrintWriter, FileOutputStream, File}
 import java.security.MessageDigest
 
 object Plugin extends sbt.Plugin {
@@ -24,6 +24,7 @@ object Plugin extends sbt.Plugin {
     lazy val excludedJars      = TaskKey[Classpath]("assembly-excluded-jars")
     lazy val assembledMappings = TaskKey[Seq[MappingSet]]("assembly-assembled-mappings")
     lazy val mergeStrategy     = SettingKey[String => MergeStrategy]("assembly-merge-strategy", "mapping from archive member path to merge strategy")
+    lazy val prependScript     = SettingKey[Seq[String]]("assembly-prepend-script", "If the prependShellScript option is enabled, this setting defines the contents of the script.")
   }
 
   // Keep track of the source package of mappings that come from a jar, so we can
@@ -157,7 +158,7 @@ object Plugin extends sbt.Plugin {
 
   object Assembly {
     def apply(out0: File, ao: AssemblyOption, po: Seq[PackageOption], mappings: Seq[MappingSet],
-        cacheDir: File, log: Logger): File = {
+        cacheDir: File, prependScript: Seq[String], log: Logger): File = {
       import Tracked.{inputChanged, outputChanged}
       import Types.:+:
       import Cache._
@@ -182,14 +183,19 @@ object Plugin extends sbt.Plugin {
           }
         }
         Package.makeJar(ms, outPath, manifest, log)
-        if (ao.makeExecutable) {
-          val script = Seq("#!/usr/bin/env sh", "exec java -jar $0 \"$@\"")
-          val tmpFile = File.createTempFile("assemblyExec", null)
+        if (ao.prependShellScript) {
+          val tmpFile = cacheDir / "assemblyExec.tmp"
           val jarCopy = IO.copyFile(outPath, tmpFile)
-          IO.writeLines(outPath, script, append = false)
+          IO.writeLines(outPath, prependScript, append = false)
           val jarBytes = IO.readBytes(tmpFile)
+          tmpFile.delete()
           IO.append(outPath, jarBytes)
-          Seq("chmod", "+x", outPath.toString).!
+          try {
+            Seq("chmod", "+x", outPath.toString).!
+          }
+          catch {
+            case e: IOException ⇒ log.warn("Could not run 'chmod +x' on jarfile. Perhaps chmod command is not available?")
+          }
         }
       }
       lazy val inputs = {
@@ -408,7 +414,7 @@ object Plugin extends sbt.Plugin {
     val s = (streams in key).value
     Assembly((outputPath in key).value, (assemblyOption in key).value,
       (packageOptions in key).value, (assembledMappings in key).value,
-      s.cacheDirectory, s.log)
+      s.cacheDirectory, (prependScript in key).value, s.log)
   }
   private def assembledMappingsTask(key: TaskKey[File]): Initialize[Task[Seq[MappingSet]]] = Def.task {
     val s = (streams in key).value
@@ -451,7 +457,7 @@ object Plugin extends sbt.Plugin {
         cacheOutput = true,
         cacheUnzip = true,
         appendContentHash = false,
-        makeExecutable = false)
+        prependShellScript = false)
     },
     assemblyOption in packageScala <<= (assemblyOption in assembly) map { opt =>
       opt.copy(includeBin = false, includeScala = true, includeDependency = false)
@@ -487,7 +493,9 @@ object Plugin extends sbt.Plugin {
     
     fullClasspath in assembly <<= fullClasspath or (fullClasspath in Runtime),
     
-    dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime)
+    dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime),
+
+    prependScript in assembly := Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@"""")
   )
   
   lazy val assemblySettings: Seq[sbt.Def.Setting[_]] = baseAssemblySettings
@@ -503,4 +511,4 @@ case class AssemblyOption(assemblyDirectory: File,
   cacheOutput: Boolean = true,
   cacheUnzip: Boolean = true,
   appendContentHash: Boolean = false,
-  makeExecutable: Boolean = false)
+  prependShellScript: Boolean = false)
