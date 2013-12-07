@@ -214,7 +214,7 @@ The dependency will be part of compilation and test, but excluded from the runti
 
 ### Exclude specific transitive deps
 
-You might be thinking about exluding JAR files because of the merge conlifcts. Merge conflict of `*.class` files indicate pathological classpath, often due to non-modular JAR files, not the problem with assembly. Here's what happens when you try to create a fat JAR with Spark included:
+You might be thinking about exluding JAR files because of the merge conlifcts. Merge conflict of `*.class` files indicate pathological classpath, often due to non-modular bundle JAR files or [SLF4J](http://www.slf4j.org/legacy.html), not the problem with assembly. Here's what happens when you try to create a fat JAR with Spark included:
 
 ```
 [error] (*:assembly) deduplicate: different file contents found in the following:
@@ -236,6 +236,17 @@ libraryDependencies ++= Seq(
 ```
 
 See sbt's [Exclude Transitive Dependencies](http://www.scala-sbt.org/release/docs/Detailed-Topics/Library-Management.html#exclude-transitive-dependencies) for more details.
+
+Sometimes it takes a bit of detective work to figure out which transitive deps to exclude. Play! comes with `dist` task, so `assembly` is not needed, but suppose we wanted to run `assembly`. It brings in signpost-commonshttp4, which leads to commons-logging. This conflicts with jcl-over-slf4j, which re-implements the logging API. Since the deps are added via build.sbt and `playScalaSettings`, here's one way to work around it:
+
+```scala
+libraryDependencies ~= { _ map {
+  case m if m.organization == "com.typesafe.play" =>
+    m.exclude("commons-logging", "commons-logging").
+      exclude("com.typesafe.play", "sbt-link")
+  case m => m
+}}
+```
 
 ### Excluding specific files
 
