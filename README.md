@@ -3,13 +3,7 @@ sbt-assembly
 
 *Deploy fat JARs. Restart processes.*
 
-sbt-assembly is a sbt 0.10+ port of an awesome sbt plugin by codahale:
-
-> assembly-sbt is a [simple-build-tool](http://code.google.com/p/simple-build-tool/)
-plugin for building a single JAR file of your project which includes all of its
-dependencies, allowing to deploy the damn thing as a single file without dicking
-around with shell scripts and lib directories or, worse, welding your
-configuration to your deployable in the form of a WAR file.
+sbt-assembly is a sbt plugin originally ported from codahale's assembly-sbt, which I'm guessing was inspired by Maven's assembly plugin. The goal is simple: Create a fat JAR of your project with all of its dependencies.
 
 Requirements
 ------------
@@ -51,8 +45,7 @@ object Plugins extends Build {
 }
 ```
 
-(You may need to check this project's tags to see what the most recent release
-is. I'm notoriously crap about updating the version numbers in my READMEs.)
+(You may need to check this project's tags to see what the most recent release is.)
 
 Usage
 -----
@@ -196,26 +189,68 @@ from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,
 which takes the temporary directory and one of the files passed into the
 strategy as parameters.
 
-### Excluding jars and files
+Excluding JARs and files
+------------------------
 
-To exclude some jar file, first consider using `"provided"` dependency. The dependency will be part of compilation and test, but excluded from the runtime. Next, try creating a custom configuration that describes your classpath. If all efforts fail, here's a way to exclude jars:
+If you need to tell sbt-assembly to ignore JARs, you're probably doing it wrong.
+assembly task grabs deps JARs from your project's classpath. Try fixing the classpath first.
+
+### % "provided" configuration
+
+If you're trying to exclude JAR files that are already part of the container (like Spark), consider scoping the dependent library to `"provided"` configuration:
 
 ```scala
-excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
-  cp filter {_.data.getName == "compile-0.1.0.jar"}
-}
+libraryDependencies += Seq(
+  "org.apache.spark" %% "spark-core" % "0.8.0-incubating" % "provided",
+  "org.apache.hadoop" % "hadoop-client" % "2.0.0-cdh4.4.0" % "provided"
+)
 ```
+
+Maven defines ["provided"](http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope) as:
+
+> This is much like `compile`, but indicates you expect the JDK or a container to provide the dependency at runtime. For example, when building a web application for the Java Enterprise Edition, you would set the dependency on the Servlet API and related Java EE APIs to scope `provided` because the web container provides those classes. This scope is only available on the compilation and test classpath, and is not transitive.
+
+The dependency will be part of compilation and test, but excluded from the runtime.
+
+### Exclude specific transitive deps
+
+You might be thinking about exluding JAR files because of the merge conlifcts. Merge conflict of `*.class` files indicate pathological classpath, often due to non-modular JAR files, not the problem with assembly. Here's what happens when you try to create a fat JAR with Spark included:
+
+```
+[error] (*:assembly) deduplicate: different file contents found in the following:
+[error] /Users/foo/.ivy2/cache/org.eclipse.jetty.orbit/javax.servlet/orbits/javax.servlet-2.5.0.v201103041518.jar:javax/servlet/SingleThreadModel.class
+[error] /Users/foo/.ivy2/cache/org.mortbay.jetty/servlet-api/jars/servlet-api-2.5-20081211.jar:javax/servlet/SingleThreadModel.class
+```
+
+In the above case two separate JAR files `javax.servlet-2.5.0.v201103041518.jar` and `servlet-api-2.5-20081211.jar` are defining `javax/servlet/SingleThreadModel.class`! Similarly also conlifcts on [common-beanutils](http://commons.apache.org/proper/commons-beanutils/) and [EsotericSoftware/minlog](https://github.com/EsotericSoftware/minlog). Here's how to evict specific transitive deps:
+
+```scala
+libraryDependencies ++= Seq(
+  ("org.apache.spark" %% "spark-core" % "0.8.0-incubating").
+    exclude("org.mortbay.jetty", "servlet-api").
+    exclude("commons-beanutils", "commons-beanutils-core").
+    exclude("commons-collections", "commons-collections").
+    exclude("commons-collections", "commons-collections").
+    exclude("com.esotericsoftware.minlog", "minlog")
+)
+```
+
+See sbt's [Exclude Transitive Dependencies](http://www.scala-sbt.org/release/docs/Detailed-Topics/Library-Management.html#exclude-transitive-dependencies) for more details.
+
+### Excluding specific files
 
 To exclude specific files, customize merge strategy:
 
 ```scala
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
-    case PathList("application.conf") => MergeStrategy.discard
+    case PathList("about.html") => MergeStrategy.rename
     case x => old(x)
   }
 }
 ```
+
+### Excluding Scala library, your project, or deps JARs
 
 To exclude Scala library,
 
@@ -229,11 +264,24 @@ To exclude the class files from the main sources,
 assemblyOption in assembly ~= { _.copy(includeBin = false) }
 ```
 
-To make a jar containing only the dependencies, type
+To make a JAR file containing only the dependencies, type
 
     > assemblyPackageDependency
 
-NOTE: If you use [`-jar` option for `java`](http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/java.html#jar), it will ignore `-cp`, so if you have multiple jars you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
+NOTE: If you use [`-jar` option for `java`](http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/java.html#jar), it will ignore `-cp`, so if you have multiple JAR files you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
+
+### excludedJars
+
+If all efforts fail, here's a way to exclude JAR files:
+
+```scala
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
+  cp filter {_.data.getName == "compile-0.1.0.jar"}
+}
+```
+
+Other Things
+------------
 
 ### Content hash
 
@@ -245,7 +293,7 @@ assemblyOption in packageDependency ~= { _.copy(appendContentHash = true) }
 
 ### Caching
 
-By default for performance reasons, the result of unzipping any dependency jars to disk is cached from run-to-run. This feature can be disabled by setting:
+By default for performance reasons, the result of unzipping any dependency JAR files to disk is cached from run-to-run. This feature can be disabled by setting:
 
 ```scala
 assemblyOption in assembly ~= { _.copy(cacheUnzip = false) }
