@@ -264,6 +264,116 @@ object Plugin extends sbt.Plugin {
       }
       (mod.toVector, stratMapping.toList)
     }
+
+    // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
+    // which jars exactly belong to the deps for packageDependency option.
+    def assembleMappings(classpath: Classpath, dependencies: Classpath,
+        ao: AssemblyOption, log: Logger): Vector[MappingSet] = {
+      import sbt.classpath.ClasspathUtilities
+
+      val tempDir = ao.assemblyDirectory
+      if (!ao.cacheUnzip) IO.delete(tempDir)
+      if (!tempDir.exists) tempDir.mkdir()
+
+      val (libs, dirs) = classpath.map(_.data).toVector.partition(ClasspathUtilities.isArchive)
+      val depLibs      = dependencies.map(_.data).toSet.filterNot(ClasspathUtilities.isArchive)
+      val excludedJars = ao.excludedJars map {_.data}
+      val libsFiltered = (libs flatMap {
+        case jar if excludedJars contains jar.asFile => None
+        case jar if jar.asFile.getName startsWith "scala-" =>
+          if (ao.includeScala) Some(jar) else None
+        case jar if depLibs contains jar.asFile =>
+          if (ao.includeDependency) Some(jar) else None
+        case jar =>
+          if (ao.includeBin) Some(jar) else None
+      })
+      val dirsFiltered =
+        dirs.par flatMap {
+          case dir =>
+            if (ao.includeBin) Some(dir)
+            else None
+        } map { dir =>
+          val hash = sha1name(dir)
+          IO.write(tempDir / (hash + "_dir.dir"), dir.getCanonicalPath, IO.utf8, false)
+          val dest = tempDir / (hash + "_dir")
+          if (dest.exists) {
+            IO.delete(dest)
+          }
+          dest.mkdir()
+          IO.copyDirectory(dir, dest)
+          dest
+        }
+      val jarDirs =
+        (for(jar <- libsFiltered.par) yield {
+          val jarName = jar.asFile.getName
+          val hash = sha1name(jar) + "_" + sha1content(jar)
+          val jarNamePath = tempDir / (hash + ".jarName")
+          val dest = tempDir / hash
+          // If the jar name path does not exist, or is not for this jar, unzip the jar
+          if (!ao.cacheUnzip || !jarNamePath.exists || IO.read(jarNamePath) != jar.getCanonicalPath )
+          {
+            log.info("Including: %s".format(jarName))
+            IO.delete(dest)
+            dest.mkdir()
+            AssemblyUtils.unzip(jar, dest, log)
+            IO.delete(ao.excludedFiles(Seq(dest)))
+            
+            // Write the jarNamePath at the end to minimise the chance of having a
+            // corrupt cache if the user aborts the build midway through
+            IO.write(jarNamePath, jar.getCanonicalPath, IO.utf8, false)
+          }
+          else log.info("Including from cache: %s".format(jarName))
+
+          (dest, jar)
+        })
+
+      log.debug("Calculate mappings...")
+      val base: Vector[File] = dirsFiltered.seq ++ (jarDirs map { _._1 })
+      def getMappings(rootDir : File): Vector[(File, String)] = {
+        val descendendants = if (!rootDir.exists) Vector()
+                             else ((rootDir ** "*") --- ao.excludedFiles(base) --- base).get
+        (descendendants x relativeTo(base)).toVector
+      }
+      val retval = (dirsFiltered map { d => MappingSet(None, getMappings(d)) }).seq ++
+                   (jarDirs map { case (d, j) => MappingSet(Some(j), getMappings(d)) })
+      retval.toVector
+    }
+
+    def assemblyTask(key: TaskKey[File]): Initialize[Task[File]] = Def.task {
+      val t = (test in key).value
+      val s = (streams in key).value
+      Assembly((outputPath in key).value, (assemblyOption in key).value,
+        (packageOptions in key).value, (assembledMappings in key).value,
+        s.cacheDirectory, s.log)
+    }
+    def assembledMappingsTask(key: TaskKey[File]): Initialize[Task[Seq[MappingSet]]] = Def.task {
+      val s = (streams in key).value
+      assembleMappings(
+        (fullClasspath in assembly).value, (dependencyClasspath in assembly).value,
+        (assemblyOption in key).value, s.log)
+    }
+
+    def isLicenseFile(fileName: String): Boolean = {
+      val LicenseFile = """(license|licence|notice|copying)([.]\w+)?$""".r
+      fileName.toLowerCase match {
+        case LicenseFile(_, ext) if ext != ".class" => true // DISLIKE
+        case _ => false
+      }
+    }
+
+    def isReadme(fileName: String): Boolean = {
+      val ReadMe = """(readme|about)([.]\w+)?$""".r
+      fileName.toLowerCase match {
+        case ReadMe(_, ext) if ext != ".class" => true
+        case _ => false
+      }
+    }
+
+    def isConfigFile(fileName: String): Boolean =
+      fileName.toLowerCase match {
+        case "reference.conf" | "rootdoc.txt" | "play.plugins" => true
+        case _ => false
+      }
   }
 
   val defaultExcludedFiles: Seq[File] => Seq[File] = (base: Seq[File]) => Nil  
@@ -276,93 +386,6 @@ object Plugin extends sbt.Plugin {
   private def bytesToString(bytes: Seq[Byte]): String =
     bytes map {"%02x".format(_)} mkString
 
-  // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
-  // which jars exactly belong to the deps for packageDependency option.
-  private def assemblyAssembledMappings(classpath: Classpath, dependencies: Classpath,
-      ao: AssemblyOption, log: Logger): Vector[MappingSet] = {
-    import sbt.classpath.ClasspathUtilities
-
-    val tempDir = ao.assemblyDirectory
-    if (!ao.cacheUnzip) IO.delete(tempDir)
-    if (!tempDir.exists) tempDir.mkdir()
-
-    val (libs, dirs) = classpath.map(_.data).toVector.partition(ClasspathUtilities.isArchive)
-    val depLibs      = dependencies.map(_.data).toSet.filterNot(ClasspathUtilities.isArchive)
-    val excludedJars = ao.excludedJars map {_.data}
-    val libsFiltered = (libs flatMap {
-      case jar if excludedJars contains jar.asFile => None
-      case jar if jar.asFile.getName startsWith "scala-" =>
-        if (ao.includeScala) Some(jar) else None
-      case jar if depLibs contains jar.asFile =>
-        if (ao.includeDependency) Some(jar) else None
-      case jar =>
-        if (ao.includeBin) Some(jar) else None
-    })
-    val dirsFiltered =
-      dirs.par flatMap {
-        case dir =>
-          if (ao.includeBin) Some(dir)
-          else None
-      } map { dir =>
-        val hash = sha1name(dir)
-        IO.write(tempDir / (hash + "_dir.dir"), dir.getCanonicalPath, IO.utf8, false)
-        val dest = tempDir / (hash + "_dir")
-        if (dest.exists) {
-          IO.delete(dest)
-        }
-        dest.mkdir()
-        IO.copyDirectory(dir, dest)
-        dest
-      }
-    val jarDirs =
-      (for(jar <- libsFiltered.par) yield {
-        val jarName = jar.asFile.getName
-        val hash = sha1name(jar) + "_" + sha1content(jar)
-        val jarNamePath = tempDir / (hash + ".jarName")
-        val dest = tempDir / hash
-        // If the jar name path does not exist, or is not for this jar, unzip the jar
-        if (!ao.cacheUnzip || !jarNamePath.exists || IO.read(jarNamePath) != jar.getCanonicalPath )
-        {
-          log.info("Including: %s".format(jarName))
-          IO.delete(dest)
-          dest.mkdir()
-          AssemblyUtils.unzip(jar, dest, log)
-          IO.delete(ao.excludedFiles(Seq(dest)))
-          
-          // Write the jarNamePath at the end to minimise the chance of having a
-          // corrupt cache if the user aborts the build midway through
-          IO.write(jarNamePath, jar.getCanonicalPath, IO.utf8, false)
-        }
-        else log.info("Including from cache: %s".format(jarName))
-
-        (dest, jar)
-      })
-
-    log.debug("Calculate mappings...")
-    val base: Vector[File] = dirsFiltered.seq ++ (jarDirs map { _._1 })
-    def getMappings(rootDir : File): Vector[(File, String)] = {
-      val descendendants = if (!rootDir.exists) Vector()
-                           else ((rootDir ** "*") --- ao.excludedFiles(base) --- base).get
-      (descendendants x relativeTo(base)).toVector
-    }
-    val retval = (dirsFiltered map { d => MappingSet(None, getMappings(d)) }).seq ++
-                 (jarDirs map { case (d, j) => MappingSet(Some(j), getMappings(d)) })
-    retval.toVector
-  }
-  private val LicenseFile = """(license|licence|notice|copying)([.]\w+)?$""".r
-  private def isLicenseFile(fileName: String): Boolean =
-    fileName.toLowerCase match {
-      case LicenseFile(_, ext) if ext != ".class" => true // DISLIKE
-      case _ => false
-    }
-
-  private val ReadMe = """(readme)([.]\w+)?$""".r
-  private def isReadme(fileName: String): Boolean =
-    fileName.toLowerCase match {
-      case ReadMe(_, ext) if ext != ".class" => true
-      case _ => false
-    }
-
   object PathList {
     private val sysFileSep = System.getProperty("file.separator")
     def unapplySeq(path: String): Option[Seq[String]] = {
@@ -373,9 +396,9 @@ object Plugin extends sbt.Plugin {
   }
 
   val defaultMergeStrategy: String => MergeStrategy = { 
-    case "reference.conf" | "rootdoc.txt" =>
+    case x if Assembly.isConfigFile(x) =>
       MergeStrategy.concat
-    case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
+    case PathList(ps @ _*) if Assembly.isReadme(ps.last) || Assembly.isLicenseFile(ps.last) =>
       MergeStrategy.rename
     case PathList("META-INF", xs @ _*) =>
       (xs map {_.toLowerCase}) match {
@@ -394,26 +417,13 @@ object Plugin extends sbt.Plugin {
     case _ => MergeStrategy.deduplicate
   }
 
-  private def assemblyTask(key: TaskKey[File]): Initialize[Task[File]] = Def.task {
-    val t = (test in key).value
-    val s = (streams in key).value
-    Assembly((outputPath in key).value, (assemblyOption in key).value,
-      (packageOptions in key).value, (assembledMappings in key).value,
-      s.cacheDirectory, s.log)
-  }
-  private def assembledMappingsTask(key: TaskKey[File]): Initialize[Task[Seq[MappingSet]]] = Def.task {
-    val s = (streams in key).value
-    assemblyAssembledMappings(
-      (fullClasspath in assembly).value, (dependencyClasspath in assembly).value,
-      (assemblyOption in key).value, s.log)
-  }
   lazy val baseAssemblySettings: Seq[sbt.Def.Setting[_]] = Seq(
-    assembly := assemblyTask(assembly).value,
-    assembledMappings in assembly := assembledMappingsTask(assembly).value,
-    packageScala := assemblyTask(packageScala).value,
-    assembledMappings in packageScala := assembledMappingsTask(packageScala).value,
-    packageDependency := assemblyTask(packageDependency).value,
-    assembledMappings in packageDependency := assembledMappingsTask(packageDependency).value,
+    assembly := Assembly.assemblyTask(assembly).value,
+    assembledMappings in assembly          := Assembly.assembledMappingsTask(assembly).value,
+    packageScala                           := Assembly.assemblyTask(packageScala).value,
+    assembledMappings in packageScala      := Assembly.assembledMappingsTask(packageScala).value,
+    packageDependency                      := Assembly.assemblyTask(packageDependency).value,
+    assembledMappings in packageDependency := Assembly.assembledMappingsTask(packageDependency).value,
 
     // test
     test in assembly := (test in Test).value,
