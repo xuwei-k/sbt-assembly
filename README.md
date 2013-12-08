@@ -162,9 +162,9 @@ Here is the default:
 
 ```scala
   val defaultMergeStrategy: String => MergeStrategy = { 
-    case "reference.conf" | "rootdoc.txt" =>
+    case x if Assembly.isConfigFile(x) =>
       MergeStrategy.concat
-    case PathList(ps @ _*) if isReadme(ps.last) || isLicenseFile(ps.last) =>
+    case PathList(ps @ _*) if Assembly.isReadme(ps.last) || Assembly.isLicenseFile(ps.last) =>
       MergeStrategy.rename
     case PathList("META-INF", xs @ _*) =>
       (xs map {_.toLowerCase}) match {
