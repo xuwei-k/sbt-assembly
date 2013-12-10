@@ -316,10 +316,10 @@ In addition the fat JAR is cached so its timestamp changes only when the input c
 assemblyOption in assembly ~= { _.copy(cacheOutput = false) }
 ```
 
-### Publishing
+### Publishing (Not Recommended)
 
-If you wish to publish your assembled artifact along with the `publish` task
-and all of the other artifacts, you can add an `assembly` classifier (or other):
+Publishing fat JARs out to the world is discouraged because non-modular JARs cause much sadness. One might think non-modularity is convenience but it quickly turns into a headache the moment your users step outside of Hello World example code. If you still wish to publish your assembled artifact along with the `publish` task
+and all of the other artifacts, add an `assembly` classifier (or other):
 
 ```scala
 artifact in (Compile, assembly) ~= { art =>
