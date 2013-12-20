@@ -24,7 +24,6 @@ object Plugin extends sbt.Plugin {
     lazy val excludedJars      = TaskKey[Classpath]("assembly-excluded-jars")
     lazy val assembledMappings = TaskKey[Seq[MappingSet]]("assembly-assembled-mappings")
     lazy val mergeStrategy     = SettingKey[String => MergeStrategy]("assembly-merge-strategy", "mapping from archive member path to merge strategy")
-    lazy val prependScript     = SettingKey[Seq[String]]("assembly-prepend-script", "If the prependShellScript option is enabled, this setting defines the contents of the script.")
   }
 
   // Keep track of the source package of mappings that come from a jar, so we can
@@ -158,7 +157,7 @@ object Plugin extends sbt.Plugin {
 
   object Assembly {
     def apply(out0: File, ao: AssemblyOption, po: Seq[PackageOption], mappings: Seq[MappingSet],
-        cacheDir: File, prependScript: Seq[String], log: Logger): File = {
+        cacheDir: File, log: Logger): File = {
       import Tracked.{inputChanged, outputChanged}
       import Types.:+:
       import Cache._
@@ -187,7 +186,7 @@ object Plugin extends sbt.Plugin {
           val tmpFile = cacheDir / "assemblyExec.tmp"
           if (tmpFile.exists()) tmpFile.delete()
           val jarCopy = IO.copyFile(outPath, tmpFile)
-          IO.writeLines(outPath, prependScript, append = false)
+          IO.writeLines(outPath, ao.scriptToPrepend, append = false)
           val jarBytes = IO.readBytes(tmpFile)
           tmpFile.delete()
           IO.append(outPath, jarBytes)
@@ -415,7 +414,7 @@ object Plugin extends sbt.Plugin {
     val s = (streams in key).value
     Assembly((outputPath in key).value, (assemblyOption in key).value,
       (packageOptions in key).value, (assembledMappings in key).value,
-      s.cacheDirectory, (prependScript in key).value, s.log)
+      s.cacheDirectory, s.log)
   }
   private def assembledMappingsTask(key: TaskKey[File]): Initialize[Task[Seq[MappingSet]]] = Def.task {
     val s = (streams in key).value
@@ -447,7 +446,7 @@ object Plugin extends sbt.Plugin {
         mergeStrategy in assembly,
         excludedJars in assembly,
         streams) map {
-      (includeBin, includeScala, includeDeps, ms, excludedJars, s) =>   
+      (includeBin, includeScala, includeDeps, ms, excludedJars, s) =>
       AssemblyOption(assemblyDirectory = s.cacheDirectory / "assembly",
         includeBin = includeBin,
         includeScala = includeScala,
@@ -457,8 +456,7 @@ object Plugin extends sbt.Plugin {
         excludedFiles = defaultExcludedFiles,
         cacheOutput = true,
         cacheUnzip = true,
-        appendContentHash = false,
-        prependShellScript = false)
+        appendContentHash = false)
     },
     assemblyOption in packageScala <<= (assemblyOption in assembly) map { opt =>
       opt.copy(includeBin = false, includeScala = true, includeDependency = false)
@@ -494,9 +492,7 @@ object Plugin extends sbt.Plugin {
     
     fullClasspath in assembly <<= fullClasspath or (fullClasspath in Runtime),
     
-    dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime),
-
-    prependScript in assembly := Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@"""")
+    dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime)
   )
   
   lazy val assemblySettings: Seq[sbt.Def.Setting[_]] = baseAssemblySettings
@@ -512,4 +508,5 @@ case class AssemblyOption(assemblyDirectory: File,
   cacheOutput: Boolean = true,
   cacheUnzip: Boolean = true,
   appendContentHash: Boolean = false,
-  prependShellScript: Boolean = false)
+  prependShellScript: Boolean = false,
+  scriptToPrepend: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@""""))
