@@ -1,0 +1,6 @@
+  [98]: https://github.com/sbt/sbt-assembly/issues/98
+  [@mrt]: https://github.com/mrt
+
+### bug fixes
+
+- `assemblyPackageDependency` is fixed to include dep libraries. [#98][98] reported by [@mrt][@mrt]

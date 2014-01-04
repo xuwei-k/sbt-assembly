@@ -276,7 +276,7 @@ object Plugin extends sbt.Plugin {
       if (!tempDir.exists) tempDir.mkdir()
 
       val (libs, dirs) = classpath.map(_.data).toVector.partition(ClasspathUtilities.isArchive)
-      val depLibs      = dependencies.map(_.data).toSet.filterNot(ClasspathUtilities.isArchive)
+      val depLibs      = dependencies.map(_.data).toSet.filter(ClasspathUtilities.isArchive)
       val excludedJars = ao.excludedJars map {_.data}
       val libsFiltered = (libs flatMap {
         case jar if excludedJars contains jar.asFile => None
