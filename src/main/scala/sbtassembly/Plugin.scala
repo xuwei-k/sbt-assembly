@@ -5,7 +5,7 @@ import Keys._
 import scala.collection.mutable
 import scala.io.Source
 import Def.Initialize
-import java.io.{ PrintWriter, FileOutputStream, File }
+import java.io.{IOException, PrintWriter, FileOutputStream, File}
 import java.security.MessageDigest
 
 object Plugin extends sbt.Plugin {
@@ -182,6 +182,21 @@ object Plugin extends sbt.Plugin {
           }
         }
         Package.makeJar(ms, outPath, manifest, log)
+        if (ao.prependShellScript) {
+          val tmpFile = cacheDir / "assemblyExec.tmp"
+          if (tmpFile.exists()) tmpFile.delete()
+          val jarCopy = IO.copyFile(outPath, tmpFile)
+          IO.writeLines(outPath, ao.scriptToPrepend, append = false)
+          val jarBytes = IO.readBytes(tmpFile)
+          tmpFile.delete()
+          IO.append(outPath, jarBytes)
+          try {
+            Seq("chmod", "+x", outPath.toString).!
+          }
+          catch {
+            case e: IOException ⇒ log.warn("Could not run 'chmod +x' on jarfile. Perhaps chmod command is not available?")
+          }
+        }
       }
       lazy val inputs = {
         log.info("Checking every *.class/*.jar file's SHA-1.")
@@ -441,7 +456,7 @@ object Plugin extends sbt.Plugin {
         mergeStrategy in assembly,
         excludedJars in assembly,
         streams) map {
-      (includeBin, includeScala, includeDeps, ms, excludedJars, s) =>   
+      (includeBin, includeScala, includeDeps, ms, excludedJars, s) =>
       AssemblyOption(assemblyDirectory = s.cacheDirectory / "assembly",
         includeBin = includeBin,
         includeScala = includeScala,
@@ -451,7 +466,7 @@ object Plugin extends sbt.Plugin {
         excludedFiles = defaultExcludedFiles,
         cacheOutput = true,
         cacheUnzip = true,
-        appendContentHash = false) 
+        appendContentHash = false)
     },
     assemblyOption in packageScala <<= (assemblyOption in assembly) map { opt =>
       opt.copy(includeBin = false, includeScala = true, includeDependency = false)
@@ -502,4 +517,6 @@ case class AssemblyOption(assemblyDirectory: File,
   mergeStrategy: String => Plugin.MergeStrategy = Plugin.defaultMergeStrategy,
   cacheOutput: Boolean = true,
   cacheUnzip: Boolean = true,
-  appendContentHash: Boolean = false)
+  appendContentHash: Boolean = false,
+  prependShellScript: Boolean = false,
+  scriptToPrepend: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@""""))
