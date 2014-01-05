@@ -182,11 +182,11 @@ object Plugin extends sbt.Plugin {
           }
         }
         Package.makeJar(ms, outPath, manifest, log)
-        if (ao.prependShellScript) {
+        ao.prependShellScript foreach { shellScript: Seq[String] =>
           val tmpFile = cacheDir / "assemblyExec.tmp"
           if (tmpFile.exists()) tmpFile.delete()
           val jarCopy = IO.copyFile(outPath, tmpFile)
-          IO.writeLines(outPath, ao.scriptToPrepend, append = false)
+          IO.writeLines(outPath, shellScript, append = false)
           val jarBytes = IO.readBytes(tmpFile)
           tmpFile.delete()
           IO.append(outPath, jarBytes)
@@ -194,7 +194,7 @@ object Plugin extends sbt.Plugin {
             Seq("chmod", "+x", outPath.toString).!
           }
           catch {
-            case e: IOException ⇒ log.warn("Could not run 'chmod +x' on jarfile. Perhaps chmod command is not available?")
+            case e: IOException => log.warn("Could not run 'chmod +x' on jarfile. Perhaps chmod command is not available?")
           }
         }
       }
@@ -432,6 +432,8 @@ object Plugin extends sbt.Plugin {
     case _ => MergeStrategy.deduplicate
   }
 
+  val defaultShellScript: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@"""") // "
+
   lazy val baseAssemblySettings: Seq[sbt.Def.Setting[_]] = Seq(
     assembly := Assembly.assemblyTask(assembly).value,
     assembledMappings in assembly          := Assembly.assembledMappingsTask(assembly).value,
@@ -451,28 +453,29 @@ object Plugin extends sbt.Plugin {
     assembleArtifact in packageDependency := true,
     mergeStrategy in assembly := defaultMergeStrategy,
     excludedJars in assembly := Nil,
-    assemblyOption in assembly <<= (assembleArtifact in packageBin,
-        assembleArtifact in packageScala, assembleArtifact in packageDependency,
-        mergeStrategy in assembly,
-        excludedJars in assembly,
-        streams) map {
-      (includeBin, includeScala, includeDeps, ms, excludedJars, s) =>
-      AssemblyOption(assemblyDirectory = s.cacheDirectory / "assembly",
-        includeBin = includeBin,
-        includeScala = includeScala,
-        includeDependency = includeDeps,
-        mergeStrategy = ms,
-        excludedJars = excludedJars,
-        excludedFiles = defaultExcludedFiles,
-        cacheOutput = true,
-        cacheUnzip = true,
-        appendContentHash = false)
+    assemblyOption in assembly := {
+      val s = streams.value
+      AssemblyOption(
+        assemblyDirectory  = s.cacheDirectory / "assembly",
+        includeBin         = (assembleArtifact in packageBin).value,
+        includeScala       = (assembleArtifact in packageScala).value,
+        includeDependency  = (assembleArtifact in packageDependency).value,
+        mergeStrategy      = (mergeStrategy in assembly).value,
+        excludedJars       = (excludedJars in assembly).value,
+        excludedFiles      = defaultExcludedFiles,
+        cacheOutput        = true,
+        cacheUnzip         = true,
+        appendContentHash  = false,
+        prependShellScript = None)
     },
-    assemblyOption in packageScala <<= (assemblyOption in assembly) map { opt =>
-      opt.copy(includeBin = false, includeScala = true, includeDependency = false)
+
+    assemblyOption in packageScala := {
+      val ao = (assemblyOption in assembly).value
+      ao.copy(includeBin = false, includeScala = true, includeDependency = false)
     },
-    assemblyOption in packageDependency <<= (assemblyOption in assembly) map { opt =>
-      opt.copy(includeBin = false, includeScala = true, includeDependency = true)
+    assemblyOption in packageDependency := {
+      val ao = (assemblyOption in assembly).value
+      ao.copy(includeBin = false, includeScala = true, includeDependency = true)
     },
 
     // packageOptions
@@ -518,5 +521,4 @@ case class AssemblyOption(assemblyDirectory: File,
   cacheOutput: Boolean = true,
   cacheUnzip: Boolean = true,
   appendContentHash: Boolean = false,
-  prependShellScript: Boolean = false,
-  scriptToPrepend: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@""""))
+  prependShellScript: Option[Seq[String]] = None)

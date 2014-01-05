@@ -329,6 +329,23 @@ artifact in (Compile, assembly) ~= { art =>
 addArtifact(artifact in (Compile, assembly), assembly)
 ```
 
+### Prepending Shebang
+
+You can prepend shell script to the fat jar as follows:
+
+```scala
+assemblyOption in assembly ~= { _.copy(prependShellScript = Some(defaultShellScript)) }
+
+jarName in assembly := { s"${name.value}-${version.value}" }
+```
+
+This will prepend the following shell script to the jar.
+
+```
+#!/usr/bin/env sh
+exec java -jar "$0" "$@"
+```
+
 License
 -------
 
