@@ -24,6 +24,6 @@ The fat jar can be executed given that you have `sh` on the system:
 
 This feature was contributed by [@tlockney][@tlockney] as [#97][97].
 
-### bug fixes
+### bug fix
 
 - `assemblyPackageDependency` is fixed to include dep libraries. [#98][98] reported by [@mrt][@mrt]
