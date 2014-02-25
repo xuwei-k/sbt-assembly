@@ -17,9 +17,8 @@ Effective bug reports are more likely to be fixed. These guidelines explain how 
 
 ## where to file a bug report
 
-- For questions and specific support issues use [stackoverflow][3] with tags `sbt` and `sbt-assembly`.
+- For questions and specific support issues use [stackoverflow][3] with tags `sbt` and `sbt-assembly`. After the quesion is aked, you can ping me on twitter (@eed3si9n) about it, but don't expect immediate response.
 - For enhancement ideas and confirmed bugs use [github issues][1] to report them.
-- If it's a general discussion, try [sbt mailing list][2] and ping me on twitter (@eed3si9n) about it.
 
 ## how to file a bug report
 
@@ -49,7 +48,7 @@ The subject of the bug report doesn't matter. A more descriptive subject is cert
 
 ### formatting
 
-If possible, use Markdown to highlight outputs and code snipplets:
+If possible, use highlight outputs and code snipplets. On Github it's:
 
     ```scala
     import sbt._
@@ -71,7 +70,19 @@ If possible, use Markdown to highlight outputs and code snipplets:
     }
     ```
 
-The above will be displayed nicely in fixed width font with Scala syntax highlights on Github.
+On StackOverflow, it's:
+
+```
+<!-- language: lang-scala -->
+
+    import sbt._
+    import Keys._
+    import sbtassembly.Plugin._
+    import AssemblyKeys._
+    ....
+```
+
+The above will be displayed nicely in fixed width font with Scala syntax highlights.
 
 ## pull reqs
 
