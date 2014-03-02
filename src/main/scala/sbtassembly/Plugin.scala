@@ -85,7 +85,7 @@ object Plugin extends sbt.Plugin {
         try {
           files foreach {f =>
             IO.transfer(f, out)
-            if (!IO.read(file).endsWith(IO.Newline)) out.write(IO.Newline.getBytes(IO.defaultCharset))
+            if (!IO.read(f).endsWith(IO.Newline)) out.write(IO.Newline.getBytes(IO.defaultCharset))
           }
           Right(Seq(file -> path))
         } finally {
