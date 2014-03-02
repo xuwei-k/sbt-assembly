@@ -83,7 +83,10 @@ object Plugin extends sbt.Plugin {
         val file = createMergeTarget(tempDir, path)
         val out = new FileOutputStream(file)
         try {
-          files foreach (f => IO.transfer(f, out))
+          files foreach {f =>
+            IO.transfer(f, out)
+            if (!IO.read(file).endsWith(IO.Newline)) out.write(IO.Newline.getBytes(IO.defaultCharset))
+          }
           Right(Seq(file -> path))
         } finally {
           out.close()
