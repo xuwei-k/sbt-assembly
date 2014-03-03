@@ -4,7 +4,7 @@ name := "sbt-assembly"
 
 organization := "com.eed3si9n"
 
-version := "0.10.2"
+version := "0.11.0-SNAPSHOT"
 
 description := "sbt plugin to create a single fat jar"
 
