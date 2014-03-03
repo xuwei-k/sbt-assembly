@@ -29,22 +29,6 @@ addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.11.0")
 
 For sbt 0.12, see [sbt-assemlby 0.9.2](https://github.com/sbt/sbt-assembly/tree/0.9.2).
 
-### Using Source Dependency
-
-Alternately, you can have sbt checkout and build the plugin's source from version control.
-
-Specify sbt-assembly.git as a dependency in `project/project/build.scala`:
-
-```scala
-import sbt._
-
-object Plugins extends Build {
-  lazy val root = Project("root", file(".")) dependsOn(
-    uri("git://github.com/sbt/sbt-assembly.git#XX") // where XX is tag or sha1
-  )
-}
-```
-
 (You may need to check this project's tags to see what the most recent release is.)
 
 Usage
