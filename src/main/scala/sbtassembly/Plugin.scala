@@ -367,7 +367,7 @@ object Plugin extends sbt.Plugin {
     def assembledMappingsTask(key: TaskKey[File]): Initialize[Task[Seq[MappingSet]]] = Def.task {
       val s = (streams in key).value
       assembleMappings(
-        (fullClasspath in assembly).value, (dependencyClasspath in assembly).value,
+        (fullClasspath in assembly).value, (externalDependencyClasspath in assembly).value,
         (assemblyOption in key).value, s.log)
     }
 
@@ -508,15 +508,17 @@ object Plugin extends sbt.Plugin {
     
     fullClasspath in assembly <<= fullClasspath or (fullClasspath in Runtime),
     
-    dependencyClasspath in assembly <<= dependencyClasspath or (dependencyClasspath in Runtime)
+    externalDependencyClasspath in assembly <<= externalDependencyClasspath or (externalDependencyClasspath in Runtime)
   )
   
   lazy val assemblySettings: Seq[sbt.Def.Setting[_]] = baseAssemblySettings
 }
 
 case class AssemblyOption(assemblyDirectory: File,
+  // include compiled class files from itself or subprojects
   includeBin: Boolean = true,
   includeScala: Boolean = true,
+  // include class files from external dependencies
   includeDependency: Boolean = true,
   excludedJars: Classpath = Nil,
   excludedFiles: Seq[File] => Seq[File] = Plugin.defaultExcludedFiles, // use mergeStrategy instead

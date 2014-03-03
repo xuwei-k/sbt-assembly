@@ -273,13 +273,13 @@ To exclude Scala library,
 assemblyOption in assembly ~= { _.copy(includeScala = false) }
 ```
 
-To exclude the class files from the main sources,
+To exclude the class files from the main sources and internal dependencies,
 
 ```scala
 assemblyOption in assembly ~= { _.copy(includeBin = false) }
 ```
 
-To make a JAR file containing only the dependencies, type
+To make a JAR file containing only the external dependencies, type
 
     > assemblyPackageDependency
 
