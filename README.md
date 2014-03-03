@@ -34,7 +34,7 @@ For sbt 0.12, see [sbt-assemlby 0.9.2](https://github.com/sbt/sbt-assembly/tree/
 Usage
 -----
 
-### Applying the Plugin to a Project (Adding the `assembly` Task)
+### Applying the plugin to a project (Adding the `assembly` Task)
 
 First, make sure that you've added the plugin to your build (either the published
 builds or source from Git).
@@ -49,6 +49,8 @@ assemblySettings
 
 // your assembly settings here
 ```
+
+### Applying the plugin to multi-project build.sbt
 
 If you are using multi-project `build.sbt`:
 
@@ -68,6 +70,32 @@ val app = (project in file("app")).
     // your settings here
   )
 ```
+
+### Applying the plugin to multi-project build.scala
+
+If you are using multi-project `build.scala`:
+
+```
+import sbt._
+import Keys._
+import sbtassembly.Plugin._
+import AssemblyKeys._
+
+object Builds extends Build {
+  lazy val buildSettings = Defaults.defaultSettings ++ Seq(
+    version := "0.1-SNAPSHOT",
+    organization := "com.example",
+    scalaVersion := "2.10.1"
+  )
+
+  lazy val app = Project("app", file("app"),
+    settings = buildSettings ++ assemblySettings) settings(
+      // your settings here
+    )
+}
+```
+
+### assembly task
 
 Now you'll have an awesome new `assembly` task which will compile your project,
 run your tests, and then pack your class files and all your dependencies into a
