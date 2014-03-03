@@ -24,7 +24,7 @@ Setup
 For sbt 0.13 add sbt-assembly as a dependency in `project/assembly.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.2")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.11.0")
 ```
 
 For sbt 0.12, see [sbt-assemlby 0.9.2](https://github.com/sbt/sbt-assembly/tree/0.9.2).
@@ -353,6 +353,6 @@ exec java -jar "$0" "$@"
 License
 -------
 
-Copyright (c) 2010-2013 e.e d3si9n, Coda Hale
+Copyright (c) 2010-2014 e.e d3si9n, Coda Hale
 
 Published under The MIT License, see LICENSE
