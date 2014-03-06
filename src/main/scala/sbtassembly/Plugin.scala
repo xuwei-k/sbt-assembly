@@ -347,11 +347,19 @@ object Plugin extends sbt.Plugin {
 
       log.debug("Calculate mappings...")
       val base: Vector[File] = dirsFiltered.seq ++ (jarDirs map { _._1 })
-      def getMappings(rootDir : File): Vector[(File, String)] = {
-        val descendendants = if (!rootDir.exists) Vector()
-                             else ((rootDir ** "*") --- ao.excludedFiles(base) --- base).get
-        (descendendants x relativeTo(base)).toVector
-      }
+      val excluded = (ao.excludedFiles(base) ++ base).toSet
+      def getMappings(rootDir : File): Vector[(File, String)] =
+        if(!rootDir.exists) Vector() else {
+          def loop(dir: File, prefix: String, acc: Seq[(File, String)]): Seq[(File, String)] = {
+            val children = (dir * new SimpleFileFilter(f => !excluded(f))).get
+            children.flatMap { f =>
+              val rel = (if(prefix.isEmpty) "" else prefix + "/") + f.getName
+              val pairAcc = (f -> rel) +: acc
+              if(f.isDirectory) loop(f, rel, pairAcc) else pairAcc
+            }
+          }
+          loop(rootDir, "", Nil).toVector
+        }
       val retval = (dirsFiltered map { d => MappingSet(None, getMappings(d)) }).seq ++
                    (jarDirs map { case (d, j) => MappingSet(Some(j), getMappings(d)) })
       retval.toVector
