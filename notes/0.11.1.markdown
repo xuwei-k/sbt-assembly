@@ -4,4 +4,4 @@
 
 ### Performance improvements
 
-[Mark Harrah][@harrah] contributed a performance improvement for sbt-assembly. [#108][108] This apparently is more noticible when you're dealing with lots of files. Related [sbt/sbt#1153][1153].
+[Mark Harrah][@harrah] contributed a performance improvement for sbt-assembly. [#108][108] The change would be more noticible when you're dealing with lots of files. Related [sbt/sbt#1153][1153].
