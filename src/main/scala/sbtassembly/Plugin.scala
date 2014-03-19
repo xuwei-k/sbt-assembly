@@ -349,11 +349,13 @@ object Plugin extends sbt.Plugin {
       val base: Vector[File] = dirsFiltered.seq ++ (jarDirs map { _._1 })
       val excluded = (ao.excludedFiles(base) ++ base).toSet
       def getMappings(rootDir : File): Vector[(File, String)] =
-        if(!rootDir.exists) Vector() else {
+        if(!rootDir.exists) Vector()
+        else {
+          val sysFileSep = System.getProperty("file.separator")
           def loop(dir: File, prefix: String, acc: Seq[(File, String)]): Seq[(File, String)] = {
             val children = (dir * new SimpleFileFilter(f => !excluded(f))).get
             children.flatMap { f =>
-              val rel = (if(prefix.isEmpty) "" else prefix + "/") + f.getName
+              val rel = (if(prefix.isEmpty) "" else prefix + sysFileSep) + f.getName
               val pairAcc = (f -> rel) +: acc
               if(f.isDirectory) loop(f, rel, pairAcc) else pairAcc
             }
