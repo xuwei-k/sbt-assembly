@@ -27,7 +27,7 @@ For sbt 0.13 add sbt-assembly as a dependency in `project/assembly.sbt`:
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.11.2")
 ```
 
-For sbt 0.12, see [sbt-assemlby 0.9.2](https://github.com/sbt/sbt-assembly/tree/0.9.2).
+For sbt 0.12, see [sbt-assembly 0.9.2](https://github.com/sbt/sbt-assembly/tree/0.9.2).
 
 (You may need to check this project's tags to see what the most recent release is.)
 
