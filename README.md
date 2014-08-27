@@ -212,7 +212,7 @@ assembly task grabs deps JARs from your project's classpath. Try fixing the clas
 If you're trying to exclude JAR files that are already part of the container (like Spark), consider scoping the dependent library to `"provided"` configuration:
 
 ```scala
-libraryDependencies += Seq(
+libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "0.8.0-incubating" % "provided",
   "org.apache.hadoop" % "hadoop-client" % "2.0.0-cdh4.4.0" % "provided"
 )
