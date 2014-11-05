@@ -432,7 +432,7 @@ object Plugin extends sbt.Plugin {
       (xs map {_.toLowerCase}) match {
         case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>
           MergeStrategy.discard
-        case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
+        case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") || ps.last.endsWith(".rsa") =>
           MergeStrategy.discard
         case "plexus" :: xs =>
           MergeStrategy.discard
