@@ -136,6 +136,18 @@ object Assembly {
     (mod.toVector, stratMapping.toList)
   }
 
+  def isScalaLibraryFile(file: File): Boolean =
+    Vector("scala-actors",
+      "scala-compiler",
+      "scala-continuations",
+      "scala-library",
+      "scala-parser-combinators",
+      "scala-reflect",
+      "scala-swing",
+      "scala-xml") exists { x =>
+      file.getName startsWith x
+    }
+
   // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
   // which jars exactly belong to the deps for packageDependency option.
   def assembleMappings(classpath: Classpath, dependencies: Classpath,
@@ -151,8 +163,7 @@ object Assembly {
     val excludedJars = ao.excludedJars map {_.data}
     val libsFiltered = (libs flatMap {
       case jar if excludedJars contains jar.asFile => None
-      case jar if (jar.asFile.getName startsWith "scala-library") ||
-                  (jar.asFile.getName startsWith "scala-compiler") =>
+      case jar if isScalaLibraryFile(jar.asFile) =>
         if (ao.includeScala) Some(jar) else None
       case jar if depLibs contains jar.asFile =>
         if (ao.includeDependency) Some(jar) else None
