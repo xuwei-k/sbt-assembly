@@ -1,6 +1,12 @@
+  [pbp]: http://www.scala-sbt.org/0.13/docs/Plugins-Best-Practices.html
 
 Upgrading from 0.11.x to 0.12.0
 -------------------------------
+
+### Key name has changed
+
+In accordance to revised [plugin best practice][pbp] guide, all keys introduced by sbt-assembly are now prefixed with "assembly" or "assemble."
+So, for example `jarName` becomes `assemblyJarName`, and `mergeStrategy` becomes `assemblyMergeStrategy`. For easier migration, the older key names are deprecated but still kept in the plugin for 0.12.0.
 
 ### Upgrading with multi-project build.sbt
 

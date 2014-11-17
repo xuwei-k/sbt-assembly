@@ -14,10 +14,10 @@ lazy val root = (project in file(".")).
     unmanagedJars in Test <++= baseDirectory map { base =>
        (base / "lib" / "test" ** "*.jar").classpath
     },
-    excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
+    assemblyExcludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
       cp filter {_.data.getName == "compile-0.1.0.jar"}
     },
-    jarName in assembly := "foo.jar",
+    assemblyJarName in assembly := "foo.jar",
     TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
       val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
       val out = (process!!)

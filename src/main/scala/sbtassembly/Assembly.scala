@@ -223,7 +223,8 @@ object Assembly {
   def assemblyTask(key: TaskKey[File]): Initialize[Task[File]] = Def.task {
     val t = (test in key).value
     val s = (streams in key).value
-    Assembly((outputPath in key).value, (assemblyOption in key).value,
+    Assembly(
+      (assemblyOutputPath in key).value, (assemblyOption in key).value,
       (packageOptions in key).value, (assembledMappings in key).value,
       s.cacheDirectory, s.log)
   }

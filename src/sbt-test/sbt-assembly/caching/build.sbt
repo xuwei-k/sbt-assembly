@@ -7,7 +7,7 @@ lazy val root = (project in file(".")).
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "0.9.29" % "runtime",
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(cacheOutput = true),
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(cacheUnzip = true),
-    jarName in assembly := "foo.jar",
+    assemblyJarName in assembly := "foo.jar",
     TaskKey[Seq[File]]("genresource") <<= (unmanagedResourceDirectories in Compile) map { (dirs) =>
       val file = dirs.head / "foo.txt"
       IO.write(file, "bye")

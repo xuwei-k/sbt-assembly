@@ -8,7 +8,7 @@ lazy val root = (project in file(".")).
     ),
     assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) },
     assemblyOption in assembly ~= { _.copy(appendContentHash = true) },
-    assemblyOption in packageDependency ~= { _.copy(appendContentHash = true) },
+    assemblyOption in assemblyPackageDependency ~= { _.copy(appendContentHash = true) },
     TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
       val process = sbt.Process("java", Seq("-cp", 
         (crossTarget / "foo-assembly-0.1-7a4ebf373b385ed1badbab93d52cffdfc4587c04.jar").toString +

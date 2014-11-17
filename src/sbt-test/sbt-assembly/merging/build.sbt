@@ -1,7 +1,7 @@
 lazy val testmerge = (project in file(".")).
   settings(
     version := "0.1",
-    jarName in assembly := "foo.jar",
+    assemblyJarName in assembly := "foo.jar",
     scalaVersion := "2.9.1",
     mergeStrategy in assembly := {
       case "a" ⇒ MergeStrategy.concat

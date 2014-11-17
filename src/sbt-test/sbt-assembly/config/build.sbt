@@ -5,7 +5,7 @@ lazy val root = (project in file(".")).
   ).
   settings(inConfig(Test)(baseAssemblySettings): _*).
   settings(
-    jarName in (Test, assembly) := "foo.jar",
+    assemblyJarName in (Test, assembly) := "foo.jar",
     TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
       val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
       val out = (process!!)
