@@ -126,11 +126,13 @@ object MergeStrategy {
     override def notifyThreshold = 1
   }
 
-  val defaultMergeStrategy: String => MergeStrategy = { 
+  val defaultMergeStrategy: String => MergeStrategy = {
     case x if Assembly.isConfigFile(x) =>
       MergeStrategy.concat
     case PathList(ps @ _*) if Assembly.isReadme(ps.last) || Assembly.isLicenseFile(ps.last) =>
       MergeStrategy.rename
+    case PathList(ps @ _*) if Assembly.isSystemJunkFile(ps.last) =>
+      MergeStrategy.discard
     case PathList("META-INF", xs @ _*) =>
       (xs map {_.toLowerCase}) match {
         case ("manifest.mf" :: Nil) | ("index.list" :: Nil) | ("dependencies" :: Nil) =>

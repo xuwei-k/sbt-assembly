@@ -1,5 +1,6 @@
   [116]: https://github.com/sbt/sbt-assembly/issues/116
   [125]: https://github.com/sbt/sbt-assembly/pull/125
+  [123]: https://github.com/sbt/sbt-assembly/issues/123
   [@romovpa]: https://github.com/romovpa
 
 ### auto plugin
@@ -11,3 +12,4 @@ See [migration guide](https://github.com/sbt/sbt-assembly/blob/master/Migration.
 
 - `META-INF/*.rsa` files are discarded by default. [#125][125] by [@romovpa][@romovpa]
 - Fixes `includeScala = false` excluding scala-logging. [#116][116]
+- Fixes OS junk file `.DS_Store` causing duplicate error. [#123][123]

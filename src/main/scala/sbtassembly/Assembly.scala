@@ -136,18 +136,6 @@ object Assembly {
     (mod.toVector, stratMapping.toList)
   }
 
-  def isScalaLibraryFile(file: File): Boolean =
-    Vector("scala-actors",
-      "scala-compiler",
-      "scala-continuations",
-      "scala-library",
-      "scala-parser-combinators",
-      "scala-reflect",
-      "scala-swing",
-      "scala-xml") exists { x =>
-      file.getName startsWith x
-    }
-
   // even though fullClasspath includes deps, dependencyClasspath is needed to figure out
   // which jars exactly belong to the deps for packageDependency option.
   def assembleMappings(classpath: Classpath, dependencies: Classpath,
@@ -247,6 +235,12 @@ object Assembly {
       (assemblyOption in key).value, s.log)
   }
 
+  def isSystemJunkFile(fileName: String): Boolean =
+    fileName.toLowerCase match {
+      case ".ds_store" | "thumbs.db" => true
+      case _ => false
+    }
+
   def isLicenseFile(fileName: String): Boolean = {
     val LicenseFile = """(license|licence|notice|copying)([.]\w+)?$""".r
     fileName.toLowerCase match {
@@ -267,6 +261,18 @@ object Assembly {
     fileName.toLowerCase match {
       case "reference.conf" | "rootdoc.txt" | "play.plugins" => true
       case _ => false
+    }
+
+  def isScalaLibraryFile(file: File): Boolean =
+    Vector("scala-actors",
+      "scala-compiler",
+      "scala-continuations",
+      "scala-library",
+      "scala-parser-combinators",
+      "scala-reflect",
+      "scala-swing",
+      "scala-xml") exists { x =>
+      file.getName startsWith x
     }
 
   private[sbtassembly] def sha1 = MessageDigest.getInstance("SHA-1")
