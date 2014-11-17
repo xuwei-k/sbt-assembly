@@ -237,25 +237,27 @@ assemblyMergeStrategy in assembly := {
 }
 ```
 
-### Excluding Scala library, your project, or deps JARs
-
-To exclude Scala library (JARs that start with `scala-` and are included in the binary Scala distribution),
-
-```scala
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
-```
-
-To exclude the class files from the main sources and internal dependencies,
-
-```scala
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeBin = false)
-```
+### Splitting your project and deps JARs
 
 To make a JAR file containing only the external dependencies, type
 
     > assemblyPackageDependency
 
+This is intended to be used with a JAR that only contains your project
+
+```scala
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false, includeDependency = false)
+```
+
 NOTE: If you use [`-jar` option for `java`](http://docs.oracle.com/javase/7/docs/technotes/tools/solaris/java.html#jar), it will ignore `-cp`, so if you have multiple JAR files you have to use `-cp` and pass the main class: `java -cp "jar1.jar:jar2.jar" Main`
+
+### Excluding Scala library JARs
+
+To exclude Scala library (JARs that start with `scala-` and are included in the binary Scala distribution) to run with `scala` command,
+
+```scala
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
+```
 
 ### assemblyExcludedJars
 
