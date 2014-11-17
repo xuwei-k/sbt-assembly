@@ -151,7 +151,8 @@ object Assembly {
     val excludedJars = ao.excludedJars map {_.data}
     val libsFiltered = (libs flatMap {
       case jar if excludedJars contains jar.asFile => None
-      case jar if jar.asFile.getName startsWith "scala-" =>
+      case jar if (jar.asFile.getName startsWith "scala-library") ||
+                  (jar.asFile.getName startsWith "scala-compiler") =>
         if (ao.includeScala) Some(jar) else None
       case jar if depLibs contains jar.asFile =>
         if (ao.includeDependency) Some(jar) else None

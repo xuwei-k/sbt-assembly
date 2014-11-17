@@ -239,7 +239,7 @@ assemblyMergeStrategy in assembly := {
 
 ### Excluding Scala library, your project, or deps JARs
 
-To exclude Scala library,
+To exclude Scala library (Any JAR that starts with `scala-library` and `scala-compiler`),
 
 ```scala
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
