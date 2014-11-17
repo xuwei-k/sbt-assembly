@@ -10,7 +10,6 @@ $ exists target/scala-2.9.1/jarHash.txt
 > checkhash
 
 > assembly
-$ newer target/scala-2.9.1/foo.jar target/scala-2.9.1/jarHash.txt
 > check
 
 # run again to check that the hash is the same
