@@ -3,6 +3,10 @@
 Upgrading from 0.11.x to 0.12.0
 -------------------------------
 
+### sbt 0.13.5 or above
+
+Auto plugins are available only for sbt 0.13.5 and above.
+
 ### Key name has changed
 
 In accordance to revised [plugin best practice][pbp] guide, all keys introduced by sbt-assembly are now prefixed with "assembly" or "assemble."
