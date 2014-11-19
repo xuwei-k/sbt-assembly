@@ -1,4 +1,5 @@
   [pbp]: http://www.scala-sbt.org/0.13/docs/Plugins-Best-Practices.html
+  [1]: https://github.com/sbt/sbt-assembly/blob/0.12.0/src/main/scala/sbtassembly/AssemblyKeys.scala
 
 Upgrading from 0.11.x to 0.12.0
 -------------------------------
@@ -7,10 +8,10 @@ Upgrading from 0.11.x to 0.12.0
 
 Auto plugins are available only for sbt 0.13.5 and above.
 
-### Key name has changed
+### Some key names have changed
 
 In accordance to revised [plugin best practice][pbp] guide, all keys introduced by sbt-assembly are now prefixed with "assembly" or "assemble."
-So, for example `jarName` becomes `assemblyJarName`, and `mergeStrategy` becomes `assemblyMergeStrategy`. For easier migration, the older key names are deprecated but still kept in the plugin for 0.12.0.
+So, for example `jarName` becomes `assemblyJarName`, and `mergeStrategy` becomes `assemblyMergeStrategy`. For easier migration, the older key names are deprecated but still kept in the plugin for 0.12.0. See [AssemblyKeys.scala][1]
 
 ### Upgrading with multi-project build.sbt
 
