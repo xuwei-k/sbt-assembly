@@ -10,6 +10,7 @@ lazy val testmerge = (project in file(".")).
       case "d" ⇒ MergeStrategy.filterDistinctLines
       case "e" ⇒ MergeStrategy.deduplicate
       case "f" ⇒ MergeStrategy.discard
+      case PathList("x", "y") ⇒ MergeStrategy.discard
       case x   ⇒
         val oldStrategy = (mergeStrategy in assembly).value
         oldStrategy(x)

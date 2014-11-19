@@ -11,6 +11,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
   object autoImport extends AssemblyKeys {
     val Assembly = sbtassembly.Assembly
     val MergeStrategy = sbtassembly.MergeStrategy
+    val PathList = sbtassembly.PathList
     val baseAssemblySettings = AssemblyPlugin.baseAssemblySettings
   }
   import autoImport.{ Assembly => _, baseAssemblySettings => _, _ }
