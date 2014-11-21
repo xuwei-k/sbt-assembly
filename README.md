@@ -24,7 +24,7 @@ Setup
 For sbt 0.13.6+ add sbt-assembly as a dependency in `project/assembly.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.12.0-M1")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.12.0")
 ```
 
 For older sbt 0.13.x, see [sbt-assembly 0.11.2](https://github.com/sbt/sbt-assembly/tree/0.11.2).
