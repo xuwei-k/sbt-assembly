@@ -206,7 +206,7 @@ libraryDependencies ++= Seq(
     exclude("org.mortbay.jetty", "servlet-api").
     exclude("commons-beanutils", "commons-beanutils-core").
     exclude("commons-collections", "commons-collections").
-    exclude("commons-collections", "commons-collections").
+    exclude("commons-logging", "commons-logging").
     exclude("com.esotericsoftware.minlog", "minlog")
 )
 ```
