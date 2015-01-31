@@ -93,36 +93,52 @@ object Assembly {
 
   def applyStrategies(srcSets: Seq[MappingSet], strats: String => MergeStrategy,
       tempDir: File, log: Logger): (Vector[(File, String)], List[(String, MergeStrategy)]) = {
+    import org.scalactic._
+    import org.scalactic.Accumulation._
+
     val srcs = srcSets.flatMap( _.mappings )
     val counts = scala.collection.mutable.Map[MergeStrategy, Int]().withDefaultValue(0)
     (tempDir * "sbtMergeTarget*").get foreach { x => IO.delete(x) }
-    def applyStrategy(strategy: MergeStrategy, name: String, files: Seq[(File, String)]): Seq[(File, String)] = {
+    def applyStrategy(strategy: MergeStrategy, name: String, files: Seq[(File, String)]): Seq[(File, String)] Or ErrorMessage = {
       if (files.size >= strategy.notifyThreshold) {
         log.log(strategy.detailLogLevel, "Merging '%s' with strategy '%s'".format(name, strategy.name))
         counts(strategy) += 1
       }
       strategy((tempDir, name, files map (_._1))) match {
-        case Right(f)  => f
-        case Left(err) => throw new RuntimeException(strategy.name + ": " + err)
+        case Right(f) => Good(f)
+        case Left(err) => Bad(strategy.name + ": " + err)
       }
     }
-    val renamed = srcs.groupBy(_._2).flatMap { case (name, files) =>
+    val renamed: Seq[(File, String)] = srcs.groupBy(_._2).toVector.map { case (name, files) =>
       val strategy = strats(name)
-      if (strategy == MergeStrategy.rename) applyStrategy(strategy, name, files)
-      else files
-    } (scala.collection.breakOut)
+      if (strategy == MergeStrategy.rename) applyStrategy(strategy, name, files).accumulating
+      else Good(files)
+    }.combined match {
+      case Good(g) => g.flatten
+      case Bad(errs) =>
+        val numErrs = errs.size
+        val message = numErrs + (if (numErrs > 1) " errors were " else " error was ") + "encountered during renaming"
+        log.error(message)
+        throw new RuntimeException(errs.mkString("\n"))
+    }
     // this step is necessary because some dirs may have been renamed above
     val cleaned: Seq[(File, String)] = renamed filter { pair =>
       (!pair._1.isDirectory) && pair._1.exists
     }
     val stratMapping = new mutable.ListBuffer[(String, MergeStrategy)]
-    val mod: Seq[(File, String)] =
-      cleaned.groupBy(_._2).toVector.sortBy(_._1).flatMap { case (name, files) =>
-        val strategy = strats(name)
-        stratMapping append (name -> strategy)
-        if (strategy != MergeStrategy.rename) applyStrategy(strategy, name, files)
-        else files
-      } (scala.collection.breakOut)
+    val mod: Seq[(File, String)] = cleaned.groupBy(_._2).toVector.sortBy(_._1).map { case (name, files) =>
+      val strategy = strats(name)
+      stratMapping append (name -> strategy)
+      if (strategy != MergeStrategy.rename) applyStrategy(strategy, name, files).accumulating
+      else Good(files)
+    }.combined match {
+      case Good(g) => g.flatten
+      case Bad(errs) =>
+        val numErrs = errs.size
+        val message = numErrs + (if (numErrs > 1) " errors were " else " error was ") + "encountered during merge"
+        log.error(message)
+        throw new RuntimeException(errs.mkString("\n"))
+    }
     counts.keysIterator.toSeq.sortBy(_.name) foreach { strat =>
       val count = counts(strat)
       log.log(strat.summaryLogLevel, "Strategy '%s' was applied to ".format(strat.name) + (count match {
