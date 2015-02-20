@@ -11,7 +11,7 @@ language: scala
 env:
   matrix:
     - TEST_COMMAND="scripted sbt-assembly/*"
-    - TEST_COMMAND="scripted merging/*"
+    - TEST_COMMAND="scripted merging/* caching/*"
 
 script:
   - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M "$TEST_COMMAND"
