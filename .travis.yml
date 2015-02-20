@@ -1,4 +1,4 @@
 language: scala
 
 script:
-   - sbt -jvm-opts travis/jvmopts scripted
+   - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M -J-Xms1024M scripted
