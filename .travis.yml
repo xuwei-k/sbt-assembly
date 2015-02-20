@@ -22,4 +22,4 @@ script:
 
 notifications:
   email:
-    secure: Mci/UpSoCTCjaAcMhKYhlI9ljMJAILgHQFYPjvzXC2drMePXMcGqdmk3cXdJzpMTUOKqC782DEG2dD+MCTZJyNBtytCvOTvDa09nHNbgxJsX3D7tF8Ozb6ouf1UbH3qXYN3iHblSCTYXMf9cj8vKDyEMXBFoBsJ7Z0VIYeGxMuM=
+    secure: "XQ1aQRScPUO2N4clkbp8NIw6SMjDhL5Wj1/PoVgYS3Bml/zFlyJ9Am6Nk1nIwbKPXL4fByVwQ9Wikqtawk4uXm+L7amJbmbDyargCHRGIfbWqnSuMYUtNa4oUjzj3zJRsjUQ35SmObyMQ8vrqwBmhUk5y8KoTdbQndaQTtKEfDA="
