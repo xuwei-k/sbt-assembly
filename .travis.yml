@@ -19,3 +19,7 @@ script:
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+
+notifications:
+  email:
+    secure: Mci/UpSoCTCjaAcMhKYhlI9ljMJAILgHQFYPjvzXC2drMePXMcGqdmk3cXdJzpMTUOKqC782DEG2dD+MCTZJyNBtytCvOTvDa09nHNbgxJsX3D7tF8Ozb6ouf1UbH3qXYN3iHblSCTYXMf9cj8vKDyEMXBFoBsJ7Z0VIYeGxMuM=
