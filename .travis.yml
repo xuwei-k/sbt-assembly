@@ -8,7 +8,7 @@ cache:
 language: scala
 
 script:
-   - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M scripted
+  - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M scripted
 
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
