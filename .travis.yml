@@ -8,8 +8,13 @@ cache:
 
 language: scala
 
+env:
+  matrix:
+    - TEST_COMMAND="scripted sbt-assembly/*"
+    - TEST_COMMAND="scripted merging/*"
+
 script:
-  - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M scripted
+  - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M "$TEST_COMMAND"
 
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
