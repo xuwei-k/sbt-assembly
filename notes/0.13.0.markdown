@@ -1,6 +1,6 @@
   [144]: https://github.com/sbt/sbt-assembly/pull/144
   [145]: https://github.com/sbt/sbt-assembly/pull/145
-  [@jeffreyolchovy][@jeffreyolchovy]: https://github.com/jeffreyolchovy
+  [@jeffreyolchovy]: https://github.com/jeffreyolchovy
   [@catap]: https://github.com/catap
 
 ### Accumulate errors during merge
