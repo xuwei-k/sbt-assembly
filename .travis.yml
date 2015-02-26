@@ -17,6 +17,7 @@ jdk:
   - openjdk7
 
 env:
+  # This splits the build into two parts
   matrix:
     - TEST_COMMAND="scripted sbt-assembly/*"
     - TEST_COMMAND="scripted merging/* caching/*"
