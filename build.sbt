@@ -1,9 +1,10 @@
 lazy val commonSettings: Seq[Setting[_]] = Seq(
-  version in ThisBuild := "0.13.0",
+  git.baseVersion in ThisBuild := "0.13.1",
   organization in ThisBuild := "com.eed3si9n"
 )
 
 lazy val root = (project in file(".")).
+  enablePlugins(GitVersioning).
   settings(commonSettings: _*).
   settings(
     sbtPlugin := true,
@@ -15,11 +16,5 @@ lazy val root = (project in file(".")).
     publishArtifact in (Compile, packageBin) := true,
     publishArtifact in (Test, packageBin) := false,
     publishArtifact in (Compile, packageDoc) := false,
-    publishArtifact in (Compile, packageSrc) := true,
-    publishMavenStyle := false,
-    publishTo := {
-      if (version.value contains "-SNAPSHOT") Some(Resolver.sbtPluginRepo("snapshots"))
-      else Some(Resolver.sbtPluginRepo("releases"))
-    },
-    credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
+    publishArtifact in (Compile, packageSrc) := true
   )
