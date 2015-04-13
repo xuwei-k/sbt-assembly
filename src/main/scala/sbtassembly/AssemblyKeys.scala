@@ -21,7 +21,7 @@ trait AssemblyKeys {
   @deprecated("Use assemblyJarName", "0.12.0")
   lazy val jarName                   = assemblyJarName
   
-  lazy val assemblyDefaultJarName    = taskKey[String]("default name of the far jar")
+  lazy val assemblyDefaultJarName    = taskKey[String]("default name of the fat jar")
   @deprecated("Use assemblyDefaultJarName", "0.12.0")
   lazy val defaultJarName            = assemblyDefaultJarName
   
