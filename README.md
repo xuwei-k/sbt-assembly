@@ -92,6 +92,16 @@ To set an explicit main class,
 mainClass in assembly := Some("com.example.Main")
 ```
 
+Excluding an explicit main class from your assembly requires something a little bit different though
+
+```
+packageOptions in assembly ~= { pos =>
+  pos.filterNot { po =>
+    po.isInstanceOf[Package.MainClass]
+  }
+}
+```
+
 ### Merge Strategy
 
 If multiple files share the same relative path (e.g. a resource named
