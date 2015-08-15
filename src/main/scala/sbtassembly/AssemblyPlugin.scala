@@ -13,9 +13,10 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     val MergeStrategy = sbtassembly.MergeStrategy
     val PathList = sbtassembly.PathList
     val baseAssemblySettings = AssemblyPlugin.baseAssemblySettings
+    val Shader = sbtassembly.Shader
   }
   import autoImport.{ Assembly => _, baseAssemblySettings => _, _ }
-   
+
   val defaultShellScript: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@"""") // "
 
   override lazy val projectSettings: Seq[Def.Setting[_]] = assemblySettings
@@ -32,12 +33,13 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     test in assembly := (test in Test).value,
     test in assemblyPackageScala := (test in assembly).value,
     test in assemblyPackageDependency := (test in assembly).value,
-    
+
     // assemblyOption
     assembleArtifact in packageBin := true,
     assembleArtifact in assemblyPackageScala := true,
     assembleArtifact in assemblyPackageDependency := true,
     assemblyMergeStrategy in assembly := MergeStrategy.defaultMergeStrategy,
+    assemblyShadingRules in assembly := Seq(),
     assemblyExcludedJars in assembly := Nil,
     assemblyOption in assembly := {
       val s = streams.value
@@ -52,7 +54,8 @@ object AssemblyPlugin extends sbt.AutoPlugin {
         cacheOutput        = true,
         cacheUnzip         = true,
         appendContentHash  = false,
-        prependShellScript = None)
+        prependShellScript = None,
+        shadingRules       = (assemblyShadingRules in assembly).value)
     },
 
     assemblyOption in assemblyPackageScala := {
@@ -86,14 +89,14 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     assemblyDefaultJarName in assemblyPackageScala      <<= (scalaVersion) map { (scalaVersion) => "scala-library-" + scalaVersion + "-assembly.jar" },
     assemblyDefaultJarName in assemblyPackageDependency <<= (name, version) map { (name, version) => name + "-assembly-" + version + "-deps.jar" },
     assemblyDefaultJarName in assembly                  <<= (name, version) map { (name, version) => name + "-assembly-" + version + ".jar" },
-    
+
     mainClass in assembly <<= mainClass or (mainClass in Runtime),
-    
+
     fullClasspath in assembly <<= fullClasspath or (fullClasspath in Runtime),
-    
+
     externalDependencyClasspath in assembly <<= externalDependencyClasspath or (externalDependencyClasspath in Runtime)
   )
-  
+
   lazy val assemblySettings: Seq[sbt.Def.Setting[_]] = baseAssemblySettings
 }
 
@@ -109,4 +112,5 @@ case class AssemblyOption(assemblyDirectory: File,
   cacheOutput: Boolean = true,
   cacheUnzip: Boolean = true,
   appendContentHash: Boolean = false,
-  prependShellScript: Option[Seq[String]] = None)
+  prependShellScript: Option[Seq[String]] = None,
+  shadingRules: Seq[ShadeRule] = Seq())
