@@ -13,7 +13,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     val MergeStrategy = sbtassembly.MergeStrategy
     val PathList = sbtassembly.PathList
     val baseAssemblySettings = AssemblyPlugin.baseAssemblySettings
-    val Shader = sbtassembly.Shader
+    val ShadeRule = sbtassembly.ShadeRule
   }
   import autoImport.{ Assembly => _, baseAssemblySettings => _, _ }
 
@@ -113,4 +113,4 @@ case class AssemblyOption(assemblyDirectory: File,
   cacheUnzip: Boolean = true,
   appendContentHash: Boolean = false,
   prependShellScript: Option[Seq[String]] = None,
-  shadingRules: Seq[ShadeRule] = Seq())
+  shadingRules: Seq[ShadeRuleConfigured] = Seq())
