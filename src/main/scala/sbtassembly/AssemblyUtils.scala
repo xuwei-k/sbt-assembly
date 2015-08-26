@@ -11,7 +11,7 @@ object AssemblyUtils {
   private val PathRE = "([^/]+)/(.*)".r
 
   /** Find the source file (and possibly the entry within a jar) whence a conflicting file came.
-   * 
+   *
    * @param tempDir The temporary directory provided to a `MergeStrategy`
    * @param f One of the files provided to a `MergeStrategy`
    * @return The source jar or dir; the path within that dir; and true if it's from a jar.
@@ -57,7 +57,7 @@ object AssemblyUtils {
         {
           val target = new File(toDirectory, name)
           //log.debug("Extracting zip entry '" + name + "' to '" + target + "'")
-          
+
           try {
             if(entry.isDirectory)
               IO.createDirectory(target)
@@ -69,7 +69,7 @@ object AssemblyUtils {
               }
             }
             if(preserveLastModified)
-              target.setLastModified(entry.getTime)            
+              target.setLastModified(entry.getTime)
           } catch {
             case e: Throwable => log.warn(e.getMessage)
           }
@@ -85,4 +85,19 @@ object AssemblyUtils {
     next()
     Set() ++ set
   }
+
+  def getMappings(rootDir : File, excluded: Set[File]): Vector[(File, String)] =
+    if(!rootDir.exists) Vector()
+    else {
+      val sysFileSep = System.getProperty("file.separator")
+      def loop(dir: File, prefix: String, acc: Seq[(File, String)]): Seq[(File, String)] = {
+        val children = (dir * new SimpleFileFilter(f => !excluded(f))).get
+        children.flatMap { f =>
+          val rel = (if(prefix.isEmpty) "" else prefix + sysFileSep) + f.getName
+          val pairAcc = (f -> rel) +: acc
+          if(f.isDirectory) loop(f, rel, pairAcc) else pairAcc
+        }
+      }
+      loop(rootDir, "", Nil).toVector
+    }
 }
