@@ -39,7 +39,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     assembleArtifact in assemblyPackageScala := true,
     assembleArtifact in assemblyPackageDependency := true,
     assemblyMergeStrategy in assembly := MergeStrategy.defaultMergeStrategy,
-    assemblyShadingRules in assembly := Seq(),
+    assemblyShadeRules in assembly := Seq(),
     assemblyExcludedJars in assembly := Nil,
     assemblyOption in assembly := {
       val s = streams.value
@@ -55,7 +55,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
         cacheUnzip         = true,
         appendContentHash  = false,
         prependShellScript = None,
-        shadingRules       = (assemblyShadingRules in assembly).value)
+        shadeRules         = (assemblyShadeRules in assembly).value)
     },
 
     assemblyOption in assemblyPackageScala := {
@@ -113,4 +113,4 @@ case class AssemblyOption(assemblyDirectory: File,
   cacheUnzip: Boolean = true,
   appendContentHash: Boolean = false,
   prependShellScript: Option[Seq[String]] = None,
-  shadingRules: Seq[ShadeRuleConfigured] = Seq())
+  shadeRules: Seq[ShadeRule] = Seq())

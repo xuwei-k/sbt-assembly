@@ -162,11 +162,11 @@ object Assembly {
     if (!ao.cacheUnzip) IO.delete(tempDir)
     if (!tempDir.exists) tempDir.mkdir()
 
-    val shadingRules = ao.shadingRules
+    val shadeRules = ao.shadeRules
 
     val (libs, dirs) = classpath.toVector.partition(c => ClasspathUtilities.isArchive(c.data))
 
-    val dirRules = shadingRules.filter(_.isApplicableToCompiling)
+    val dirRules = shadeRules.filter(_.isApplicableToCompiling)
     if (!dirRules.isEmpty) {
       dirs.foreach(d => Shader.shadeDirectory(dirRules, d.data, log))
     }
@@ -213,7 +213,7 @@ object Assembly {
           AssemblyUtils.unzip(jar.data, dest, log)
           IO.delete(ao.excludedFiles(Seq(dest)))
 
-          val jarRules = shadingRules
+          val jarRules = shadeRules
             .filter(_.isApplicableTo(jar.metadata.get(moduleID.key).get))
           if (jarRules.nonEmpty) {
             Shader.shadeDirectory(jarRules, dest, log)

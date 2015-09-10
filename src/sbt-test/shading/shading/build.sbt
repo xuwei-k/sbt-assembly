@@ -3,10 +3,10 @@ lazy val testshade = (project in file(".")).
     version := "0.1",
     assemblyJarName in assembly := "foo.jar",
     scalaVersion := "2.9.1",
-    assemblyShadingRules in assembly := Seq(
-      ShadeRule.Remove("remove.*").applyToCompiling,
-      ShadeRule.Rename("toshade.ShadeClass" -> "toshade.ShadedClass").applyToCompiling,
-      ShadeRule.Rename("toshade.ShadePackage" -> "shaded_package.ShadePackage").applyToCompiling
+    assemblyShadeRules in assembly := Seq(
+      ShadeRule.remove("remove.*").inProject,
+      ShadeRule.rename("toshade.ShadeClass" -> "toshade.ShadedClass").inProject,
+      ShadeRule.rename("toshade.ShadePackage" -> "shaded_package.ShadePackage").inProject
     ),
     TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) ⇒
       IO.withTemporaryDirectory { dir ⇒
