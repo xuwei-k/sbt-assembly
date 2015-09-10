@@ -174,7 +174,7 @@ strategy as parameters.
 ### Shading
 
 sbt-assembly can shade classes from your projects or from the library dependencies.
-Backed by [jarjar](https://code.google.com/archive/p/jarjar/wikis/CommandLineDocs.wiki), bytecode transformation (via ASM) is used to change references to the renamed classes.
+Backed by [Jar Jar Links](https://code.google.com/archive/p/jarjar/wikis/CommandLineDocs.wiki), bytecode transformation (via ASM) is used to change references to the renamed classes.
 
 ```scala
     assemblyShadeRules in assembly := Seq(
