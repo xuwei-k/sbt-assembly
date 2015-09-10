@@ -23,6 +23,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
 
   lazy val baseAssemblySettings: Seq[sbt.Def.Setting[_]] = Seq(
     assembly := Assembly.assemblyTask(assembly).value,
+    logLevel in assembly := Level.Info,
     assembledMappings in assembly                   := Assembly.assembledMappingsTask(assembly).value,
     assemblyPackageScala                            := Assembly.assemblyTask(assemblyPackageScala).value,
     assembledMappings in assemblyPackageScala       := Assembly.assembledMappingsTask(assemblyPackageScala).value,
@@ -55,7 +56,8 @@ object AssemblyPlugin extends sbt.AutoPlugin {
         cacheUnzip         = true,
         appendContentHash  = false,
         prependShellScript = None,
-        shadeRules         = (assemblyShadeRules in assembly).value)
+        shadeRules         = (assemblyShadeRules in assembly).value,
+        level              = (logLevel in assembly).value)
     },
 
     assemblyOption in assemblyPackageScala := {
@@ -113,4 +115,5 @@ case class AssemblyOption(assemblyDirectory: File,
   cacheUnzip: Boolean = true,
   appendContentHash: Boolean = false,
   prependShellScript: Option[Seq[String]] = None,
-  shadeRules: Seq[ShadeRule] = Seq())
+  shadeRules: Seq[ShadeRule] = Seq(),
+  level: Level.Value)

@@ -10,11 +10,12 @@ lazy val testshade = (project in file(".")).
       ShadeRule.rename("toshade.ShadePackage" -> "shaded_package.ShadePackage").inProject,
       ShadeRule.rename("org.apache.commons.io.**" -> "shadeio.@1").inLibrary("commons-io" % "commons-io" % "2.4").inProject
     ),
+    // logLevel in assembly := Level.Debug,
     TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) ⇒
       IO.withTemporaryDirectory { dir ⇒
         IO.unzip(crossTarget / "foo.jar", dir)
         mustNotExist(dir / "remove" / "Removed.class")
-        // mustNotExist(dir / "org" / "apache" / "commons" / "io" / "ByteOrderMark.class")
+        mustNotExist(dir / "org" / "apache" / "commons" / "io" / "ByteOrderMark.class")
         mustExist(dir / "shaded_package" / "ShadePackage.class")
         mustExist(dir / "toshade" / "ShadedClass.class")
         mustExist(dir / "shadeio" / "ByteOrderMark.class")

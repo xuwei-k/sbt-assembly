@@ -168,7 +168,7 @@ object Assembly {
 
     val dirRules = shadeRules.filter(_.isApplicableToCompiling)
     if (!dirRules.isEmpty) {
-      dirs.foreach(d => Shader.shadeDirectory(dirRules, d.data, log))
+      dirs.foreach(d => Shader.shadeDirectory(dirRules, d.data, log, ao.level))
     }
 
     val depLibs      = dependencies.map(_.data).toSet.filter(ClasspathUtilities.isArchive)
@@ -215,7 +215,7 @@ object Assembly {
           AssemblyUtils.unzip(jar.data, dest, log)
           IO.delete(ao.excludedFiles(Seq(dest)))
           if (jarRules.nonEmpty) {
-            Shader.shadeDirectory(jarRules, dest, log)
+            Shader.shadeDirectory(jarRules, dest, log, ao.level)
           }
 
           // Write the jarNamePath at the end to minimise the chance of having a

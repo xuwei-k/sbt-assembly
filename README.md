@@ -206,6 +206,12 @@ The `ShadeRule.zap` rule causes any matched class to be removed from the resulti
 
 The `ShadeRule.keep` rule marks all matched classes as "roots". If any keep rules are defined all classes which are not reachable from the roots via dependency analysis are discarded when writing the output jar. This is the last step in the process, after renaming and zapping.
 
+To see the verbose output for shading:
+
+```scala
+    logLevel in assembly := Level.Debug
+```
+
 Excluding JARs and files
 ------------------------
 
