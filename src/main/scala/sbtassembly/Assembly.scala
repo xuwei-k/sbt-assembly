@@ -201,7 +201,9 @@ object Assembly {
     val jarDirs =
       (for(jar <- libsFiltered.par) yield {
         val jarName = jar.data.asFile.getName
-        val hash = sha1name(jar.data) + "_" + sha1content(jar.data)
+        val jarRules = shadeRules
+          .filter(_.isApplicableTo(jar.metadata.get(moduleID.key).get))
+        val hash = sha1name(jar.data) + "_" + sha1content(jar.data) + "_" + sha1rules(jarRules)
         val jarNamePath = tempDir / (hash + ".jarName")
         val dest = tempDir / hash
         // If the jar name path does not exist, or is not for this jar, unzip the jar
@@ -212,9 +214,6 @@ object Assembly {
           dest.mkdir()
           AssemblyUtils.unzip(jar.data, dest, log)
           IO.delete(ao.excludedFiles(Seq(dest)))
-
-          val jarRules = shadeRules
-            .filter(_.isApplicableTo(jar.metadata.get(moduleID.key).get))
           if (jarRules.nonEmpty) {
             Shader.shadeDirectory(jarRules, dest, log)
           }
@@ -295,6 +294,7 @@ object Assembly {
   private[sbtassembly] def sha1content(f: File): String  = bytesToSha1String(IO.readBytes(f))
   private[sbtassembly] def sha1name(f: File): String     = sha1string(f.getCanonicalPath)
   private[sbtassembly] def sha1string(s: String): String = bytesToSha1String(s.getBytes("UTF-8"))
+  private[sbtassembly] def sha1rules(rs: Seq[ShadeRule]): String = sha1string(rs.toList.mkString(":"))
   private[sbtassembly] def bytesToSha1String(bytes: Array[Byte]): String =
     bytesToString(sha1.digest(bytes))
   private[sbtassembly] def bytesToString(bytes: Seq[Byte]): String =
