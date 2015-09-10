@@ -24,7 +24,7 @@ Setup
 For sbt 0.13.6+ add sbt-assembly as a dependency in `project/assembly.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.13.0")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.0")
 ```
 
 For older sbt 0.13.x, see [sbt-assembly 0.11.2](https://github.com/sbt/sbt-assembly/tree/0.11.2).
@@ -41,7 +41,7 @@ See [migration guide](Migration.md) for details on how to upgrade from older sbt
 
 ### Applying the plugin to multi-project build.sbt
 
-For example, here's multi-project `build.sbt`:
+For example, here's a multi-project `build.sbt`:
 
 ```scala
 lazy val commonSettings = Seq(
