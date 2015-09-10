@@ -171,6 +171,47 @@ from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,
 which takes the temporary directory and one of the files passed into the
 strategy as parameters.
 
+### Shading
+
+sbt-assembly can shade classes from your projects or from the library dependencies.
+Backed by [Jar Jar Links](https://code.google.com/archive/p/jarjar/wikis/CommandLineDocs.wiki), bytecode transformation (via ASM) is used to change references to the renamed classes.
+
+```scala
+    assemblyShadeRules in assembly := Seq(
+      ShadeRule.rename("org.apache.commons.io.**" -> "shadeio.@1").inAll
+    )
+```
+
+Here are the shade rules:
+
+* `ShadeRule.rename("x.**" -> "y.@1", ...).inAll` This is the main rule.
+* `ShadeRule.zap("a.b.c").inAll`
+* `ShadeRule.keep("x.**").inAll`
+
+The main `ShadeRule.rename` rule is used to rename classes. All references to the renamed classes will also be updated. If a class name is matched by more than one rule, only the first one will apply.
+The `rename` rules takes a vararg of String pairs in `<pattern> -> <result>` format:
+
+- `<pattern>` is a class name with optional wildcards. `**` will match against any valid class name substring. To match a single package component (by excluding `.` from the match), a single `*` may be used instead.
+- `<result>` is a class name which can optionally reference the substrings matched by the wildcards. A numbered reference is available for every `*` or `**` in the `<pattern>`, starting from left to right: `@1`, `@2`, etc. A special `@0` reference contains the entire matched class name.
+
+Instead of `.inAll`, call `.inProject` to match your project source, or call `.inLibrary("commons-io" % "commons-io" % "2.4", ...)` to match specific library dependencies. `inProject` and `inLibrary(...)` can be chained.
+
+```scala
+    assemblyShadeRules in assembly := Seq(
+      ShadeRule.rename("org.apache.commons.io.**" -> "shadeio.@1").inLibrary("commons-io" % "commons-io" % "2.4", ...).inProject
+    )
+```
+
+The `ShadeRule.zap` rule causes any matched class to be removed from the resulting jar file. All zap rules are processed before renaming rules.
+
+The `ShadeRule.keep` rule marks all matched classes as "roots". If any keep rules are defined all classes which are not reachable from the roots via dependency analysis are discarded when writing the output jar. This is the last step in the process, after renaming and zapping.
+
+To see the verbose output for shading:
+
+```scala
+    logLevel in assembly := Level.Debug
+```
+
 Excluding JARs and files
 ------------------------
 

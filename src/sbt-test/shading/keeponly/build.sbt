@@ -3,8 +3,8 @@ lazy val testkeep = (project in file(".")).
     version := "0.1",
     assemblyJarName in assembly := "foo.jar",
     scalaVersion := "2.9.1",
-    assemblyShadingRules in assembly := Seq(
-      ShadeRule.KeepOnly("keep.**").applyToCompiling
+    assemblyShadeRules in assembly := Seq(
+      ShadeRule.keep("keep.**").inProject
     ),
     TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) ⇒
       IO.withTemporaryDirectory { dir ⇒

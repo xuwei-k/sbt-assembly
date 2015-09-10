@@ -37,7 +37,7 @@ trait AssemblyKeys {
   @deprecated("Use assemblyMergeStrategy", "0.12.0")
   lazy val mergeStrategy             = assemblyMergeStrategy
 
-  lazy val assemblyShadingRules      = settingKey[Seq[ShadeRuleConfigured]]("shading rules backed by jarjar")
+  lazy val assemblyShadeRules        = settingKey[Seq[ShadeRule]]("shading rules backed by jarjar")
 }
 object AssemblyKeys extends AssemblyKeys
 
