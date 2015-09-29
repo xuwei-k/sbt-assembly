@@ -145,7 +145,7 @@ object MergeStrategy {
           MergeStrategy.discard
         case "services" :: xs =>
           MergeStrategy.filterDistinctLines
-        case ("spring.schemas" :: Nil) | ("spring.handlers" :: Nil) =>
+        case ("spring.schemas" :: Nil) | ("spring.handlers" :: Nil) | ("spring.tooling" :: Nil) =>
           MergeStrategy.filterDistinctLines
         case _ => MergeStrategy.deduplicate
       }
