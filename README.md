@@ -329,7 +329,7 @@ Other Things
 You can also append SHA-1 fingerprint to the assembly file name, this may help you to determine whether it has changed and, for example, if it's necessary to deploy the dependencies,
 
 ```scala
-assemblyOption in assemblyPackageDependency := (assemblyOption in assemblyPackageDependency).value.copy(appendContentHash = true)
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(appendContentHash = true)
 ```
 
 ### Caching
