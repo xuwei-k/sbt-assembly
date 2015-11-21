@@ -1,0 +1,12 @@
+  [171]: https://github.com/sbt/sbt-assembly/pull/171
+  [179]: https://github.com/sbt/sbt-assembly/pull/179
+  [188]: https://github.com/sbt/sbt-assembly/pull/188
+  [@onilton]: https://github.com/onilton
+  [@ryano144]: https://github.com/ryano144
+  [@philwills]: https://github.com/philwills
+
+## minor enhancements and bug fixes
+
+- Fixes assembly of projects containing spring-web. [#171][171] by [@onilton][@onilton]
+- Bumping up jarjar to 1.6.0 to support shading with Java 8. [#179][179] by [@ryano144][@ryano144]
+- Allow shading to work in presence of unmanaged jars . [#188][188] by [@philwills][@philwills]
