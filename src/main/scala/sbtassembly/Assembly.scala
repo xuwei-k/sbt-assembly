@@ -166,11 +166,6 @@ object Assembly {
 
     val (libs, dirs) = classpath.toVector.partition(c => ClasspathUtilities.isArchive(c.data))
 
-    val dirRules = shadeRules.filter(_.isApplicableToCompiling)
-    if (!dirRules.isEmpty) {
-      dirs.foreach(d => Shader.shadeDirectory(dirRules, d.data, log, ao.level))
-    }
-
     val depLibs      = dependencies.map(_.data).toSet.filter(ClasspathUtilities.isArchive)
     val excludedJars = ao.excludedJars map {_.data}
     val libsFiltered = (libs flatMap {
@@ -182,6 +177,7 @@ object Assembly {
       case jar =>
         if (ao.includeBin) Some(jar) else None
     })
+    val dirRules = shadeRules.filter(_.isApplicableToCompiling)
     val dirsFiltered =
       dirs.par flatMap {
         case dir =>
@@ -196,6 +192,9 @@ object Assembly {
         }
         dest.mkdir()
         IO.copyDirectory(dir.data, dest)
+        if (dirRules.nonEmpty) {
+          Shader.shadeDirectory(dirRules, dest, log, ao.level)
+        }
         dest
       }
     val jarDirs =
