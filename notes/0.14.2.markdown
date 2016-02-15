@@ -1,0 +1,6 @@
+  [@eed3si9n]: https://github.com/eed3si9n
+  [145]: https://github.com/sbt/sbt-assembly/pull/145
+
+## breaking change
+
+- sbt-assembly 0.14.2 will no longer discard `META-INF/mailcap` and `META-INF/mimetypes.default`, reversing the change added in [#145][145].

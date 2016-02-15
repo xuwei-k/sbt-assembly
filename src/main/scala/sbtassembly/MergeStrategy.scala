@@ -135,7 +135,7 @@ object MergeStrategy {
       MergeStrategy.discard
     case PathList("META-INF", xs @ _*) =>
       (xs map {_.toLowerCase}) match {
-        case (x :: Nil) if Seq("manifest.mf", "index.list", "dependencies", "mailcap", "mimetypes.default") contains x =>
+        case (x :: Nil) if Seq("manifest.mf", "index.list", "dependencies") contains x =>
           MergeStrategy.discard
         case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") || ps.last.endsWith(".rsa") =>
           MergeStrategy.discard
