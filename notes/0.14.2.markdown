@@ -1,6 +1,12 @@
   [@eed3si9n]: https://github.com/eed3si9n
   [145]: https://github.com/sbt/sbt-assembly/pull/145
+  [197]: https://github.com/sbt/sbt-assembly/pull/197
+  [@pvlugter]: https://github.com/pvlugter
 
 ## breaking change
 
 - sbt-assembly 0.14.2 will no longer discard `META-INF/mailcap` and `META-INF/mimetypes.default`, reversing the change added in [#145][145].
+
+## shading fix
+
+- Fixes shading from shading in place, and instead shade after it's been copied to another directory. [#197][197] by [@pvlugter][@pvlugter]
