@@ -9,4 +9,4 @@
 
 ## shading fix
 
-- Fixes shading from shading in place, and instead shade after it's been copied to another directory. [#197][197] by [@pvlugter][@pvlugter]
+- Fixes shading that was shading in place, and instead shades after it's been copied to another directory. [#197][197] by [@pvlugter][@pvlugter]
