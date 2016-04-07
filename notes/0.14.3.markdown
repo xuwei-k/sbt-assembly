@@ -1,0 +1,6 @@
+  [206]: https://github.com/sbt/sbt-assembly/pull/206
+  [@YuvalItzchakov]: https://github.com/YuvalItzchakov
+
+## shading fix
+
+- Fixes broken shading on Windows [#206][206] by [@YuvalItzchakov][@YuvalItzchakov]
