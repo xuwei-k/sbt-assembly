@@ -5,7 +5,7 @@ import java.io.File
 import org.pantsbuild.jarjar._
 import org.pantsbuild.jarjar.util.EntryStruct
 
-import sbt._
+import sbt._, syntax._
 
 case class ShadeRule(shadePattern: ShadePattern, targets: Seq[ShadeTarget] = Seq()) {
   def inLibrary(moduleId: ModuleID*): ShadeRule =

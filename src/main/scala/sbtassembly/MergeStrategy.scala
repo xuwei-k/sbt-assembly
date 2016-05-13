@@ -1,7 +1,6 @@
 package sbtassembly
 
-import sbt._
-import Keys._
+import sbt._, Keys._, syntax._
 import java.io.{ FileOutputStream, File}
 import Assembly.{ sha1string, sha1content }
 
@@ -14,7 +13,7 @@ import Assembly.{ sha1string, sha1content }
 abstract class MergeStrategy extends Function1[(File, String, Seq[File]), Either[String, Seq[(File, String)]]] {
   def name: String
   def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]]
-  def notifyThreshold = 2
+  def notifyThreshold = 2f
   def detailLogLevel = Level.Warn
   def summaryLogLevel = Level.Warn
   final def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
@@ -107,7 +106,7 @@ object MergeStrategy {
             val dest = new File(f.getParent, appendJarName(f.getName, jar))
             IO.move(f, dest)
             val result = Seq(dest -> appendJarName(path, jar))
-            if (dest.isDirectory) ((dest ** (-DirectoryFilter))) pair relativeTo(base)
+            if (dest.isDirectory) ((dest ** (-DirectoryFilter))) pair Path.relativeTo(base)
             else result
         }
       })

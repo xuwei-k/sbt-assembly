@@ -1,7 +1,6 @@
 package sbtassembly
 
-import sbt._
-import Keys._
+import sbt._, Keys._, syntax._
 import scala.io.Source
 
 object AssemblyPlugin extends sbt.AutoPlugin {

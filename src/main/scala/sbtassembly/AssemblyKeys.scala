@@ -1,7 +1,6 @@
 package sbtassembly
 
-import sbt._
-import Keys._
+import sbt._, Keys._, syntax._
 
 trait AssemblyKeys {
   lazy val assembly                  = taskKey[File]("Builds a deployable fat jar.")

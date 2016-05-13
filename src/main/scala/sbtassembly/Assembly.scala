@@ -1,7 +1,6 @@
 package sbtassembly
 
-import sbt._
-import Keys._
+import sbt._, Keys._, syntax._
 import java.security.MessageDigest
 import java.io.{IOException, PrintWriter, FileOutputStream, File}
 import scala.collection.mutable
@@ -156,7 +155,7 @@ object Assembly {
   // which jars exactly belong to the deps for packageDependency option.
   def assembleMappings(classpath: Classpath, dependencies: Classpath,
       ao: AssemblyOption, log: Logger): Vector[MappingSet] = {
-    import sbt.classpath.ClasspathUtilities
+    import sbt.internal.inc.classpath.ClasspathUtilities
 
     val tempDir = ao.assemblyDirectory
     if (!ao.cacheUnzip) IO.delete(tempDir)
