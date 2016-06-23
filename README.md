@@ -47,15 +47,26 @@ For example, here's a multi-project `build.sbt`:
 lazy val commonSettings = Seq(
   version := "0.1-SNAPSHOT",
   organization := "com.example",
-  scalaVersion := "2.10.1"
+  scalaVersion := "2.10.1",
+  test in assembly := {}
 )
 
 lazy val app = (project in file("app")).
   settings(commonSettings: _*).
   settings(
-    // your settings here
+    mainClass in assembly := Some("com.example.Main"),
+    // more settings here ...
+  )
+
+lazy val utils = (project in file("utils")).
+  settings(commonSettings: _*).
+  settings(
+    assemblyJarName in assembly := "utils.jar",
+    // more settings here ...
   )
 ```
+
+In the above example, both the `app` project and the `utils` project do not run tests during assembly. The `app` project sets a main class whereas the `utils` project sets the name of its jar file.
 
 ### assembly task
 
