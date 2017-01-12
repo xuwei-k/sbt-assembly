@@ -21,13 +21,13 @@ lazy val root = (project in file(".")).
     TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
       val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
       val out = (process!!)
-      if (out.trim != "hello") error("unexpected output: " + out)
+      if (out.trim != "hello") sys.error("unexpected output: " + out)
       ()
     },
     TaskKey[Unit]("checkfoo") <<= (crossTarget) map { (crossTarget) =>
       val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
       val out = (process!!)
-      if (out.trim != "foo.txt") error("unexpected output: " + out)
+      if (out.trim != "foo.txt") sys.error("unexpected output: " + out)
       ()
     },
     TaskKey[Unit]("checkhash") <<= (crossTarget, streams) map { (crossTarget, s) =>

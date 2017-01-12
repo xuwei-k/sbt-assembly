@@ -22,7 +22,7 @@ lazy val testshade = (project in file(".")).
       }
       val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
       val out = (process!!)
-      if (out.trim != "hello shadeio.filefilter.AgeFileFilter") error("unexpected output: " + out)
+      if (out.trim != "hello shadeio.filefilter.AgeFileFilter") sys.error("unexpected output: " + out)
       ()
     })
 
