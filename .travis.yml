@@ -20,7 +20,7 @@ env:
   # This splits the build into two parts
   matrix:
     - TEST_COMMAND="scripted sbt-assembly/*"
-    - TEST_COMMAND="scripted merging/* caching/*"
+    - TEST_COMMAND="scripted merging/* caching/* shading/*"
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M "$TEST_COMMAND"
