@@ -11,16 +11,16 @@ lazy val testshade = (project in file(".")).
       ShadeRule.rename("org.apache.commons.io.**" -> "shadeio.@1").inLibrary("commons-io" % "commons-io" % "2.4").inProject
     ),
     // logLevel in assembly := Level.Debug,
-    TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) ⇒
+    TaskKey[Unit]("check") := {
       IO.withTemporaryDirectory { dir ⇒
-        IO.unzip(crossTarget / "foo.jar", dir)
+        IO.unzip(crossTarget.value / "foo.jar", dir)
         mustNotExist(dir / "remove" / "Removed.class")
         mustNotExist(dir / "org" / "apache" / "commons" / "io" / "ByteOrderMark.class")
         mustExist(dir / "shaded_package" / "ShadePackage.class")
         mustExist(dir / "toshade" / "ShadedClass.class")
         mustExist(dir / "shadeio" / "ByteOrderMark.class")
       }
-      val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
+      val process = sbt.Process("java", Seq("-jar", (crossTarget.value / "foo.jar").toString))
       val out = (process!!)
       if (out.trim != "hello shadeio.filefilter.AgeFileFilter") sys.error("unexpected output: " + out)
       ()

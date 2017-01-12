@@ -5,8 +5,8 @@ lazy val root = (project in file(".")).
     libraryDependencies += "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
     mainClass in assembly := Some("foo.Hello"),
     assemblyJarName in assembly := "foo.jar",
-    TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
-      val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
+    TaskKey[Unit]("check") := {
+      val process = sbt.Process("java", Seq("-jar", (crossTarget.value / "foo.jar").toString))
       val out = (process!!)
       if (out.trim != "hello") sys.error("unexpected output: " + out)
       ()

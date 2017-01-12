@@ -247,7 +247,7 @@ Maven defines ["provided"](http://maven.apache.org/guides/introduction/introduct
 The dependency will be part of compilation and test, but excluded from the runtime. If you Spark people want to include "provided" dependencies back to `run`, [@douglaz](https://github.com/douglaz) has come up with a one-liner solution on StackOverflow [sbt: how can I add "provided" dependencies back to run/test tasks' classpath?](http://stackoverflow.com/a/21803413/3827):
 
 ```scala
-run in Compile <<= Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)) 
+run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated
 ```
 
 ### Exclude specific transitive deps

@@ -15,9 +15,9 @@ lazy val testmerge = (project in file(".")).
         val oldStrategy = (mergeStrategy in assembly).value
         oldStrategy(x)
     },
-    TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) ⇒
+    TaskKey[Unit]("check") := {
       IO.withTemporaryDirectory { dir ⇒
-        IO.unzip(crossTarget / "foo.jar", dir)
+        IO.unzip(crossTarget.value / "foo.jar", dir)
         mustContain(dir / "a", Seq("1", "2", "1", "3"))
         mustContain(dir / "b", Seq("1"))
         mustContain(dir / "c", Seq("1", "3"))

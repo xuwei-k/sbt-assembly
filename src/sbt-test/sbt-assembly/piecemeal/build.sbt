@@ -5,10 +5,10 @@ lazy val root = (project in file(".")).
     scalaVersion := "2.10.2",
     assembleArtifact in assemblyPackageScala := false,
     assembleArtifact in assemblyPackageDependency := false,
-    TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
+    TaskKey[Unit]("check") := {
       val process = sbt.Process("java", Seq("-cp", 
-        (crossTarget / "scala-library-2.10.2-assembly.jar").toString + ":" +
-        (crossTarget / "foo-assembly-0.1.jar").toString,
+        (crossTarget.value / "scala-library-2.10.2-assembly.jar").toString + ":" +
+        (crossTarget.value / "foo-assembly-0.1.jar").toString,
         "Main"))
       val out = (process!!)
       if (out.trim != "hello") sys.error("unexpected output: " + out)
