@@ -9,7 +9,7 @@ lazy val root = (project in file(".")).
     TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) =>
       val process = sbt.Process("java", Seq("-jar", (crossTarget / "foo.jar").toString))
       val out = (process!!)
-      if (out.trim != "hellospec") error("unexpected output: " + out)
+      if (out.trim != "hellospec") sys.error("unexpected output: " + out)
       ()
     }
   )

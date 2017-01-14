@@ -16,7 +16,7 @@ lazy val root = (project in file(".")).
         (crossTarget / "foo-assembly-0.1-deps-1aa2cc229f2e93446713bf8d1c6efc1e6ddab0fe.jar").toString,
         "Main"))
       val out = (process!!)
-      if (out.trim != "hello") error("unexpected output: " + out)
+      if (out.trim != "hello") sys.error("unexpected output: " + out)
       ()
     }
   )

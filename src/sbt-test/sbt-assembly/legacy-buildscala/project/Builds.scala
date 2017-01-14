@@ -15,7 +15,7 @@ object Builds extends Build {
       TaskKey[Unit]("check") := {
         val process = sbt.Process("java", Seq("-jar", (crossTarget.value / "app-assembly-0.1-SNAPSHOT.jar").toString))
         val out = (process!!)
-        if (out.trim != "hello") error("unexpected output: " + out)
+        if (out.trim != "hello") sys.error("unexpected output: " + out)
         ()
       }
     )
