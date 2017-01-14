@@ -1,7 +1,7 @@
 lazy val root = (project in file(".")).
   settings(
     version := "0.1",
-    scalaVersion := "2.9.1"
+    scalaVersion := "2.11.8"
   ).
   settings(inConfig(Test)(baseAssemblySettings): _*).
   settings(
