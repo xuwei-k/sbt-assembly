@@ -2,7 +2,7 @@ lazy val testkeep = (project in file(".")).
   settings(
     version := "0.1",
     assemblyJarName in assembly := "foo.jar",
-    scalaVersion := "2.9.1",
+    scalaVersion := "2.11.8",
     assemblyShadeRules in assembly := Seq(
       ShadeRule.keep("keep.**").inProject
     ),
