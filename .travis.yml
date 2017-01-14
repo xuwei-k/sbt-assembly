@@ -14,7 +14,7 @@ scala:
    - 2.10.4
 
 jdk:
-  - openjdk7
+  - oraclejdk8
 
 env:
   # This splits the build into two parts
