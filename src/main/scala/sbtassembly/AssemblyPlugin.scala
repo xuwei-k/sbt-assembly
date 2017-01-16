@@ -70,8 +70,9 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     },
 
     // packageOptions
-    packageOptions in assembly <<= (packageOptions in (Compile, packageBin), mainClass in assembly) map { (os, mainClass) =>
-      mainClass map { s =>
+    packageOptions in assembly := {
+      val os = (packageOptions in (Compile, packageBin)).value
+      (mainClass in assembly).value map { s =>
         Package.MainClass(s) +: (os filterNot {_.isInstanceOf[Package.MainClass]})
       } getOrElse {os}
     },
@@ -82,21 +83,21 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     assemblyOutputPath in assembly                  := { (target in assembly).value / (assemblyJarName in assembly).value },
     assemblyOutputPath in assemblyPackageScala      := { (target in assembly).value / (assemblyJarName in assemblyPackageScala).value },
     assemblyOutputPath in assemblyPackageDependency := { (target in assembly).value / (assemblyJarName in assemblyPackageDependency).value },
-    target in assembly <<= crossTarget,
+    target in assembly := crossTarget.value,
 
-    assemblyJarName in assembly                   <<= (assemblyJarName in assembly)                  or (assemblyDefaultJarName in assembly),
-    assemblyJarName in assemblyPackageScala       <<= (assemblyJarName in assemblyPackageScala)      or (assemblyDefaultJarName in assemblyPackageScala),
-    assemblyJarName in assemblyPackageDependency  <<= (assemblyJarName in assemblyPackageDependency) or (assemblyDefaultJarName in assemblyPackageDependency),
+    assemblyJarName in assembly                   := ((assemblyJarName in assembly)                  or (assemblyDefaultJarName in assembly)).value,
+    assemblyJarName in assemblyPackageScala       := ((assemblyJarName in assemblyPackageScala)      or (assemblyDefaultJarName in assemblyPackageScala)).value,
+    assemblyJarName in assemblyPackageDependency  := ((assemblyJarName in assemblyPackageDependency) or (assemblyDefaultJarName in assemblyPackageDependency)).value,
 
-    assemblyDefaultJarName in assemblyPackageScala      <<= (scalaVersion) map { (scalaVersion) => "scala-library-" + scalaVersion + "-assembly.jar" },
-    assemblyDefaultJarName in assemblyPackageDependency <<= (name, version) map { (name, version) => name + "-assembly-" + version + "-deps.jar" },
-    assemblyDefaultJarName in assembly                  <<= (name, version) map { (name, version) => name + "-assembly-" + version + ".jar" },
+    assemblyDefaultJarName in assemblyPackageScala      := { "scala-library-" + scalaVersion.value + "-assembly.jar" },
+    assemblyDefaultJarName in assemblyPackageDependency := { name.value + "-assembly-" + version.value + "-deps.jar" },
+    assemblyDefaultJarName in assembly                  := { name.value + "-assembly-" + version.value + ".jar" },
 
-    mainClass in assembly <<= mainClass or (mainClass in Runtime),
+    mainClass in assembly := (mainClass or (mainClass in Runtime)).value,
 
-    fullClasspath in assembly <<= fullClasspath or (fullClasspath in Runtime),
+    fullClasspath in assembly := (fullClasspath or (fullClasspath in Runtime)).value,
 
-    externalDependencyClasspath in assembly <<= externalDependencyClasspath or (externalDependencyClasspath in Runtime)
+    externalDependencyClasspath in assembly := (externalDependencyClasspath or (externalDependencyClasspath in Runtime)).value
   )
 
   lazy val assemblySettings: Seq[sbt.Def.Setting[_]] = baseAssemblySettings

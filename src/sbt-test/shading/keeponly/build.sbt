@@ -6,9 +6,9 @@ lazy val testkeep = (project in file(".")).
     assemblyShadeRules in assembly := Seq(
       ShadeRule.keep("keep.**").inProject
     ),
-    TaskKey[Unit]("check") <<= (crossTarget) map { (crossTarget) ⇒
+    TaskKey[Unit]("check") := {
       IO.withTemporaryDirectory { dir ⇒
-        IO.unzip(crossTarget / "foo.jar", dir)
+        IO.unzip(crossTarget.value / "foo.jar", dir)
         mustNotExist(dir / "removed" / "ShadeClass.class")
         mustNotExist(dir / "removed" / "ShadePackage.class")
         mustExist(dir / "keep" / "Keeped.class")
