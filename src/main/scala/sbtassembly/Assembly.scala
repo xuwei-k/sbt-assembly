@@ -201,7 +201,7 @@ object Assembly {
       (for(jar <- libsFiltered.par) yield {
         val jarName = jar.data.asFile.getName
         val jarRules = shadeRules
-          .filter(r => jar.metadata.get(moduleID.key).exists(r.isApplicableTo))
+          .filter(r => (r.isApplicableToAll || jar.metadata.get(moduleID.key).exists(r.isApplicableTo)))
         val hash = sha1name(jar.data) + "_" + sha1content(jar.data) + "_" + sha1rules(jarRules)
         val jarNamePath = tempDir / (hash + ".jarName")
         val dest = tempDir / hash
