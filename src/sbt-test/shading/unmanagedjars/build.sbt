@@ -7,6 +7,7 @@ lazy val testshade = (project in file(".")).
     assemblyShadeRules in assembly := Seq(
       ShadeRule.zap("remove.**").inProject,
       ShadeRule.rename("toshade.ShadeClass" -> "toshade.ShadedClass").inProject,
+      ShadeRule.rename("com.shade.unmanaged.**" -> "shaded_package.@0").inAll,
       ShadeRule.rename("toshade.ShadePackage" -> "shaded_package.ShadePackage").inProject,
       ShadeRule.rename("org.apache.commons.io.**" -> "shadeio.@1").inLibrary("commons-io" % "commons-io" % "2.4").inProject
     ),
@@ -17,6 +18,8 @@ lazy val testshade = (project in file(".")).
         mustNotExist(dir / "remove" / "Removed.class")
         mustNotExist(dir / "org" / "apache" / "commons" / "io" / "ByteOrderMark.class")
         mustExist(dir / "shaded_package" / "ShadePackage.class")
+        mustExist(dir / "shaded_package" / "com" / "shade" / "unmanaged" / "test" / "Bar.class")
+        mustExist(dir / "Foo.class")
         mustExist(dir / "toshade" / "ShadedClass.class")
         mustExist(dir / "shadeio" / "ByteOrderMark.class")
       }
