@@ -1,0 +1,19 @@
+
+## shading fix
+
+- Fixes shading not inserting unmanaged dependencies appropriately in the jar. [#233][233] by [@damdev][@damdev]
+- Fixes "VerifyError: Inconsistent stackmap frames" issue by updating library dependency Jar Jar Links 1.6.3 and asm 5.2. See also [#317586][317586]. [#237][237] by [@pomadchin][@pomadchin]
+
+## minor enhancements and bug fixes
+
+- Change prependShellScript to always use line feed. [#210][210] by [@naegelejd][@naegelejd]
+- Scalactic is bumped to 3.0.1. [#237][237] by [@pomadchin][@pomadchin]
+
+  [210]: https://github.com/sbt/sbt-assembly/pull/210
+  [233]: https://github.com/sbt/sbt-assembly/pull/233
+  [237]: https://github.com/sbt/sbt-assembly/pull/237
+  [317586]: http://forge.ow2.org/tracker/?group_id=23&atid=100023&func=detail&aid=317586
+  [@naegelejd]: https://github.com/naegelejd
+  [@fommil]: https://github.com/fommil
+  [@damdev]: https://github.com/damdev
+  [@pomadchin]: https://github.com/pomadchin
