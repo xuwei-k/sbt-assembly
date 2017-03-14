@@ -157,7 +157,6 @@ object Assembly {
   def assembleMappings(classpath: Classpath, dependencies: Classpath,
       ao: AssemblyOption, log: Logger): Vector[MappingSet] = {
     import sbt.classpath.ClasspathUtilities
-    implicit val aoImplicit = ao
     val tempDir = ao.assemblyDirectory
     if (!ao.cacheUnzip) IO.delete(tempDir)
     if (!tempDir.exists) tempDir.mkdir()
@@ -184,7 +183,7 @@ object Assembly {
           if (ao.includeBin) Some(dir)
           else None
       } map { dir =>
-        val hash = sha1name(dir.data)
+        val hash = sha1name(ao, dir.data)
         IO.write(tempDir / (hash + "_dir.dir"), dir.data.getCanonicalPath, IO.utf8, false)
         val dest = tempDir / (hash + "_dir")
         if (dest.exists) {
@@ -203,9 +202,9 @@ object Assembly {
         val jarRules = shadeRules
           .filter(r => (r.isApplicableToAll || jar.metadata.get(moduleID.key).exists(r.isApplicableTo)))
         val hash = {
-          val original = sha1name(jar.data) + "_" + sha1content(jar.data) + "_" + sha1rules(jarRules)
+          val original = sha1name(ao, jar.data) + "_" + sha1content(jar.data) + "_" + sha1rules(ao, jarRules)
           ao.maxHashLength match {
-            case Some(_) => sha1SafeString(original)
+            case Some(_) => sha1SafeString(ao, original)
             case None => original
           }
         }
@@ -297,16 +296,16 @@ object Assembly {
 
   private[sbtassembly] def sha1 = MessageDigest.getInstance("SHA-1")
   private[sbtassembly] def sha1content(f: File): String  = bytesToSha1String(IO.readBytes(f))
-  private[sbtassembly] def sha1name(f: File)(implicit ao: AssemblyOption): String = sha1SafeString(f.getCanonicalPath)
+  private[sbtassembly] def sha1name(ao: AssemblyOption, f: File): String = sha1SafeString(ao, f.getCanonicalPath)
   private[sbtassembly] def sha1string(s: String): String = bytesToSha1String(s.getBytes("UTF-8"))
-  private[sbtassembly] def sha1SafeString(s: String)(implicit ao: AssemblyOption): String = {
+  private[sbtassembly] def sha1SafeString(ao: AssemblyOption, s: String): String = {
     val sha1 = sha1string(s)
     ao.maxHashLength match {
       case Some(length) => sha1.substring(0, Math.min(sha1.length, length))
       case None => sha1
     }
   }
-  private[sbtassembly] def sha1rules(rs: Seq[ShadeRule])(implicit ao: AssemblyOption): String = sha1SafeString(rs.toList.mkString(":"))
+  private[sbtassembly] def sha1rules(ao: AssemblyOption, rs: Seq[ShadeRule]): String = sha1SafeString(ao, rs.toList.mkString(":"))
   private[sbtassembly] def bytesToSha1String(bytes: Array[Byte]): String =
     bytesToString(sha1.digest(bytes))
   private[sbtassembly] def bytesToString(bytes: Seq[Byte]): String =
