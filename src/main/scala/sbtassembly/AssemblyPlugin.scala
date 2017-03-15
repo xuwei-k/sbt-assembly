@@ -56,6 +56,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
         cacheUnzip         = true,
         appendContentHash  = false,
         prependShellScript = None,
+        maxHashLength      = None,
         shadeRules         = (assemblyShadeRules in assembly).value,
         level              = (logLevel in assembly).value)
     },
@@ -116,5 +117,6 @@ case class AssemblyOption(assemblyDirectory: File,
   cacheUnzip: Boolean = true,
   appendContentHash: Boolean = false,
   prependShellScript: Option[Seq[String]] = None,
+  maxHashLength: Option[Int] = None,
   shadeRules: Seq[ShadeRule] = Seq(),
   level: Level.Value)
