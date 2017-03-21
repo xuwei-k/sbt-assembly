@@ -182,6 +182,14 @@ from using the `sourceOfFileForMerge` method on `sbtassembly.AssemblyUtils`,
 which takes the temporary directory and one of the files passed into the
 strategy as parameters.
 
+#### Third Party Merge Strategy Plugins
+
+Support for special-case merge strategies beyond the generic scope can be
+provided by companion plugins, below is a non-exhaustive list:
+
+* Log4j2 Plugin Caches (`Log4j2Plugins.dat`):
+  <https://github.com/idio/sbt-assembly-log4j2>
+
 ### Shading
 
 sbt-assembly can shade classes from your projects or from the library dependencies.
