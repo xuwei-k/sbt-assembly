@@ -57,14 +57,14 @@ object Assembly {
     lazy val inputs = {
       log.info("Checking every *.class/*.jar file's SHA-1.")
       val rawHashBytes = 
-        (mappings.toVector.par flatMap { m =>
+        (mappings.toVector flatMap { m =>
           m.sourcePackage match {
             case Some(x) => hash(x).hash
             case _       => (m.mappings map { x => hash(x._1).hash }).flatten
           }
         })
       val pathStratBytes = 
-        (stratMapping.par flatMap { case (path, strat) =>
+        (stratMapping flatMap { case (path, strat) =>
           (path + strat.name).getBytes("UTF-8")
         })
       sha1.digest((rawHashBytes.seq ++ pathStratBytes.seq).toArray)
@@ -175,7 +175,7 @@ object Assembly {
         if (ao.includeBin) Some(jar) else None
     })
     val dirsFiltered =
-      dirs.par flatMap {
+      dirs flatMap {
         case dir =>
           if (ao.includeBin) Some(dir)
           else None
@@ -191,7 +191,7 @@ object Assembly {
         dest
       }
     val jarDirs =
-      (for(jar <- libsFiltered.par) yield {
+      (for(jar <- libsFiltered) yield {
         val jarName = jar.asFile.getName
         val hash = sha1name(jar) + "_" + sha1content(jar)
         val jarNamePath = tempDir / (hash + ".jarName")
@@ -215,7 +215,7 @@ object Assembly {
       })
 
     log.debug("Calculate mappings...")
-    val base: Vector[File] = dirsFiltered.seq ++ (jarDirs map { _._1 })
+    val base: Vector[File] = dirsFiltered.toVector ++ jarDirs.map { _._1 }
     val excluded = (ao.excludedFiles(base) ++ base).toSet
     def getMappings(rootDir : File): Vector[(File, String)] =
       if(!rootDir.exists) Vector()
