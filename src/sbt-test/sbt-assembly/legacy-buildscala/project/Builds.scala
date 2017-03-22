@@ -6,7 +6,7 @@ object Builds extends Build {
   lazy val commonSettings = Seq(
     version := "0.1-SNAPSHOT",
     organization := "com.example",
-    scalaVersion := "2.10.1"
+    scalaVersion := "2.10.6"
   )
 
   lazy val app = (project in file("app")).
