@@ -17,7 +17,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
   }
   import autoImport.{ Assembly => _, baseAssemblySettings => _, _ }
 
-  val defaultShellScript: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@"""") // "
+  val defaultShellScript: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@"""" + "\n")
 
   override lazy val projectSettings: Seq[Def.Setting[_]] = assemblySettings
 
