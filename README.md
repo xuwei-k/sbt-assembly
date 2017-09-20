@@ -373,7 +373,7 @@ and all of the other artifacts, add an `assembly` classifier (or other):
 ```scala
 artifact in (Compile, assembly) := {
   val art = (artifact in (Compile, assembly)).value
-  art.copy(`classifier` = Some("assembly"))
+  art.withClassifier(Some("assembly"))
 }
 
 addArtifact(artifact in (Compile, assembly), assembly)
