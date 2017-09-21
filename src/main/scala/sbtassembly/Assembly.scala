@@ -42,7 +42,7 @@ object Assembly {
         val tmpFile = cacheDir / "assemblyExec.tmp"
         if (tmpFile.exists()) tmpFile.delete()
         val jarCopy = IO.copyFile(outPath, tmpFile)
-        IO.write(outPath, shellScript.mkString("\n"), append = false)
+        IO.write(outPath, shellScript.map(_+"\n").mkString, append = false)
         val jarBytes = IO.readBytes(tmpFile)
         tmpFile.delete()
         IO.append(outPath, jarBytes)
