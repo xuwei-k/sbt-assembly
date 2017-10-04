@@ -365,20 +365,6 @@ In addition the fat JAR is cached so its timestamp changes only when the input c
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(cacheOutput = false)
 ```
 
-### Publishing (Not Recommended)
-
-Publishing fat JARs out to the world is discouraged because non-modular JARs cause much sadness. One might think non-modularity is convenience but it quickly turns into a headache the moment your users step outside of Hello World example code. If you still wish to publish your assembled artifact along with the `publish` task
-and all of the other artifacts, add an `assembly` classifier (or other):
-
-```scala
-artifact in (Compile, assembly) := {
-  val art = (artifact in (Compile, assembly)).value
-  art.withClassifier(Some("assembly"))
-}
-
-addArtifact(artifact in (Compile, assembly), assembly)
-```
-
 ### Prepending Shebang
 
 You can prepend shell script to the fat jar as follows:
@@ -396,6 +382,41 @@ This will prepend the following shell script to the jar.
 ```
 #!/usr/bin/env sh
 exec java -jar "$0" "$@"
+```
+
+### Publishing (Not Recommended)
+
+Publishing fat JARs out to the world is discouraged because non-modular JARs cause much sadness. One might think non-modularity is convenience but it quickly turns into a headache the moment your users step outside of Hello World example code. If you still wish to publish your assembled artifact along with the `publish` task
+and all of the other artifacts, add an `assembly` classifier (or other):
+
+```scala
+artifact in (Compile, assembly) := {
+  val art = (artifact in (Compile, assembly)).value
+  art.withClassifier(Some("assembly"))
+}
+
+addArtifact(artifact in (Compile, assembly), assembly)
+```
+
+### Q: Despite the concerned friends, I still want publish fat JARs. What advice do you have?
+
+You would likely need to set up a front business to lie about what dependencies you have in `pom.xml` and `ivy.xml`.
+To do so, make a subproject for fat JAR purpose only where you depend on the dependencies, and make a second cosmetic subproject that you use only for publishing purpose:
+
+```scala
+lazy val fatJar = project
+  .enablePlugins(AssemblyPlugin)
+  .settings(
+    depend on the good stuff
+    skip in publish := true
+  )
+
+lazy val cosmetic = project
+  .settings(
+    name := "shaded-something",
+    // I am sober. no dependencies.
+    packageBin in Compile := (assembly in (fatJar, Compile)).value
+  )
 ```
 
 License
