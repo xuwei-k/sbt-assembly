@@ -278,7 +278,7 @@ object Assembly {
 
   def isConfigFile(fileName: String): Boolean =
     fileName.toLowerCase match {
-      case "reference.conf" | "rootdoc.txt" | "play.plugins" => true
+      case "reference.conf" | "application.conf" | "rootdoc.txt" | "play.plugins" => true
       case _ => false
     }
 
