@@ -23,7 +23,7 @@ lazy val testshade = (project in file(".")).
         mustExist(dir / "toshade" / "ShadedClass.class")
         mustExist(dir / "shadeio" / "ByteOrderMark.class")
       }
-      val process = sbt.Process("java", Seq("-jar", (crossTarget.value / "foo.jar").toString))
+      val process = sys.process.Process("java", Seq("-jar", (crossTarget.value / "foo.jar").toString))
       val out = (process!!)
       if (out.trim != "hello shadeio.filefilter.AgeFileFilter") sys.error("unexpected output: " + out)
       ()

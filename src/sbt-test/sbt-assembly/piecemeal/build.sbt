@@ -6,7 +6,7 @@ lazy val root = (project in file(".")).
     assembleArtifact in assemblyPackageScala := false,
     assembleArtifact in assemblyPackageDependency := false,
     TaskKey[Unit]("check") := {
-      val process = sbt.Process("java", Seq("-cp", 
+      val process = sys.process.Process("java", Seq("-cp", 
         (crossTarget.value / "scala-library-2.10.2-assembly.jar").toString + ":" +
         (crossTarget.value / "foo-assembly-0.1.jar").toString,
         "Main"))
