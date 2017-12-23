@@ -9,14 +9,17 @@ lazy val root = (project in file(".")).
     assemblyOption in assembly ~= { _.copy(includeScala = false, includeDependency = false) },
     assemblyOption in assembly ~= { _.copy(appendContentHash = true) },
     assemblyOption in assemblyPackageDependency ~= { _.copy(appendContentHash = true) },
-    TaskKey[Unit]("check") := {
-      val process = sys.process.Process("java", Seq("-cp", 
-        (crossTarget.value / "foo-assembly-0.1-7a4ebf373b385ed1badbab93d52cffdfc4587c04.jar").toString +
-        java.io.File.pathSeparator +
-        (crossTarget.value / "foo-assembly-0.1-deps-1aa2cc229f2e93446713bf8d1c6efc1e6ddab0fe.jar").toString,
-        "Main"))
-      val out = (process!!)
-      if (out.trim != "hello") sys.error("unexpected output: " + out)
-      ()
+    InputKey[Unit]("checkFile") := {
+      val args = sbt.complete.Parsers.spaceDelimited("<arg>").parsed
+      val expectFileNameRegex = args.head.r
+      assert((crossTarget.value ** "*.jar").get.exists{ jar =>
+        expectFileNameRegex.findFirstIn(jar.getName).isDefined
+      })
+    },
+    TaskKey[Unit]("checkPrevious") := {
+      import sbinary.DefaultProtocol._
+      import sbtassembly.PluginCompat._
+      import CacheImplicits._
+      assert(Some(assembly.value) == assembly.previous)
     }
   )
