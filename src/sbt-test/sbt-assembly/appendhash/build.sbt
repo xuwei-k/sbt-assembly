@@ -10,7 +10,7 @@ lazy val root = (project in file(".")).
     assemblyOption in assembly ~= { _.copy(appendContentHash = true) },
     assemblyOption in assemblyPackageDependency ~= { _.copy(appendContentHash = true) },
     TaskKey[Unit]("check") := {
-      val process = sbt.Process("java", Seq("-cp", 
+      val process = sys.process.Process("java", Seq("-cp", 
         (crossTarget.value / "foo-assembly-0.1-7a4ebf373b385ed1badbab93d52cffdfc4587c04.jar").toString +
         java.io.File.pathSeparator +
         (crossTarget.value / "foo-assembly-0.1-deps-1aa2cc229f2e93446713bf8d1c6efc1e6ddab0fe.jar").toString,

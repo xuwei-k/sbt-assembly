@@ -6,7 +6,7 @@ lazy val root = (project in file(".")).
     assemblyOption in assembly ~= { _.copy(cacheUnzip = true) },
     assemblyJarName in assembly := "foo.jar",
     TaskKey[Unit]("check") := {
-      val process = sbt.Process("java", Seq("-jar", (crossTarget.value / "foo.jar").toString))
+      val process = sys.process.Process("java", Seq("-jar", (crossTarget.value / "foo.jar").toString))
       val out = (process!!)
       if (out.trim != "hello") sys.error("unexpected output: " + out)
       ()
