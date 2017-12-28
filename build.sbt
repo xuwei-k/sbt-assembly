@@ -16,6 +16,38 @@ lazy val root = (project in file(".")).
       "org.scalactic" %% "scalactic" % "3.0.1",
       "org.pantsbuild" % "jarjar" % "1.6.5"
     ),
+    TaskKey[Unit]("runScriptedTest") := Def.taskDyn {
+      val sbtBinVersion = (sbtBinaryVersion in pluginCrossBuild).value
+      val base = sbtTestDirectory.value
+
+      def isCompatible(directory: File): Boolean = {
+        val buildProps = new java.util.Properties()
+        IO.load(buildProps, directory / "project" / "build.properties")
+        Option(buildProps.getProperty("sbt.version"))
+          .map { version =>
+            val requiredBinVersion = CrossVersion.binarySbtVersion(version)
+            val compatible = requiredBinVersion == sbtBinVersion
+            if (!compatible) {
+              val testName = directory.relativeTo(base).getOrElse(directory)
+              streams.value.log.warn(s"Skipping $testName since it requires sbt $requiredBinVersion")
+            }
+            compatible
+          }
+          .getOrElse(true)
+      }
+
+      val testDirectoryFinder = base * AllPassFilter * AllPassFilter filter { _.isDirectory }
+      val tests = for {
+        test <- testDirectoryFinder.get
+        if isCompatible(test)
+        path <- Path.relativeTo(base)(test)
+      } yield path.replace('\\', '/')
+
+      if (tests.nonEmpty)
+        Def.task(scripted.toTask(tests.mkString(" ", " ", "")).value)
+      else
+        Def.task(streams.value.log.warn("No tests can be run for this sbt version"))
+    }.value,
     publishArtifact in (Compile, packageBin) := true,
     publishArtifact in (Test, packageBin) := false,
     publishArtifact in (Compile, packageDoc) := false,

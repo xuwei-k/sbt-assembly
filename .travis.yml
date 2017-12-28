@@ -14,7 +14,7 @@ matrix:
     scala: 2.12.4
 
 script:
-  - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M ++$TRAVIS_SCALA_VERSION "^^${SBT_VERSION}" test scripted
+  - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M ++$TRAVIS_SCALA_VERSION "^^${SBT_VERSION}" test runScriptedTest
 
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
