@@ -70,7 +70,7 @@ object Assembly {
         })
       sha1.digest((rawHashBytes.seq ++ pathStratBytes.seq).toArray)
     }
-    lazy val out = if (ao.appendContentHash) doAppendContentHash(inputs, out0, log)
+    lazy val out = if (ao.appendContentHash) doAppendContentHash(inputs, out0, log, ao.maxHashLength)
                    else out0
     import CacheImplicits._
     val cachedMakeJar = inputChanged(cacheDir / "assembly-inputs") { (inChanged, inputs: Seq[Byte]) =>
@@ -87,9 +87,10 @@ object Assembly {
     out
   }
 
-  private def doAppendContentHash(inputs: Seq[Byte], out0: File, log: Logger) = {
+  private def doAppendContentHash(inputs: Seq[Byte], out0: File, log: Logger, maxHashLength: Option[Int]) = {
     val fullSha1 = bytesToString(inputs)
-    val newName = out0.getName.replaceAll("\\.[^.]*$", "") + "-" +  fullSha1 + ".jar"
+    val sha1 = maxHashLength.fold(fullSha1)(length => fullSha1.take(length))
+    val newName = out0.getName.replaceAll("\\.[^.]*$", "") + "-" +  sha1 + ".jar"
     new File(out0.getParentFile, newName)
   }
 
@@ -184,7 +185,7 @@ object Assembly {
           if (ao.includeBin) Some(dir)
           else None
       } map { dir =>
-        val hash = sha1name(ao, dir.data)
+        val hash = sha1name(dir.data)
         IO.write(tempDir / (hash + "_dir.dir"), dir.data.getCanonicalPath, IO.utf8, false)
         val dest = tempDir / (hash + "_dir")
         if (dest.exists) {
@@ -202,13 +203,7 @@ object Assembly {
         val jarName = jar.data.asFile.getName
         val jarRules = shadeRules
           .filter(r => (r.isApplicableToAll || jar.metadata.get(moduleID.key).exists(r.isApplicableTo)))
-        val hash = {
-          val original = sha1name(ao, jar.data) + "_" + sha1content(jar.data) + "_" + sha1rules(ao, jarRules)
-          ao.maxHashLength match {
-            case Some(_) => sha1SafeString(ao, original)
-            case None => original
-          }
-        }
+        val hash = sha1name(jar.data) + "_" + sha1content(jar.data) + "_" + sha1rules(jarRules)
         val jarNamePath = tempDir / (hash + ".jarName")
         val dest = tempDir / hash
         // If the jar name path does not exist, or is not for this jar, unzip the jar
@@ -297,16 +292,9 @@ object Assembly {
 
   private[sbtassembly] def sha1 = MessageDigest.getInstance("SHA-1")
   private[sbtassembly] def sha1content(f: File): String  = bytesToSha1String(IO.readBytes(f))
-  private[sbtassembly] def sha1name(ao: AssemblyOption, f: File): String = sha1SafeString(ao, f.getCanonicalPath)
+  private[sbtassembly] def sha1name(f: File): String = sha1string(f.getCanonicalPath)
   private[sbtassembly] def sha1string(s: String): String = bytesToSha1String(s.getBytes("UTF-8"))
-  private[sbtassembly] def sha1SafeString(ao: AssemblyOption, s: String): String = {
-    val sha1 = sha1string(s)
-    ao.maxHashLength match {
-      case Some(length) => sha1.substring(0, Math.min(sha1.length, length))
-      case None => sha1
-    }
-  }
-  private[sbtassembly] def sha1rules(ao: AssemblyOption, rs: Seq[ShadeRule]): String = sha1SafeString(ao, rs.toList.mkString(":"))
+  private[sbtassembly] def sha1rules(rs: Seq[ShadeRule]): String = sha1string(rs.toList.mkString(":"))
   private[sbtassembly] def bytesToSha1String(bytes: Array[Byte]): String =
     bytesToString(sha1.digest(bytes))
   private[sbtassembly] def bytesToString(bytes: Seq[Byte]): String =

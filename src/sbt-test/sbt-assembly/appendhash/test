@@ -1,13 +1,16 @@
 # check if it generates the expected hash
 > assembly
-# $ exists target/scala-2.10/foo-assembly-0.1-3acf1c677d4200461de388cc30c7522f318baaf8.jar
+> checkFile "foo-assembly-0.1-[0-9abcdef]{40}.jar"
 
 # check if it generates the expected hash given caching
-# $ delete target/scala-2.10/foo-assembly-0.1-3acf1c677d4200461de388cc30c7522f318baaf8.jar
+> clean
 > assembly
-# $ exists target/scala-2.10/foo-assembly-0.1-3acf1c677d4200461de388cc30c7522f318baaf8.jar
+> checkPrevious
 
 > assemblyPackageDependency
-# $ exists target/scala-2.10/foo-assembly-0.1-deps-1aa2cc229f2e93446713bf8d1c6efc1e6ddab0fe.jar
+> checkFile "foo-assembly-0.1-deps-[0-9abcdef]{40}.jar"
 
-# > check
+> set assemblyOption in assembly ~= { _.copy(appendContentHash = true, maxHashLength = Some(5)) }
+> clean
+> assembly
+> checkFile "foo-assembly-0.1-[0-9abcdef]{5}.jar"
