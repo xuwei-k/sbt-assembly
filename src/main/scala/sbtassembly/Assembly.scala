@@ -22,7 +22,7 @@ object Assembly {
     import java.util.jar.{Attributes, Manifest}
 
     lazy val (ms: Vector[(File, String)], stratMapping: List[(String, MergeStrategy)]) = {
-      log.info("Merging files...")
+      log.debug("Merging files...")
       applyStrategies(mappings, ao.mergeStrategy, ao.assemblyDirectory, log)
     }
     def makeJar(outPath: File) {
@@ -56,7 +56,7 @@ object Assembly {
       }
     }
     lazy val inputs = {
-      log.info("Checking every *.class/*.jar file's SHA-1.")
+      log.debug("Checking every *.class/*.jar file's SHA-1.")
       val rawHashBytes =
         (mappings.toVector.par flatMap { m =>
           m.sourcePackage match {
@@ -76,7 +76,7 @@ object Assembly {
     val cachedMakeJar = inputChanged(cacheDir / "assembly-inputs") { (inChanged, inputs: Seq[Byte]) =>
       outputChanged(cacheDir / "assembly-outputs") { (outChanged, jar: PlainFileInfo) =>
         if (inChanged) {
-          log.info("SHA-1: " + bytesToString(inputs))
+          log.debug("SHA-1: " + bytesToString(inputs))
         } // if
         if (inChanged || outChanged) makeJar(out)
         else log.info("Assembly up to date: " + jar.file)
@@ -214,7 +214,7 @@ object Assembly {
         // If the jar name path does not exist, or is not for this jar, unzip the jar
         if (!ao.cacheUnzip || !jarNamePath.exists || IO.read(jarNamePath) != jar.data.getCanonicalPath )
         {
-          log.info("Including: %s".format(jarName))
+          log.debug("Including: %s".format(jarName))
           IO.delete(dest)
           dest.mkdir()
           AssemblyUtils.unzip(jar.data, dest, log)
@@ -227,7 +227,7 @@ object Assembly {
           // corrupt cache if the user aborts the build midway through
           IO.write(jarNamePath, jar.data.getCanonicalPath, IO.utf8, false)
         }
-        else log.info("Including from cache: %s".format(jarName))
+        else log.debug("Including from cache: %s".format(jarName))
 
         (dest, jar.data)
       })
