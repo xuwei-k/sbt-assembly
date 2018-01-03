@@ -27,9 +27,9 @@ object Assembly {
     }
     def makeJar(outPath: File) {
       import Package._
-      import collection.JavaConversions._
+      import collection.JavaConverters._
       val manifest = new Manifest
-      val main = manifest.getMainAttributes
+      val main = manifest.getMainAttributes.asScala
       for(option <- po) {
         option match {
           case JarManifest(mergeManifest)     => Package.mergeManifests(manifest, mergeManifest)
