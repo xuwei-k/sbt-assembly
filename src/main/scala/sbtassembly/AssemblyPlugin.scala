@@ -17,7 +17,28 @@ object AssemblyPlugin extends sbt.AutoPlugin {
   }
   import autoImport.{ Assembly => _, baseAssemblySettings => _, _ }
 
-  val defaultShellScript: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar "$0" "$@"""" + "\n")
+  val defaultShellScript: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar $JAVA_OPTS "$0" "$@"""" + "\n")
+
+  private def universalScript(shellCommands: Seq[String],
+                              cmdCommands: Seq[String],
+                              shebang: Boolean = true): Seq[String] = {
+    Seq(
+      Seq("#!/usr/bin/env sh")
+        .filter(_ => shebang),
+      Seq(":; alias ::=''"),
+      (shellCommands :+ "exit")
+        .map(line => s":: $line"),
+      "@echo off" +: cmdCommands :+ "exit /B",
+      Seq("\r\n")
+    ).flatten
+  }
+
+  def defaultUniversalScript(shebang: Boolean = true): Seq[String] =
+    universalScript(
+      shellCommands = Seq("""exec java -jar $JAVA_OPTS "$0" "$@""""),
+      cmdCommands = Seq("""java -jar %JAVA_OPTS% "%~dpnx0" %*"""),
+      shebang = shebang
+    )
 
   override lazy val projectSettings: Seq[Def.Setting[_]] = assemblySettings
 
