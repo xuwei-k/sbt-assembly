@@ -25,7 +25,7 @@ object Assembly {
       log.info("Merging files...")
       applyStrategies(mappings, ao.mergeStrategy, ao.assemblyDirectory, log)
     }
-    def makeJar(outPath: File) {
+    def makeJar(outPath: File): Unit = {
       import Package._
       import collection.JavaConverters._
       val manifest = new Manifest
