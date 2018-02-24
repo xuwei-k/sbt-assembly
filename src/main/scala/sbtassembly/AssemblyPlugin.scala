@@ -80,7 +80,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     packageOptions in assemblyPackageScala      := (packageOptions in (Compile, packageBin)).value,
     packageOptions in assemblyPackageDependency := (packageOptions in (Compile, packageBin)).value,
 
-    // ouputPath
+    // outputPath
     assemblyOutputPath in assembly                  := { (target in assembly).value / (assemblyJarName in assembly).value },
     assemblyOutputPath in assemblyPackageScala      := { (target in assembly).value / (assemblyJarName in assemblyPackageScala).value },
     assemblyOutputPath in assemblyPackageDependency := { (target in assembly).value / (assemblyJarName in assemblyPackageDependency).value },
