@@ -2,7 +2,7 @@ lazy val testshade = (project in file(".")).
   settings(
     version := "0.1",
     assemblyJarName in assembly := "foo.jar",
-    scalaVersion := "2.10.5",
+    scalaVersion := "2.10.7",
     libraryDependencies += "commons-io" % "commons-io" % "2.4",
     assemblyShadeRules in assembly := Seq(
       ShadeRule.zap("remove.**").inProject,

@@ -2,7 +2,7 @@ lazy val root = (project in file(".")).
   settings(
     name := "foo",
     version := "0.1",
-    scalaVersion := "2.10.2",
+    scalaVersion := "2.10.7",
     libraryDependencies ++= Seq(
       "net.databinder.dispatch" %% "dispatch-core" % "0.11.0"
     ),
