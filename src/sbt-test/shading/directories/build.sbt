@@ -10,7 +10,7 @@ assemblyShadeRules in assembly := Seq(
 
 TaskKey[Unit]("check") := {
   val expected = "Hello shaded.SomeClass"
-  val output = Process("java", Seq("-jar", assembly.value.absString)).!!.trim
+  val output = sys.process.Process("java", Seq("-jar", assembly.value.absString)).!!.trim
   if (output != expected) sys.error("Unexpected output: " + output)
 }
 
