@@ -46,8 +46,7 @@ object AssemblyUtils {
   private def extract(from: ZipInputStream, toDirectory: File, log: Logger, filter: NameFilter, preserveLastModified: Boolean) =
   {
     val set = new HashSet[File]
-    def next()
-    {
+    def next(): Unit = {
       val entry = from.getNextEntry
       if(entry == null)
         ()
