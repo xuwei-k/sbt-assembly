@@ -260,7 +260,7 @@ run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compi
 
 ### Exclude specific transitive deps
 
-You might be thinking about exluding JAR files because of the merge conflicts. Merge conflict of `*.class` files indicate pathological classpath, often due to non-modular bundle JAR files or [SLF4J](http://www.slf4j.org/legacy.html), not the problem with assembly. Here's what happens when you try to create a fat JAR with Spark included:
+You might be thinking about excluding JAR files because of the merge conflicts. Merge conflict of `*.class` files indicate pathological classpath, often due to non-modular bundle JAR files or [SLF4J](http://www.slf4j.org/legacy.html), not the problem with assembly. Here's what happens when you try to create a fat JAR with Spark included:
 
 ```
 [error] (*:assembly) deduplicate: different file contents found in the following:
