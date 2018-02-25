@@ -14,8 +14,8 @@ abstract class MergeStrategy extends Function1[(File, String, Seq[File]), Either
   def name: String
   def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]]
   def notifyThreshold = 2
-  def detailLogLevel = Level.Warn
-  def summaryLogLevel = Level.Warn
+  def detailLogLevel = Level.Debug
+  def summaryLogLevel = Level.Info
   final def apply(args: (File, String, Seq[File])): Either[String, Seq[(File, String)]] =
     apply(args._1, args._2, args._3)
 }
@@ -91,8 +91,6 @@ object MergeStrategy {
         else Left("different file contents found in the following:" +
             filenames(tempDir, files).mkString("\n", "\n", ""))
       }
-    override def detailLogLevel = Level.Debug
-    override def summaryLogLevel = Level.Info
   }
   val rename: MergeStrategy = new MergeStrategy {
     val name = "rename"
