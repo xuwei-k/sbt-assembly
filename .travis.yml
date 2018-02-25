@@ -13,6 +13,10 @@ matrix:
     jdk: oraclejdk8
     scala: 2.12.4
 
+  - env: SBT_VERSION="1.0.4"
+    jdk: oraclejdk9
+    scala: 2.12.4
+
 script:
   - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M ++$TRAVIS_SCALA_VERSION "^^${SBT_VERSION}" test runScriptedTest
 
