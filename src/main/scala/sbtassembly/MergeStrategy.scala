@@ -1,7 +1,6 @@
 package sbtassembly
 
 import sbt._
-import Keys._
 import java.io.{ FileOutputStream, File}
 import Assembly.{ sha1string, sha1content }
 

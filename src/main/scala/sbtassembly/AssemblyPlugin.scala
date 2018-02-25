@@ -2,7 +2,6 @@ package sbtassembly
 
 import sbt._
 import Keys._
-import scala.io.Source
 
 object AssemblyPlugin extends sbt.AutoPlugin {
   override def requires = plugins.JvmPlugin

@@ -3,7 +3,7 @@ package sbtassembly
 import sbt._
 import Keys._
 import java.security.MessageDigest
-import java.io.{IOException, PrintWriter, FileOutputStream, File}
+import java.io.{IOException, File}
 import scala.collection.mutable
 import Def.Initialize
 import PluginCompat._
@@ -16,7 +16,6 @@ object Assembly {
   def apply(out0: File, ao: AssemblyOption, po: Seq[PackageOption], mappings: Seq[MappingSet],
       cacheDir: File, log: Logger): File = {
     import Tracked.{ inputChanged, outputChanged }
-    import Types.:+:
     import Cache._
     import FileInfo.{hash, exists}
     import java.util.jar.{Attributes, Manifest}
