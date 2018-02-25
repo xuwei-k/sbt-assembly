@@ -1,7 +1,7 @@
 lazy val root = (project in file(".")).
   settings(
     version := "0.1",
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.11.12",
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "0.9.29" % "runtime",
     unmanagedJars in Compile ++= {
