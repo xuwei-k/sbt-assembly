@@ -281,7 +281,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
-See sbt's [Exclude Transitive Dependencies](http://www.scala-sbt.org/release/docs/Detailed-Topics/Library-Management.html#exclude-transitive-dependencies) for more details.
+See sbt's [Exclude Transitive Dependencies](https://www.scala-sbt.org/release/docs/Library-Management.html#Exclude+Transitive+Dependencies) for more details.
 
 Sometimes it takes a bit of detective work to figure out which transitive deps to exclude. Play! comes with `dist` task, so `assembly` is not needed, but suppose we wanted to run `assembly`. It brings in signpost-commonshttp4, which leads to commons-logging. This conflicts with jcl-over-slf4j, which re-implements the logging API. Since the deps are added via build.sbt and `playScalaSettings`, here's one way to work around it:
 
