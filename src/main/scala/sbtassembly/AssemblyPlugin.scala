@@ -33,12 +33,14 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     ).flatten
   }
 
-  def defaultUniversalScript(shebang: Boolean = true): Seq[String] =
+  def defaultUniversalScript(javaOpts: Seq[String] = Seq.empty, shebang: Boolean = true): Seq[String] = {
+    val javaOptsString = javaOpts.map(_ + " ").mkString
     universalScript(
-      shellCommands = Seq("""exec java -jar $JAVA_OPTS "$0" "$@""""),
-      cmdCommands = Seq("""java -jar %JAVA_OPTS% "%~dpnx0" %*"""),
+      shellCommands = Seq(s"exec java -jar $javaOptsString" + """$JAVA_OPTS "$0" "$@""""),
+      cmdCommands = Seq(s"java -jar $javaOptsString" + """%JAVA_OPTS% "%~dpnx0" %*"""),
       shebang = shebang
     )
+  }
 
   override lazy val projectSettings: Seq[Def.Setting[_]] = assemblySettings
 
