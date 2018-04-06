@@ -43,9 +43,10 @@ object Assembly {
         if (tmpFile.exists()) tmpFile.delete()
         val jarCopy = IO.copyFile(outPath, tmpFile)
         IO.write(outPath, shellScript.map(_+"\n").mkString, append = false)
-        val jarBytes = IO.readBytes(tmpFile)
+
+        Using.fileOutputStream(true)(outPath) { out => IO.transfer(tmpFile, out) }
         tmpFile.delete()
-        IO.append(outPath, jarBytes)
+        
         try {
           sys.process.Process("chmod", Seq("+x", outPath.toString)).!
         }
@@ -290,7 +291,21 @@ object Assembly {
     }
 
   private[sbtassembly] def sha1 = MessageDigest.getInstance("SHA-1")
-  private[sbtassembly] def sha1content(f: File): String  = bytesToSha1String(IO.readBytes(f))
+  private[sbtassembly] def sha1content(f: File): String = {
+    Using.fileInputStream(f) { in =>
+      val messageDigest = sha1
+      val buffer = new Array[Byte](8192)
+      def read(): Unit = {
+        val byteCount = in.read(buffer)
+        if (byteCount >= 0) {
+          messageDigest.update(buffer, 0, byteCount)
+          read()
+        }
+      }
+      read()
+      bytesToString(messageDigest.digest())
+    }
+  }
   private[sbtassembly] def sha1name(f: File): String = sha1string(f.getCanonicalPath)
   private[sbtassembly] def sha1string(s: String): String = bytesToSha1String(s.getBytes("UTF-8"))
   private[sbtassembly] def sha1rules(rs: Seq[ShadeRule]): String = sha1string(rs.toList.mkString(":"))
