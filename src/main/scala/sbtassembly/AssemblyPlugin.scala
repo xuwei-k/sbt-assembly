@@ -17,11 +17,16 @@ object AssemblyPlugin extends sbt.AutoPlugin {
   }
   import autoImport.{ Assembly => _, baseAssemblySettings => _, _ }
 
-  val defaultShellScript: Seq[String] = Seq("#!/usr/bin/env sh", """exec java -jar $JAVA_OPTS "$0" "$@"""" + "\n")
+  val defaultShellScript: Seq[String] = defaultShellScript()
+
+  def defaultShellScript(javaOpts: Seq[String] = Seq.empty): Seq[String] = {
+    val javaOptsString = javaOpts.map(_ + " ").mkString
+    Seq("#!/usr/bin/env sh", s"""exec java -jar $javaOptsString$$JAVA_OPTS "$$0" "$$@"""", "")
+  }
 
   private def universalScript(shellCommands: String,
                               cmdCommands: String,
-                              shebang: Boolean = true): String = {
+                              shebang: Boolean = false): String = {
     Seq(
       if (shebang) "#!/usr/bin/env sh" else "",
       "@ 2>/dev/null # 2>nul & echo off & goto BOF\r",

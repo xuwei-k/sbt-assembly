@@ -365,14 +365,14 @@ In addition the fat JAR is cached so its timestamp changes only when the input c
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(cacheOutput = false)
 ```
 
-### Prepending Shebang
+### Prepending a launch script
 
-You can prepend shell script to the fat jar as follows:
+Your can prepend a launch script to the fat jar. This script will be a valid shell and batch script and will make the jar executable on Unix and Windows. If you enable the shebang the file will be detected as an executable under Linux but this will cause an error message to appear on Windows. On Windows just append a ".bat" to the files name to make it executable.
 
 ```scala
-import sbtassembly.AssemblyPlugin.defaultShellScript
+import sbtassembly.AssemblyPlugin.defaultUniversalScript
 
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript))
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultUniversalScript(shebang = false)))
 
 assemblyJarName in assembly := s"${name.value}-${version.value}"
 ```
@@ -380,9 +380,29 @@ assemblyJarName in assembly := s"${name.value}-${version.value}"
 This will prepend the following shell script to the jar.
 
 ```
-#!/usr/bin/env sh
-exec java -jar "$0" "$@"
+(#!/usr/bin/env sh)
+@ 2>/dev/null # 2>nul & echo off & goto BOF
+:
+exec java -jar $JAVA_OPTS "$0" "$@"
+exit
+
+:BOF
+@echo off
+java -jar %JAVA_OPTS% "%~dpnx0" %*
+exit /B %errorlevel%
 ```
+
+You can also choose to prepend just the shell script to the fat jar as follows:
+
+```scala
+import sbtassembly.AssemblyPlugin.defaultShellScript
+
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript()))
+
+assemblyJarName in assembly := s"${name.value}-${version.value}"
+```
+
+
 
 ### Publishing (Not Recommended)
 
