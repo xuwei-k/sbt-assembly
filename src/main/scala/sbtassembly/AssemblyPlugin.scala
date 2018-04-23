@@ -35,7 +35,6 @@ object AssemblyPlugin extends sbt.AutoPlugin {
       Seq(
         "",
         ":BOF",
-        "@echo off",
         cmdCommands.replaceAll("\r\n|\n", "\r\n"),
         "exit /B %errorlevel%",
         ""
@@ -43,7 +42,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     ).filterNot(_.isEmpty).mkString("\n")
   }
 
-  def defaultUniversalScript(javaOpts: Seq[String] = Seq.empty, shebang: Boolean = true): Seq[String] = {
+  def defaultUniversalScript(javaOpts: Seq[String] = Seq.empty, shebang: Boolean = false): Seq[String] = {
     val javaOptsString = javaOpts.map(_ + " ").mkString
     Seq(universalScript(
       shellCommands = s"""exec java -jar $javaOptsString$$JAVA_OPTS "$$0" "$$@"""",
