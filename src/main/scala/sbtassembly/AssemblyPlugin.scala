@@ -25,7 +25,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
 
   private def universalScript(shellCommands: String,
                               cmdCommands: String,
-                              shebang: Boolean = false): String = {
+                              shebang: Boolean): String = {
     Seq(
       if (shebang) "#!/usr/bin/env sh" else "",
       "@ 2>/dev/null # 2>nul & echo off & goto BOF\r",
@@ -42,7 +42,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     ).filterNot(_.isEmpty).mkString("\n")
   }
 
-  def defaultUniversalScript(javaOpts: Seq[String] = Seq.empty, shebang: Boolean = false): Seq[String] = {
+  def defaultUniversalScript(javaOpts: Seq[String] = Seq.empty, shebang: Boolean = true): Seq[String] = {
     val javaOptsString = javaOpts.map(_ + " ").mkString
     Seq(universalScript(
       shellCommands = s"""exec java -jar $javaOptsString$$JAVA_OPTS "$$0" "$$@"""",
