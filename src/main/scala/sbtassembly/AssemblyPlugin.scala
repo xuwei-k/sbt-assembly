@@ -25,7 +25,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
 
   private def universalScript(shellCommands: String,
                               cmdCommands: String,
-                              shebang: Boolean = false): String = {
+                              shebang: Boolean): String = {
     Seq(
       if (shebang) "#!/usr/bin/env sh" else "",
       "@ 2>/dev/null # 2>nul & echo off & goto BOF\r",
@@ -35,7 +35,6 @@ object AssemblyPlugin extends sbt.AutoPlugin {
       Seq(
         "",
         ":BOF",
-        "@echo off",
         cmdCommands.replaceAll("\r\n|\n", "\r\n"),
         "exit /B %errorlevel%",
         ""
