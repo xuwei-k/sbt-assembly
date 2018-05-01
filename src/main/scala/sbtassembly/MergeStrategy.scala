@@ -75,7 +75,7 @@ object MergeStrategy {
     val name = "filterDistinctLines"
     def apply(tempDir: File, path: String, files: Seq[File]): Either[String, Seq[(File, String)]] = {
       val lines = files flatMap (IO.readLines(_, IO.utf8))
-      val unique = (Vector.empty[String] /: lines)((v, l) => if (v contains l) v else v :+ l)
+      val unique = lines.distinct
       val file = createMergeTarget(tempDir, path)
       IO.writeLines(file, unique, IO.utf8)
       Right(Seq(file -> path))
