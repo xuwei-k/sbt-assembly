@@ -46,7 +46,7 @@ object Assembly {
 
         Using.fileOutputStream(true)(outPath) { out => IO.transfer(tmpFile, out) }
         tmpFile.delete()
-        
+
         try {
           sys.process.Process("chmod", Seq("+x", outPath.toString)).!
         }
@@ -274,7 +274,7 @@ object Assembly {
 
   def isConfigFile(fileName: String): Boolean =
     fileName.toLowerCase match {
-      case "reference.conf" | "application.conf" | "rootdoc.txt" | "play.plugins" => true
+      case "reference.conf" | "reference-overrides.conf" | "application.conf" | "rootdoc.txt" | "play.plugins" => true
       case _ => false
     }
 
