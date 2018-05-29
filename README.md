@@ -397,7 +397,7 @@ You can also choose to prepend just the shell script to the fat jar as follows:
 ```scala
 import sbtassembly.AssemblyPlugin.defaultShellScript
 
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript()))
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript))
 
 assemblyJarName in assembly := s"${name.value}-${version.value}"
 ```
