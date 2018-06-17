@@ -1,5 +1,4 @@
   [1]: https://github.com/sbt/sbt-assembly/issues
-  [2]: http://groups.google.com/group/simple-build-tool
   [3]: http://stackoverflow.com/questions/tagged/sbt-assembly
 
 issue reporting guideline
