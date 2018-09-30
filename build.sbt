@@ -1,5 +1,5 @@
 lazy val commonSettings: Seq[Setting[_]] = Seq(
-  version in ThisBuild := "0.14.8-SNAPSHOT",
+  version in ThisBuild := "0.14.9-SNAPSHOT",
   organization in ThisBuild := "com.eed3si9n"
 )
 
