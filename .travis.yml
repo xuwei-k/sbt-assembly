@@ -9,6 +9,12 @@ matrix:
     jdk: oraclejdk11
     scala: 2.12.6
 
+before_script:
+  - git clone --depth=1 -b jdk11-sbt git://github.com/xuwei-k/jarjar.git
+  - cd jarjar
+  - sbt "java++ 1.8" publishLocal
+  - cd ..
+
 script:
   - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M ++$TRAVIS_SCALA_VERSION "^^${SBT_VERSION}" "scripted shading/jdk11"
 

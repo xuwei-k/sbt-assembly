@@ -14,7 +14,7 @@ lazy val root = (project in file(".")).
     scalacOptions := Seq("-deprecation", "-unchecked", "-Dscalac.patmat.analysisBudget=1024", "-Xfuture"),
     libraryDependencies ++= Seq(
       "org.scalactic" %% "scalactic" % "3.0.1",
-      "org.pantsbuild" % "jarjar" % "1.6.6"
+      "org.pantsbuild" % "jarjar" % "1.6.7-SNAPSHOT"
     ),
     publishArtifact in (Compile, packageBin) := true,
     publishArtifact in (Test, packageBin) := false,
