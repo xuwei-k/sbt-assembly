@@ -9,11 +9,11 @@ matrix:
     jdk: openjdk7
     scala: 2.10.7
 
-  - env: SBT_VERSION="1.2.4"
+  - env: SBT_VERSION="1.2.6"
     jdk: oraclejdk8
     scala: 2.12.7
 
-  - env: SBT_VERSION="1.2.4"
+  - env: SBT_VERSION="1.2.6"
     jdk: oraclejdk10
     scala: 2.12.7
 
