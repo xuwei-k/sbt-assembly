@@ -5,15 +5,15 @@ language: scala
 
 matrix:
   include:
-  - env: SBT_VERSION="0.13.17"
+  - env: SBT_VERSION="0.13.18"
     jdk: openjdk7
     scala: 2.10.7
 
-  - env: SBT_VERSION="1.2.6"
+  - env: SBT_VERSION="1.2.7"
     jdk: oraclejdk8
     scala: 2.12.7
 
-  - env: SBT_VERSION="1.2.6"
+  - env: SBT_VERSION="1.2.7"
     jdk: openjdk11
     scala: 2.12.7
 
