@@ -1,6 +1,10 @@
 # Use container-based infrastructure
 sudo: false
 
+# TODO use xenial
+# https://blog.travis-ci.com/2018-11-30-announcing-xenial-build-environment-for-enterprise
+dist: trusty
+
 language: scala
 
 matrix:
