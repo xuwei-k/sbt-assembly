@@ -165,7 +165,7 @@ object Assembly {
 
     val shadeRules = ao.shadeRules
 
-    val (libs, dirs) = classpath.toVector.partition(c => ClasspathUtilities.isArchive(c.data))
+    val (libs, dirs) = classpath.toVector.sortBy(_.data.getCanonicalPath).partition(c => ClasspathUtilities.isArchive(c.data))
 
     val depLibs      = dependencies.map(_.data).toSet.filter(ClasspathUtilities.isArchive)
     val excludedJars = ao.excludedJars map {_.data}
