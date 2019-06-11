@@ -13,7 +13,7 @@ lazy val root = (project in file(".")).
     licenses := Seq("MIT License" -> url("https://github.com/sbt/sbt-assembly/blob/master/LICENSE")),
     scalacOptions := Seq("-deprecation", "-unchecked", "-Dscalac.patmat.analysisBudget=1024", "-Xfuture"),
     libraryDependencies ++= Seq(
-      "org.scalactic" %% "scalactic" % "3.0.7",
+      "org.scalactic" %% "scalactic" % "3.0.8",
       "org.pantsbuild" % "jarjar" % "1.7.2"
     ),
     publishArtifact in (Compile, packageBin) := true,
