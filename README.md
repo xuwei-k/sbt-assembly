@@ -21,15 +21,13 @@ Setup
 
 ### Using Published Plugin
 
-For sbt 0.13.6+ and sbt 1.0.0-M6, add sbt-assembly as a dependency in `project/assembly.sbt`:
+![Bintray version](https://img.shields.io/bintray/v/eed3si9n/sbt-plugins/sbt-assembly.svg)
+
+Add sbt-assembly as a dependency in `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.9")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "x.y.z")
 ```
-
-For older sbt 0.13.x, see [sbt-assembly 0.11.2](https://github.com/sbt/sbt-assembly/tree/0.11.2).
-
-For sbt 0.12, see [sbt-assembly 0.9.2](https://github.com/sbt/sbt-assembly/tree/0.9.2).
 
 (You may need to check this project's tags to see what the most recent release is.)
 
