@@ -187,9 +187,12 @@ object Assembly {
     val excludedJars = ao.excludedJars map {_.data}
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.data.asFile => None
-      case jar if ao.includeScala && isScalaLibraryFile(ao, jar.data.asFile) => Some(jar)
-      case jar if ao.includeDependency && depLibs.contains(jar.data.asFile) => Some(jar)
-      case jar => if (ao.includeBin) Some(jar) else None
+      case jar if isScalaLibraryFile(ao, jar.data.asFile) =>
+        if (ao.includeScala) Some(jar) else None
+      case jar if depLibs contains jar.data.asFile =>
+        if (ao.includeDependency) Some(jar) else None
+      case jar =>
+        if (ao.includeBin) Some(jar) else None
     }
     val dirRules = shadeRules.filter(_.isApplicableToCompiling)
     val dirsFiltered =
