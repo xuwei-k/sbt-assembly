@@ -11,6 +11,22 @@ import PluginCompat._
 object Assembly {
   import AssemblyPlugin.autoImport.{ Assembly => _, _ }
 
+  private val scalaPre213Libraries = Vector(
+    "scala-actors",
+    "scala-compiler",
+    "scala-continuations",
+    "scala-library",
+    "scala-parser-combinators",
+    "scala-reflect",
+    "scala-swing",
+    "scala-xml")
+  private val scala213AndLaterLibraries = Vector(
+    "scala-actors",
+    "scala-compiler",
+    "scala-continuations",
+    "scala-library",
+    "scala-reflect")
+
   val defaultExcludedFiles: Seq[File] => Seq[File] = (base: Seq[File]) => Nil
 
   def apply(out0: File, ao: AssemblyOption, po: Seq[PackageOption], mappings: Seq[MappingSet],
@@ -169,15 +185,12 @@ object Assembly {
 
     val depLibs      = dependencies.map(_.data).toSet.filter(ClasspathUtilities.isArchive)
     val excludedJars = ao.excludedJars map {_.data}
-    val libsFiltered = (libs flatMap {
+    val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.data.asFile => None
-      case jar if isScalaLibraryFile(jar.data.asFile) =>
-        if (ao.includeScala) Some(jar) else None
-      case jar if depLibs contains jar.data.asFile =>
-        if (ao.includeDependency) Some(jar) else None
-      case jar =>
-        if (ao.includeBin) Some(jar) else None
-    })
+      case jar if ao.includeScala && isScalaLibraryFile(ao, jar.data.asFile) => Some(jar)
+      case jar if ao.includeDependency && depLibs.contains(jar.data.asFile) => Some(jar)
+      case jar => if (ao.includeBin) Some(jar) else None
+    }
     val dirRules = shadeRules.filter(_.isApplicableToCompiling)
     val dirsFiltered =
       dirs.par flatMap {
@@ -278,17 +291,10 @@ object Assembly {
       case _ => false
     }
 
-  def isScalaLibraryFile(file: File): Boolean =
-    Vector("scala-actors",
-      "scala-compiler",
-      "scala-continuations",
-      "scala-library",
-      "scala-parser-combinators",
-      "scala-reflect",
-      "scala-swing",
-      "scala-xml") exists { x =>
-      file.getName startsWith x
-    }
+  def isScalaLibraryFile(ao: AssemblyOption, file: File): Boolean = {
+    val scalaLibraries = if (ao.isScala213AndLater) scala213AndLaterLibraries else scalaPre213Libraries
+    scalaLibraries exists { x => file.getName startsWith x }
+  }
 
   private[sbtassembly] def sha1 = MessageDigest.getInstance("SHA-1")
   private[sbtassembly] def sha1content(f: File): String = {
