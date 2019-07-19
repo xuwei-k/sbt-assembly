@@ -185,9 +185,16 @@ object Assembly {
 
     val depLibs      = dependencies.map(_.data).toSet.filter(ClasspathUtilities.isArchive)
     val excludedJars = ao.excludedJars map {_.data}
+
+    val scalaLibraries = {
+      val scalaVersionParts = VersionNumber(ao.scalaVersion)
+      val isScala213AndLater = scalaVersionParts.numbers.length>=2 && scalaVersionParts._1.get>=2 && scalaVersionParts._2.get>=13
+      if (isScala213AndLater) scala213AndLaterLibraries else scalaPre213Libraries
+    }
+
     val libsFiltered = libs flatMap {
       case jar if excludedJars contains jar.data.asFile => None
-      case jar if isScalaLibraryFile(ao, jar.data.asFile) =>
+      case jar if isScalaLibraryFile(scalaLibraries, jar.data.asFile) =>
         if (ao.includeScala) Some(jar) else None
       case jar if depLibs contains jar.data.asFile =>
         if (ao.includeDependency) Some(jar) else None
@@ -294,10 +301,8 @@ object Assembly {
       case _ => false
     }
 
-  def isScalaLibraryFile(ao: AssemblyOption, file: File): Boolean = {
-    val scalaLibraries = if (ao.isScala213AndLater) scala213AndLaterLibraries else scalaPre213Libraries
+  def isScalaLibraryFile(scalaLibraries: Vector[String], file: File): Boolean =
     scalaLibraries exists { x => file.getName startsWith x }
-  }
 
   private[sbtassembly] def sha1 = MessageDigest.getInstance("SHA-1")
   private[sbtassembly] def sha1content(f: File): String = {
