@@ -90,6 +90,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
         prependShellScript = None,
         maxHashLength      = None,
         shadeRules         = (assemblyShadeRules in assembly).value,
+        scalaVersion       = scalaVersion.value,
         level              = (logLevel in assembly).value)
     },
 
@@ -151,4 +152,5 @@ case class AssemblyOption(assemblyDirectory: File,
   prependShellScript: Option[Seq[String]] = None,
   maxHashLength: Option[Int] = None,
   shadeRules: Seq[ShadeRule] = Seq(),
+  scalaVersion: String = "",
   level: Level.Value)
