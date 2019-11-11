@@ -16,6 +16,7 @@ lazy val root = (project in file(".")).
       "org.scalactic" %% "scalactic" % "3.0.8",
       "org.pantsbuild" % "jarjar" % "1.7.2"
     ),
+    crossSbtVersions := Seq("0.13.18", "1.2.8"), // https://github.com/sbt/sbt/issues/5049
     publishArtifact in (Compile, packageBin) := true,
     publishArtifact in (Test, packageBin) := false,
     publishArtifact in (Compile, packageDoc) := false,

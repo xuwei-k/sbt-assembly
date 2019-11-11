@@ -8,20 +8,16 @@ dist: xenial
 matrix:
   include:
   - env: SBT_VERSION="0.13.18"
-    jdk: openjdk7
-    dist: trusty
-    scala: 2.10.7
+    jdk: openjdk8
 
   - env: SBT_VERSION="1.2.8"
     jdk: openjdk8
-    scala: 2.12.8
 
   - env: SBT_VERSION="1.2.8"
     jdk: openjdk11
-    scala: 2.12.8
 
 script:
-  - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M ++$TRAVIS_SCALA_VERSION "^^${SBT_VERSION}" test scripted
+  - sbt -Dfile.encoding=UTF8 -J-XX:ReservedCodeCacheSize=256M "^^${SBT_VERSION}" test scripted
 
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
