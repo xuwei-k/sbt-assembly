@@ -1,3 +1,3 @@
-package toshade
+package toshade.classes
 
 class ShadeClass
