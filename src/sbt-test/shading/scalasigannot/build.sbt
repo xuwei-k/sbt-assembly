@@ -1,5 +1,6 @@
 ThisBuild / version := "1.0-SNAPSHOT"
 ThisBuild / organization := "scalasigannottest"
+ThisBuild / scalaVersion := "2.13.1"
 
 val shadingSettings: Seq[Def.Setting[_]] = Seq(
   assemblyShadeRules in assembly := Seq(
