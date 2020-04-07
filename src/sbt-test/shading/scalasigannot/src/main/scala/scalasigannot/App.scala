@@ -15,6 +15,7 @@ case object Main {
 //    val instanceMirror = runtimeMirror.reflect(moduleMirror.instance)
 
     assert(new shade.Clazz().myMethod == "test_class")
+    assert(new shade.BigClazz().myMethod == "test_bigclass")
     assert(shade.MyString == "test_packageobject1")
     assert(new Test().callPackageObject == "test_packageobject1")
     assert(shade.anobject.MyString == "test_object1")
