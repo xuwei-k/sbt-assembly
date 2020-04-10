@@ -1,6 +1,6 @@
-ThisBuild / version := "1.0-SNAPSHOT"
-ThisBuild / organization := "scalasigannottest"
-ThisBuild / scalaVersion := "2.13.1"
+version in ThisBuild := "1.0-SNAPSHOT"
+organization in ThisBuild := "scalasigannottest"
+scalaVersion in ThisBuild := "2.13.1"
 
 val shadingSettings: Seq[Def.Setting[_]] = Seq(
   assemblyShadeRules in assembly := Seq(
@@ -18,7 +18,7 @@ val shadingSettings: Seq[Def.Setting[_]] = Seq(
   },
 
   artifactClassifier in (sbt.Test, packageBin) := None,
-  artifact in (Compile, assembly) := (artifact in (Compile, assembly)).value.withClassifier(Some("shaded")),
+  artifact in (Compile, assembly) := (artifact in (Compile, assembly)).value.withClassifier(Some("shaded"))
 
 ) ++ addArtifact(artifact in (Compile, assembly), assembly).settings
 
@@ -33,9 +33,11 @@ lazy val fatLib = project.in(file("fatlib"))
   .settings(
     Seq(
       name := "fatlib",
-      Compile / unmanagedJars := {
-        val tbs: File = ((Compile / packageBin) in toBeShaded).value
-        Seq(sbt.internal.util.Attributed.blank[java.io.File](tbs))
+      (unmanagedJars in Compile) := {
+        val tbs: File = ((packageBin in Compile) in toBeShaded).value
+        //Seq(sbt.internal.util.Attributed.blank[java.io.File](tbs))
+
+        Seq(Attributed.blank[java.io.File](tbs))
       }
     )
   )
@@ -49,9 +51,12 @@ lazy val root = project.in(file("."))
       libraryDependencies := Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
       ),
-      Compile / unmanagedJars := {
-        val tbs: File = ((Compile / packageBin / assembly) in fatLib).value
-        Seq(sbt.internal.util.Attributed.blank[java.io.File](tbs))
+      (unmanagedJars in Compile) := {
+        //val tbs: File = ((packageBin in (Compile, assembly)) in fatLib).value
+        //Seq(sbt.internal.util.Attributed.blank[java.io.File](tbs))
+
+        val x = (assembly in (fatLib, Compile)).value
+        Seq(Attributed.blank[java.io.File](x))
       }
     )
   )
