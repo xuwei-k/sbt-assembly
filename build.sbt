@@ -14,7 +14,8 @@ lazy val root = (project in file(".")).
     scalacOptions := Seq("-deprecation", "-unchecked", "-Dscalac.patmat.analysisBudget=1024", "-Xfuture"),
     libraryDependencies ++= Seq(
       "org.scalactic" %% "scalactic" % "3.0.8",
-      "org.pantsbuild" % "jarjar" % "1.7.2"
+      "org.pantsbuild" % "jarjar" % "1.7.2",
+      "org.scalatest" %% "scalatest" % "3.1.1" % Test,
     ),
     crossSbtVersions := Seq("0.13.18", "1.2.8"), // https://github.com/sbt/sbt/issues/5049
     publishArtifact in (Compile, packageBin) := true,
