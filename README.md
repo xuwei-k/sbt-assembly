@@ -229,6 +229,13 @@ To see the verbose output for shading:
     logLevel in assembly := Level.Debug
 ```
 
+#### Scala libraries
+
+Scala classes contain an annotation which, among other things, contain all symbols referenced in that class. As of sbt-assembly XXX the rename rules
+will be applied to these annotations as well which makes it possible to compile or reflect against a shaded library.   
+
+This is currently limited to renaming packages. Renaming class names will not work and cause compiler errors when compiling against the shaded library.
+
 Excluding JARs and files
 ------------------------
 
