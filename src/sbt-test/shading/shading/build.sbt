@@ -6,7 +6,7 @@ lazy val testshade = (project in file(".")).
     libraryDependencies += "commons-io" % "commons-io" % "2.4",
     assemblyShadeRules in assembly := Seq(
       ShadeRule.zap("remove.**").inProject,
-      ShadeRule.rename("toshade.ShadeClass" -> "toshade.ShadedClass").inProject,
+      ShadeRule.rename("toshade.classes.ShadeClass" -> "toshade.classez.ShadedClass").inProject,
       ShadeRule.rename("toshade.ShadePackage" -> "shaded_package.ShadePackage").inProject,
       ShadeRule.rename("org.apache.commons.io.**" -> "shadeio.@1").inLibrary("commons-io" % "commons-io" % "2.4").inProject
     ),
@@ -17,7 +17,7 @@ lazy val testshade = (project in file(".")).
         mustNotExist(dir / "remove" / "Removed.class")
         mustNotExist(dir / "org" / "apache" / "commons" / "io" / "ByteOrderMark.class")
         mustExist(dir / "shaded_package" / "ShadePackage.class")
-        mustExist(dir / "toshade" / "ShadedClass.class")
+        mustExist(dir / "toshade" / "classez" / "ShadedClass.class")
         mustExist(dir / "shadeio" / "ByteOrderMark.class")
       }
       val process = sys.process.Process("java", Seq("-jar", (crossTarget.value / "foo.jar").toString))
