@@ -1,4 +1,4 @@
-ThisBuild / version := "0.14.11-SNAPSHOT"
+ThisBuild / version := "0.15.1-SNAPSHOT"
 ThisBuild / organization := "com.eed3si9n"
 
 lazy val root = (project in file("."))
