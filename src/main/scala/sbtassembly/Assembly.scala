@@ -2,11 +2,13 @@ package sbtassembly
 
 import sbt._
 import Keys._
+import Path.relativeTo
 import java.security.MessageDigest
 import java.io.{IOException, File}
 import scala.collection.mutable
 import Def.Initialize
 import PluginCompat._
+import com.eed3si9n.jarjarabrams._
 
 object Assembly {
   import AssemblyPlugin.autoImport.{ Assembly => _, _ }
@@ -217,7 +219,10 @@ object Assembly {
         dest.mkdir()
         IO.copyDirectory(dir.data, dest)
         if (dirRules.nonEmpty) {
-          Shader.shadeDirectory(dirRules, dest, log, ao.level)
+          val mappings = ((dest ** (-DirectoryFilter)).get  pair relativeTo(dest)) map {
+            case (k, v) => k.toPath -> v
+          }
+          Shader.shadeDirectory(dirRules, dest.toPath, mappings, ao.level == Level.Debug)
         }
         dest
       }
@@ -225,7 +230,10 @@ object Assembly {
       (for(jar <- libsFiltered.par) yield {
         val jarName = jar.data.asFile.getName
         val jarRules = shadeRules
-          .filter(r => (r.isApplicableToAll || jar.metadata.get(moduleID.key).exists(r.isApplicableTo)))
+          .filter(r => (r.isApplicableToAll ||
+            jar.metadata.get(moduleID.key)
+              .map(m => ModuleCoordinate(m.organization, m.name, m.revision))
+              .exists(r.isApplicableTo)))
         val hash = sha1name(jar.data) + "_" + sha1content(jar.data) + "_" + sha1rules(jarRules)
         val jarNamePath = tempDir / (hash + ".jarName")
         val dest = tempDir / hash
@@ -238,7 +246,10 @@ object Assembly {
           AssemblyUtils.unzip(jar.data, dest, log)
           IO.delete(ao.excludedFiles(Seq(dest)))
           if (jarRules.nonEmpty) {
-            Shader.shadeDirectory(jarRules, dest, log, ao.level)
+            val mappings = ((dest ** (-DirectoryFilter)).get pair relativeTo(dest)) map {
+              case (k, v) => k.toPath -> v
+            }
+            Shader.shadeDirectory(dirRules, dest.toPath, mappings, ao.level == Level.Debug)
           }
 
           // Write the jarNamePath at the end to minimise the chance of having a
