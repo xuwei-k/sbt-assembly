@@ -2,6 +2,7 @@ package sbtassembly
 
 import sbt._
 import Keys._
+import com.eed3si9n.jarjarabrams
 
 object AssemblyPlugin extends sbt.AutoPlugin {
   override def requires = plugins.JvmPlugin
@@ -12,7 +13,12 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     val MergeStrategy = sbtassembly.MergeStrategy
     val PathList = sbtassembly.PathList
     val baseAssemblySettings = AssemblyPlugin.baseAssemblySettings
-    val ShadeRule = sbtassembly.ShadeRule
+    val ShadeRule = com.eed3si9n.jarjarabrams.ShadeRule
+    implicit class RichShadePattern(pattern: jarjarabrams.ShadePattern) {
+      def inLibrary(moduleId: ModuleID*): jarjarabrams.ShadeRule =
+        pattern.inModuleCoordinates(moduleId.toVector
+          .map(m => jarjarabrams.ModuleCoordinate(m.organization, m.name, m.revision)): _*)
+    }
   }
   import autoImport.{ Assembly => _, baseAssemblySettings => _, _ }
 
@@ -151,6 +157,6 @@ case class AssemblyOption(assemblyDirectory: File,
   appendContentHash: Boolean = false,
   prependShellScript: Option[Seq[String]] = None,
   maxHashLength: Option[Int] = None,
-  shadeRules: Seq[ShadeRule] = Seq(),
+  shadeRules: Seq[jarjarabrams.ShadeRule] = Seq(),
   scalaVersion: String = "",
   level: Level.Value)

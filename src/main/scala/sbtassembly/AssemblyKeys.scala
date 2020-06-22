@@ -2,6 +2,7 @@ package sbtassembly
 
 import sbt._
 import Keys._
+import com.eed3si9n.jarjarabrams
 
 trait AssemblyKeys {
   lazy val assembly                  = taskKey[File]("Builds a deployable fat jar.")
@@ -37,7 +38,7 @@ trait AssemblyKeys {
   @deprecated("Use assemblyMergeStrategy", "0.12.0")
   lazy val mergeStrategy             = assemblyMergeStrategy
 
-  lazy val assemblyShadeRules        = settingKey[Seq[ShadeRule]]("shading rules backed by jarjar")
+  lazy val assemblyShadeRules        = settingKey[Seq[jarjarabrams.ShadeRule]]("shading rules backed by jarjar")
 }
 object AssemblyKeys extends AssemblyKeys
 
