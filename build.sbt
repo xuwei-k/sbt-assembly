@@ -9,9 +9,9 @@ lazy val root = (project in file("."))
     licenses := Seq("MIT License" -> url("https://github.com/sbt/sbt-assembly/blob/master/LICENSE")),
     scalacOptions := Seq("-deprecation", "-unchecked", "-Dscalac.patmat.analysisBudget=1024", "-Xfuture"),
     libraryDependencies ++= Seq(
-      "org.scalactic" %% "scalactic" % "3.0.8",
-      "com.eed3si9n.jarjarabrams" %% "jarjar-abrams-core" % "0.1.0",
-      "org.scalatest" %% "scalatest" % "3.1.1" % Test,
+      "org.scalactic" %% "scalactic" % "3.2.1",
+      "com.eed3si9n.jarjarabrams" %% "jarjar-abrams-core" % "0.2.0",
+      "org.scalatest" %% "scalatest" % "3.1.3" % Test,
     ),
     crossSbtVersions := Seq("0.13.18", "1.2.8"), // https://github.com/sbt/sbt/issues/5049
     publishArtifact in (Compile, packageBin) := true,
