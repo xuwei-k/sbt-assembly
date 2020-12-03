@@ -6,6 +6,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "sbt-assembly",
     description := "sbt plugin to create a single fat jar",
+    homepage := Some(url("https://github.com/sbt/sbt-assembly")),
     licenses := Seq("MIT License" -> url("https://github.com/sbt/sbt-assembly/blob/master/LICENSE")),
     scalacOptions := Seq("-deprecation", "-unchecked", "-Dscalac.patmat.analysisBudget=1024", "-Xfuture"),
     libraryDependencies ++= Seq(
