@@ -1,3 +1,3 @@
 publishMavenStyle := false
-bintrayOrganization in bintray := None
+bintray / bintrayOrganization := None
 bintrayRepository := "sbt-plugins"
