@@ -15,8 +15,8 @@ lazy val root = (project in file("."))
       "org.scalatest" %% "scalatest" % "3.1.1" % Test,
     ),
     crossSbtVersions := Seq("0.13.18", "1.2.8"), // https://github.com/sbt/sbt/issues/5049
-    publishArtifact in (Compile, packageBin) := true,
-    publishArtifact in (Test, packageBin) := false,
-    publishArtifact in (Compile, packageDoc) := false,
-    publishArtifact in (Compile, packageSrc) := true
+    Compile / packageBin / publishArtifact := true,
+    Test / packageBin / publishArtifact := false,
+    Compile / packageDoc / publishArtifact := false,
+    Compile / packageSrc / publishArtifact := true
   )
