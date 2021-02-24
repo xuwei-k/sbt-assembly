@@ -257,7 +257,7 @@ Maven defines ["provided"](http://maven.apache.org/guides/introduction/introduct
 
 > This is much like `compile`, but indicates you expect the JDK or a container to provide the dependency at runtime. For example, when building a web application for the Java Enterprise Edition, you would set the dependency on the Servlet API and related Java EE APIs to scope `provided` because the web container provides those classes. This scope is only available on the compilation and test classpath, and is not transitive.
 
-The dependency will be part of compilation and test, but excluded from the runtime. If you Spark people want to include "provided" dependencies back to `run`, [@douglaz](https://github.com/douglaz) has come up with a one-liner solution on StackOverflow [sbt: how can I add "provided" dependencies back to run/test tasks' classpath?](http://stackoverflow.com/a/21803413/3827):
+The dependency will be part of compilation and test, but excluded from the runtime. If you're using Spark and want to include "provided" dependencies back to `run`, [@douglaz](https://github.com/douglaz) has come up with a one-liner solution on StackOverflow [sbt: how can I add "provided" dependencies back to run/test tasks' classpath?](http://stackoverflow.com/a/21803413/3827):
 
 ```scala
 run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated
