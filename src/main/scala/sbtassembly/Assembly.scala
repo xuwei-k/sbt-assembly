@@ -45,17 +45,55 @@ object Assembly {
     def makeJar(outPath: File): Unit = {
       import Package._
       import collection.JavaConverters._
+      import scala.language.reflectiveCalls
       val manifest = new Manifest
       val main = manifest.getMainAttributes.asScala
+      var time: Option[Long] = None
       for(option <- po) {
         option match {
           case JarManifest(mergeManifest)     => Package.mergeManifests(manifest, mergeManifest)
           case MainClass(mainClassName)       => main.put(Attributes.Name.MAIN_CLASS, mainClassName)
           case ManifestAttributes(attrs @ _*) => main ++= attrs
-          case _                              => log.warn("Ignored unknown package option " + option)
+          case _                              =>
+            // use reflection for compatibility
+            if (option.getClass.getName == "sbt.Package$FixedTimestamp") {
+              try {
+                // https://github.com/sbt/sbt/blob/59130d4703e9238e/main-actions/src/main/scala/sbt/Package.scala#L50
+                time = option.asInstanceOf[{def value: Option[Long]}].value
+              } catch {
+                case e: Throwable =>
+                  log.debug(e.toString)
+              }
+            } else {
+              log.warn("Ignored unknown package option " + option)
+            }
         }
       }
-      Package.makeJar(ms, outPath, manifest, log)
+      if (time.isEmpty) {
+        Package.makeJar(ms, outPath, manifest, log)
+      } else {
+        try {
+          // https://github.com/sbt/sbt/blob/59130d4703e9238e/main-actions/src/main/scala/sbt/Package.scala#L213-L219
+          Package.asInstanceOf[ {
+            def makeJar(
+              sources: Seq[(File, String)],
+              jar: File,
+              manifest: Manifest,
+              log: Logger,
+              time: Option[Long]
+            ): Unit
+          }].makeJar(
+            sources = ms,
+            jar = outPath,
+            manifest = manifest,
+            log = log,
+            time = time
+          )
+        } catch {
+          case e: Throwable =>
+            log.debug(e.toString)
+        }
+      }
       ao.prependShellScript foreach { shellScript: Seq[String] =>
         val tmpFile = cacheDir / "assemblyExec.tmp"
         if (tmpFile.exists()) tmpFile.delete()
