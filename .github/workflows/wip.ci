@@ -1,9 +1,6 @@
-name: CI
+name: aaa
 on:
-  pull_request:
   push:
-  schedule:
-  - cron: '0 21 * * 0'
 jobs:
   test:
     runs-on: ubuntu-latest
