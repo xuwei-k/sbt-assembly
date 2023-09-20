@@ -6,7 +6,7 @@ ThisBuild / version := {
 
 ThisBuild / organization := "com.eed3si9n"
 
-def scala212 = "2.12.8"
+def scala212 = "2.12.18"
 ThisBuild / crossScalaVersions := Seq(scala212)
 ThisBuild / scalaVersion := scala212
 
@@ -20,11 +20,6 @@ lazy val root = (project in file("."))
       "com.eed3si9n.jarjarabrams" %% "jarjar-abrams-core" % "1.9.0",
       "org.scalatest" %% "scalatest" % "3.1.1" % Test,
     )
-    (pluginCrossBuild / sbtVersion) := {
-      scalaBinaryVersion.value match {
-        case "2.12" => "1.2.8"
-      }
-    }
     Compile / generateContrabands / sourceManaged := baseDirectory.value / "src" / "main" / "scala"
   })
 
