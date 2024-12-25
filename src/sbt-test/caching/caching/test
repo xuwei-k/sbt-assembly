@@ -1,12 +1,12 @@
 # check if the file gets created
 > clean
 > assembly
-> fileCheck1
+$ exists target/**/foo.jar
 
 # run to cache the hash, then check it's consistent
 > check
 > checkhash
-> fileCheck2
+$ exists target/**/jarHash.txt
 > checkhash
 
 > assembly

@@ -1,6 +1,6 @@
 # check if the file gets created
 > Test/assembly
-> fileCheck
+$ exists target/**/foo.jar
 
 # check if it says hello
 > check

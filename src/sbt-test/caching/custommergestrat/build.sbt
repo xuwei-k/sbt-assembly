@@ -40,7 +40,3 @@ def mustContain(f: File, l: Seq[String]): Unit = {
 TaskKey[Unit]("copy-preserve-last-modified") := {
   IO.copy(Seq((crossTarget.value / "foo.jar") -> (crossTarget.value / "foo-1.jar")), true, true, true)
 }
-
-TaskKey[Unit]("fileCheck1") := {
-  assert((crossTarget.value / "foo.jar").exists())
-}
