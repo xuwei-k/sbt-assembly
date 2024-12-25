@@ -23,8 +23,9 @@ lazy val root = (project in file("."))
     },
 
     TaskKey[Unit]("checkPrevious") := {
-      import sbinary.DefaultProtocol._
-      import CacheImplicits._
+      import sbinary.DefaultProtocol.*
+      import CacheImplicits.{given, *}
+      import Def.*
       assert(Some(assembly.value) == assembly.previous)
     }
   )

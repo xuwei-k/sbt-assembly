@@ -12,7 +12,3 @@ lazy val root = (project in file("."))
       ()
     }
   )
-
-TaskKey[Unit]("fileCheck") := {
-  assert((crossTarget.value / "foo.jar").exists())
-}

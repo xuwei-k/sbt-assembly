@@ -8,7 +8,3 @@ TaskKey[Unit]("check") := {
   if (out.trim != "hello") sys.error("unexpected output: " + out)
   ()
 }
-
-TaskKey[Unit]("fileCheck") := {
-  assert((crossTarget.value / "foo.jar").exists())
-}

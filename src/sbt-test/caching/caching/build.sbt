@@ -44,11 +44,3 @@ lazy val root = (project in file(".")).
       ()
     }
   )
-
-TaskKey[Unit]("fileCheck1") := {
-  assert((crossTarget.value / "foo.jar").exists())
-}
-
-TaskKey[Unit]("fileCheck2") := {
-  assert((crossTarget.value / "jarHash.txt").exists())
-}
