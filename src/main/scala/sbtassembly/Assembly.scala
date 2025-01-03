@@ -345,32 +345,33 @@ object Assembly {
           .map(t => t - java.util.TimeZone.getDefault.getOffset(t))
           .getOrElse(System.currentTimeMillis())
 
+        val absOutput = output.getAbsoluteFile
         timed(Level.Debug, "Create jar") {
-          if (output.isDirectory) {
-            val invalidPath = output.toPath.toAbsolutePath.normalize
+          if (absOutput.isDirectory) {
+            val invalidPath = absOutput.toPath.normalize
             log.error(s"expected a file name for assemblyOutputPath, but found a directory: ${invalidPath}; fix the setting or delete the directory")
             throw new RuntimeException("Exiting task")
           } else {
-            IO.delete(output)
-            val dest = output.getParentFile
+            IO.delete(absOutput)
+            val dest = absOutput.getParentFile
             if (!dest.exists()) {
               dest.mkdirs()
             }
-            createJar(output, jarEntriesToWrite, jarManifest, localTime)
+            createJar(absOutput, jarEntriesToWrite, jarManifest, localTime)
           }
         }
         val fullSha1 = timed(Level.Debug, "Hash newly-built Jar") {
-          hash(output)
+          hash(absOutput)
         }
         val builtAssemblyJar =
           if (ao.appendContentHash) {
             val sha1 = ao.maxHashLength.fold(fullSha1)(length => fullSha1.take(length))
-            val newName = output.getName.replaceAll("\\.[^.]*$", "") + "-" + sha1 + ".jar"
-            val outputWithHash = new File(output.getParentFile, newName)
+            val newName = absOutput.getName.replaceAll("\\.[^.]*$", "") + "-" + sha1 + ".jar"
+            val outputWithHash = new File(absOutput.getParentFile, newName)
             IO.delete(outputWithHash)
-            Files.move(output.toPath, outputWithHash.toPath, StandardCopyOption.REPLACE_EXISTING)
+            Files.move(absOutput.toPath, outputWithHash.toPath, StandardCopyOption.REPLACE_EXISTING)
             outputWithHash
-          } else output
+          } else absOutput
         ao.prependShellScript
           .foreach { shellScript =>
             timed(Level.Info, "Prepend shell script") {
