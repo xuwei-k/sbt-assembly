@@ -243,7 +243,7 @@ object Assembly {
 
     val filteredJars = timed(Level.Debug, "Filter jars") {
       jars.flatMap {
-        case jar if excludedJars.contains(jar) => None
+        case jar if excludedJars.contains(toNioPath(jar)) => None
         case jar if isScalaLibraryFile(scalaLibraries, toNioPath(jar)) =>
           if (ao.includeScala) Some(jar) else None
         case jar if externalDeps.contains(jar) =>
