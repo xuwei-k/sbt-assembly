@@ -27,7 +27,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
   }
   import autoImport.{ baseAssemblySettings => _, Assembly => _, _ }
 
-  override lazy val globalSettings: Seq[Def.Setting[_]] = Seq(
+  override lazy val globalSettings: Seq[Def.Setting[?]] = Seq(
     assemblyMergeStrategy := MergeStrategy.defaultMergeStrategy,
     assemblyShadeRules := Nil,
     assemblyExcludedJars := Nil,
@@ -41,10 +41,10 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     concurrentRestrictions += Tags.limit(Assembly.assemblyTag, 1)
   )
 
-  override lazy val projectSettings: Seq[Def.Setting[_]] = assemblySettings
+  override lazy val projectSettings: Seq[Def.Setting[?]] = assemblySettings
 
   // Compile-specific defaults
-  def assemblySettings: Seq[sbt.Def.Setting[_]] = baseAssemblySettings ++ Seq(
+  def assemblySettings: Seq[sbt.Def.Setting[?]] = baseAssemblySettings ++ Seq(
     assembly / packageOptions := {
       val os = (Compile / packageBin / packageOptions).value
       (assembly / mainClass).value map { s =>
@@ -55,7 +55,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     assemblyPackageDependency / packageOptions := (Compile / packageBin / packageOptions).value
   )
 
-  def baseAssemblySettings: Seq[sbt.Def.Setting[_]] = (Seq(
+  def baseAssemblySettings: Seq[sbt.Def.Setting[?]] = (Seq(
     assembly := Assembly.assemblyTask(assembly).value,
     assemblyPackageScala := Assembly.assemblyTask(assemblyPackageScala).value,
     assemblyPackageDependency := Assembly.assemblyTask(assemblyPackageDependency).value,
@@ -105,7 +105,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
       }
     ))
 
-  def assemblyOptionSettings: Seq[Setting[_]] = Seq(
+  def assemblyOptionSettings: Seq[Setting[?]] = Seq(
     assemblyOption := {
       val s = streams.value
       val sr = assemblyShadeRules.value
