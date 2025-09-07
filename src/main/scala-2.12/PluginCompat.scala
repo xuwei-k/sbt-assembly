@@ -3,6 +3,7 @@ package sbtassembly
 import java.nio.file.{ Path => NioPath }
 import java.util.jar.{ Manifest => JManifest }
 import sbt.*
+import Keys.test
 import sbt.internal.util.HNil
 import sbt.internal.util.Types.:+:
 import sbt.util.FileInfo.lastModified
@@ -29,6 +30,17 @@ private[sbtassembly] object PluginCompat {
     cp.map(_.data.toPath()).toVector
   def toFiles(cp: Seq[Attributed[File]])(implicit conv: FileConverter): Vector[File] =
     cp.map(_.data).toVector
+
+  // This adds `Def.uncached(...)`
+  implicit class DefOp(singleton: Def.type) {
+    def uncached[A1](a: A1): A1 = a
+  }
+
+  def baseTestSettings: Seq[sbt.Def.Setting[?]] = Seq(
+    AssemblyKeys.assembly / test := (()),
+    AssemblyKeys.assemblyPackageScala / test := (AssemblyKeys.assembly / test).value,
+    AssemblyKeys.assemblyPackageDependency / test := (AssemblyKeys.assembly / test).value,
+  )
 
   type CacheKey = FilesInfo[ModifiedFileInfo] :+:
     Map[String, (Boolean, String)] :+: // map of target paths that matched a merge strategy

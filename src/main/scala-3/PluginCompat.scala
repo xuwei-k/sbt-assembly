@@ -4,6 +4,7 @@ import java.io.File
 import java.nio.file.{ Path => NioPath }
 import java.util.jar.{ Manifest => JManifest }
 import sbt.*
+import Keys.test
 import sbt.librarymanagement.ModuleID
 import xsbti.{ FileConverter, HashedVirtualFileRef, VirtualFile }
 
@@ -31,6 +32,12 @@ object PluginCompat:
     cp.map(toNioPath).toVector
   inline def toFiles(cp: Seq[Attributed[HashedVirtualFileRef]])(using conv: FileConverter): Vector[File] =
     toNioPaths(cp).map(_.toFile())
+
+  def baseTestSettings: Seq[sbt.Def.Setting[?]] = Seq(
+    AssemblyKeys.assembly / test := TestResult.Empty,
+    AssemblyKeys.assemblyPackageScala / test := (AssemblyKeys.assembly / test).evaluated,
+    AssemblyKeys.assemblyPackageDependency / test := (AssemblyKeys.assembly / test).evaluated,
+  )
 
   object HListFormats
   val Streamable = scala.reflect.io.Streamable

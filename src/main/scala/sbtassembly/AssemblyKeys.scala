@@ -5,14 +5,23 @@ import sbt.Keys.*
 import sbt.*
 
 trait AssemblyKeys {
+  @transient
   lazy val assembly                  = taskKey[PluginCompat.FileRef]("Builds a deployable über JAR")
   lazy val assembleArtifact          = settingKey[Boolean]("Enables (true) or disables (false) assembling an artifact")
+
+  @transient
   lazy val assemblyOption            = taskKey[AssemblyOption]("Configuration for making a deployable über JAR")
+
+  @transient
   lazy val assemblyPackageScala      = taskKey[PluginCompat.FileRef]("Produces the Scala artifact")
+
+  @transient
   lazy val assemblyPackageDependency = taskKey[PluginCompat.FileRef]("Produces the dependency artifact")
   lazy val assemblyJarName           = taskKey[String]("name of the über jar")
   lazy val assemblyDefaultJarName    = taskKey[String]("default name of the über jar")
   lazy val assemblyOutputPath        = taskKey[File]("output path of the über jar")
+
+  @transient
   lazy val assemblyExcludedJars      = taskKey[Classpath]("list of excluded jars")
   lazy val assemblyMergeStrategy     = settingKey[String => MergeStrategy]("mapping from archive member path to merge strategy")
   lazy val assemblyShadeRules        = settingKey[Seq[jarjarabrams.ShadeRule]]("shading rules backed by jarjar")
