@@ -22,10 +22,13 @@ lazy val root = (project in file("."))
       })
     },
 
-    TaskKey[Unit]("checkPrevious") := {
+    InputKey[Unit]("checkPrevious") := {
       import sbinary.DefaultProtocol.*
       import CacheImplicits.{given, *}
       import Def.*
-      assert(Some(assembly.value) == assembly.previous)
+      val args = sbt.complete.Parsers.spaceDelimited("<arg>").parsed
+      val a = assembly.value
+      val p = assembly.previous
+      assert(Some(a) == p)
     }
   )
