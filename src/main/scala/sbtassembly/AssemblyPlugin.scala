@@ -21,7 +21,7 @@ object AssemblyPlugin extends sbt.AutoPlugin {
       def inLibrary(moduleId: ModuleID*): jarjarabrams.ShadeRule =
         pattern.inModuleCoordinates(
           moduleId.toVector
-            .map(m => jarjarabrams.ModuleCoordinate(m.organization, m.name, m.revision)): _*
+            .map(m => jarjarabrams.ModuleCoordinate(m.organization, m.name, m.revision))*
         )
     }
   }
@@ -60,11 +60,6 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     assemblyPackageScala := Assembly.assemblyTask(assemblyPackageScala).value,
     assemblyPackageDependency := Assembly.assemblyTask(assemblyPackageDependency).value,
 
-    // test
-    assembly / test := {},
-    assemblyPackageScala / test := (assembly / test).value,
-    assemblyPackageDependency / test := (assembly / test).value,
-
     // packageOptions not specific to Compile scope. see also assemblySettings
     assembly / packageOptions := {
       val os = (packageBin / packageOptions).value
@@ -87,9 +82,10 @@ object AssemblyPlugin extends sbt.AutoPlugin {
     assemblyPackageDependency / assemblyDefaultJarName := name.value + "-assembly-" + version.value + "-deps.jar",
     assembly / assemblyDefaultJarName := name.value + "-assembly-" + version.value + ".jar",
     assembly / mainClass := (mainClass or (Runtime / mainClass)).value,
-    assembly / fullClasspath := (fullClasspath or (Runtime / fullClasspath)).value,
-    assembly / externalDependencyClasspath := (externalDependencyClasspath or (Runtime / externalDependencyClasspath)).value
-  ) ++ inTask(assembly)(assemblyOptionSettings)
+    assembly / fullClasspath := Def.uncached((fullClasspath or (Runtime / fullClasspath)).value),
+    assembly / externalDependencyClasspath := Def.uncached((externalDependencyClasspath or (Runtime / externalDependencyClasspath)).value),
+  ) ++ PluginCompat.baseTestSettings
+    ++ inTask(assembly)(assemblyOptionSettings)
     ++ inTask(assemblyPackageScala)(assemblyOptionSettings)
     ++ inTask(assemblyPackageDependency)(assemblyOptionSettings)
     ++ Seq(
