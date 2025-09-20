@@ -1,5 +1,5 @@
 /**
- * This code is generated using [[https://www.scala-sbt.org/contraband/ sbt-contraband]].
+ * This code is generated using [[https://www.scala-sbt.org/contraband]].
  */
 
 // DO NOT EDIT MANUALLY
@@ -36,7 +36,7 @@ final class AssemblyOption private (
   override def toString: String = {
     "AssemblyOption(" + includeBin + ", " + includeScala + ", " + includeDependency + ", " + excludedJars + ", " + repeatableBuild + ", " + mergeStrategy + ", " + cacheOutput + ", " + appendContentHash + ", " + prependShellScript + ", " + maxHashLength + ", " + shadeRules + ", " + scalaVersion + ", " + level + ")"
   }
-  private[this] def copy(includeBin: Boolean = includeBin, includeScala: Boolean = includeScala, includeDependency: Boolean = includeDependency, excludedJars: sbt.Keys.Classpath = excludedJars, repeatableBuild: Boolean = repeatableBuild, mergeStrategy: sbtassembly.MergeStrategy.StringToMergeStrategy = mergeStrategy, cacheOutput: Boolean = cacheOutput, appendContentHash: Boolean = appendContentHash, prependShellScript: Option[sbtassembly.Assembly.SeqString] = prependShellScript, maxHashLength: Option[Int] = maxHashLength, shadeRules: sbtassembly.Assembly.SeqShadeRules = shadeRules, scalaVersion: String = scalaVersion, level: sbt.Level.Value = level): AssemblyOption = {
+  private def copy(includeBin: Boolean = includeBin, includeScala: Boolean = includeScala, includeDependency: Boolean = includeDependency, excludedJars: sbt.Keys.Classpath = excludedJars, repeatableBuild: Boolean = repeatableBuild, mergeStrategy: sbtassembly.MergeStrategy.StringToMergeStrategy = mergeStrategy, cacheOutput: Boolean = cacheOutput, appendContentHash: Boolean = appendContentHash, prependShellScript: Option[sbtassembly.Assembly.SeqString] = prependShellScript, maxHashLength: Option[Int] = maxHashLength, shadeRules: sbtassembly.Assembly.SeqShadeRules = shadeRules, scalaVersion: String = scalaVersion, level: sbt.Level.Value = level): AssemblyOption = {
     new AssemblyOption(includeBin, includeScala, includeDependency, excludedJars, repeatableBuild, mergeStrategy, cacheOutput, appendContentHash, prependShellScript, maxHashLength, shadeRules, scalaVersion, level)
   }
   def withIncludeBin(includeBin: Boolean): AssemblyOption = {
