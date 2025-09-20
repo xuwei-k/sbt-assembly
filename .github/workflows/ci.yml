@@ -25,8 +25,8 @@ jobs:
             distribution: temurin
             jobtype: sbt-1
           - os: ubuntu-latest
-            java: 24-ea
-            distribution: temurin
+            java: 25
+            distribution: zulu
             jobtype: sbt-1
           - os: windows-latest
             java: 11
