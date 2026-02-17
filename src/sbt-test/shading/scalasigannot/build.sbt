@@ -8,7 +8,7 @@ lazy val scala213 = "2.13.11"
 ThisBuild / crossScalaVersions := List(scala212, scala213)
 
 
-val shadingSettings: Seq[Def.Setting[_]] = Seq(
+val shadingSettings: Seq[Def.Setting[?]] = Seq(
   exportJars := false,
   assembly / assemblyShadeRules := Seq(
     ShadeRule.rename(
