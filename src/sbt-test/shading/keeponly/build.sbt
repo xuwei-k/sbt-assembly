@@ -5,6 +5,9 @@ lazy val scala213 = "2.13.11"
 scalaVersion := scala212
 crossScalaVersions := List(scala212, scala213)
 
+@transient
+val check = taskKey[Unit]("")
+
 lazy val testkeep = (project in file(".")).
   settings(
     version := "0.1",
@@ -12,7 +15,7 @@ lazy val testkeep = (project in file(".")).
     assembly / assemblyShadeRules := Seq(
       ShadeRule.keep("keep.**").inProject
     ),
-    TaskKey[Unit]("check") := {
+    check := {
       IO.withTemporaryDirectory { dir =>
         IO.unzip(crossTarget.value / "foo.jar", dir)
         mustNotExist(dir / "removed" / "ShadeClass.class")
