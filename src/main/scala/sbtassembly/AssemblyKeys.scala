@@ -20,6 +20,7 @@ trait AssemblyKeys {
   lazy val assemblyPackageDependency = taskKey[FileRef]("Produces the dependency artifact")
   lazy val assemblyJarName           = taskKey[String]("name of the über jar")
   lazy val assemblyDefaultJarName    = taskKey[String]("default name of the über jar")
+  @transient
   lazy val assemblyOutputPath        = taskKey[File]("output path of the über jar")
 
   @transient
