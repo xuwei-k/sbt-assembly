@@ -5,13 +5,13 @@ lazy val root = (project in file(".")).
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.10" % "test",
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "0.9.29" % "runtime",
     assembly / assemblyJarName := "foo.jar",
-    TaskKey[Seq[File]]("genresource") := {
+    InputKey[Seq[File]]("genresource") := {
       val dirs = (Compile / unmanagedResourceDirectories).value
       val file = dirs.head / "foo.txt"
       IO.write(file, "bye")
       Seq(file)
     },
-    TaskKey[Seq[File]]("genresource2") := {
+    InputKey[Seq[File]]("genresource2") := {
       val dirs = (Compile / unmanagedResourceDirectories).value
       val file = dirs.head / "bar.txt"
       IO.write(file, "bye")
