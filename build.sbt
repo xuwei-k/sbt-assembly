@@ -38,13 +38,13 @@ lazy val root = (project in file("."))
     (pluginCrossBuild / sbtVersion) := {
       scalaBinaryVersion.value match {
         case "2.12" => "1.5.8"
-        case _      => "2.0.0-RC10"
+        case _      => "2.0.0-RC11"
       }
     }
     scriptedSbt := {
       scalaBinaryVersion.value match {
         case "2.12" => "1.10.7"
-        case _      => "2.0.0-RC10"
+        case _      => "2.0.0-RC11"
       }
     }
     Compile / generateContrabands / sourceManaged := baseDirectory.value / "src" / "main" / "scala"
