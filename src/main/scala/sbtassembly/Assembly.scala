@@ -288,7 +288,8 @@ object Assembly {
         log
       )
     val (jarFiles, jarFileEntries) = timed(Level.Debug, "Collect and shade dependency entries") {
-      filteredJars.par.map { jar =>
+      val (externalJars, projectJars) = filteredJars.partition(externalDeps.contains)
+      (projectJars ++ externalJars).par.map { jar =>
         val module = jar.metadata
           .get(moduleIDStr)
           .map(parseModuleIDStrAttribute)
