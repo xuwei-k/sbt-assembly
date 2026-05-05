@@ -1,6 +1,11 @@
-# check if the file gets created
+> clean
+> set ThisBuild / exportJars := false
 > assembly
 $ exists target/**/foo.jar
+> check
 
-# check if it says hello
+> clean
+> set ThisBuild / exportJars := true
+> assembly
+$ exists target/**/foo.jar
 > check

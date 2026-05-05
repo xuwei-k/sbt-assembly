@@ -266,9 +266,12 @@ object Assembly {
         classByParentDir
           .flatMap { case (parentDir, file) =>
             val originalTarget = parentDir.relativize(file).toString
-            classShader(originalTarget, () => new BufferedInputStream(new FileInputStream(file.toFile())))
+            val sanitizedTarget =
+              if (originalTarget.contains('\\')) originalTarget.replace('\\', '/')
+              else originalTarget
+            classShader(sanitizedTarget, () => new BufferedInputStream(new FileInputStream(file.toFile())))
               .map { case (shadedName, stream) =>
-                Project(targetJarName, originalTarget, shadedName, stream)
+                Project(targetJarName, sanitizedTarget, shadedName, stream)
               }
           }
       }
@@ -285,7 +288,8 @@ object Assembly {
         log
       )
     val (jarFiles, jarFileEntries) = timed(Level.Debug, "Collect and shade dependency entries") {
-      filteredJars.par.map { jar =>
+      val (externalJars, projectJars) = filteredJars.partition(externalDeps.contains)
+      (projectJars ++ externalJars).par.map { jar =>
         val module = jar.metadata
           .get(moduleIDStr)
           .map(parseModuleIDStrAttribute)
@@ -705,8 +709,7 @@ object PathList {
   private val sysFileSep = "/"
 
   def unapplySeq(path: String): Option[Seq[String]] = {
-    val sanitizedPath = if (path.contains('\\')) path.replace('\\', '/') else path
-    val split = sanitizedPath.split(sysFileSep)
+    val split = path.split(sysFileSep)
     if (split.isEmpty) Option.empty
     else Option(split.toList)
   }

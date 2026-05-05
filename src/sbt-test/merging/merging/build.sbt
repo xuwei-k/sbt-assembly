@@ -13,12 +13,15 @@ assemblyMergeStrategy := {
     oldStrategy(x)
 }
 name := "foo"
-exportJars := true
 
 lazy val testmerge = (project in file("."))
   .settings(
     assembly / assemblyJarName := "foo.jar",
     TaskKey[Unit]("check") := {
+      val s = streams.value
+      val projectAsJar = exportJars.value
+      val renameSuffix = if (projectAsJar) "foo-0.1" else "foo"
+      s.log.info(s"Checking with exportJars=$projectAsJar")
       IO.withTemporaryDirectory { dir =>
         IO.unzip(crossTarget.value / "foo.jar", dir)
         mustContain(dir / "a", Seq("1", "2", "1", "3"))
@@ -27,9 +30,9 @@ lazy val testmerge = (project in file("."))
         mustContain(dir / "d", Seq("1", "2", "3"))
         mustContain(dir / "e", Seq("1"))
         mustNotExist(dir / "f")
-        mustContain(dir / "README_foo-0.1", Seq("resources"))
+        mustContain(dir / s"README_$renameSuffix", Seq("resources"))
         mustContain(dir / "README_1", Seq("1"))
-        mustContain(dir / "LICENSE_foo-0.1", Seq("resources"))
+        mustContain(dir / s"LICENSE_$renameSuffix", Seq("resources"))
         mustContain(dir / "LICENSE" / "a", Seq("1"))
         // 80f5a06 -- don't rename License.class
         mustExist(dir / "com" / "example" / "License.class")
@@ -41,6 +44,7 @@ lazy val testmerge = (project in file("."))
         mustExist(dir / "com" / "example" / "license" / "PublicDomain.class")
         mustExist(dir / "NOTICE" / "README_3.txt")
         mustExist(dir / "NOTICE" / "LICENSE_3.txt")
+        mustContain(dir / "META-INF" / "services" / "srv", Seq("local", "jar1", "jar2"))
       }
     })
 
